@@ -398,6 +398,269 @@ class RadarHtmlColors {
 typedef _RadarHtmlColors = RadarHtmlColors;
 
 // ==========================================
+// 🌐 OPENSTREETMAP MERCATOR PROJEKSİYON FONKSİYONLARI
+// ==========================================
+double osmLonToTileX(double lon, double zoom) {
+  return ((lon + 180.0) / 360.0 * math.pow(2.0, zoom));
+}
+
+double osmLatToTileY(double lat, double zoom) {
+  final rad = lat * math.pi / 180.0;
+  final sinVal = math.sin(rad).clamp(-0.9999, 0.9999);
+  return ((1.0 - math.log((1.0 + sinVal) / (1.0 - sinVal)) / (2.0 * math.pi)) / 2.0 * math.pow(2.0, zoom));
+}
+
+double osmTileXToLon(double x, double zoom) {
+  return (x / math.pow(2.0, zoom) * 360.0 - 180.0);
+}
+
+double osmTileYToLat(double y, double zoom) {
+  final n = math.pi - 2.0 * math.pi * y / math.pow(2.0, zoom);
+  final sinh = 0.5 * (math.exp(n) - math.exp(-n));
+  return (180.0 / math.pi * math.atan(sinh));
+}
+
+// ==========================================
+// 📍 OPENSTREETMAP ŞEHİR VE REFERANS NOKTALARI
+// ==========================================
+class OsmCityRef {
+  final String name;
+  final String nameEn;
+  final double lon;
+  final double lat;
+  final bool important;
+
+  const OsmCityRef({
+    required this.name,
+    required this.nameEn,
+    required this.lon,
+    required this.lat,
+    this.important = false,
+  });
+}
+
+final List<OsmCityRef> osmCityLabels = [
+  const OsmCityRef(name: "🏛️ Lefkoşa", nameEn: "🏛️ Nicosia", lon: 33.36, lat: 35.18, important: true),
+  const OsmCityRef(name: "⚓ Gazimağusa", nameEn: "⚓ Famagusta", lon: 33.93, lat: 35.13, important: true),
+  const OsmCityRef(name: "🏰 Girne", nameEn: "🏰 Kyrenia", lon: 33.32, lat: 35.34, important: true),
+  const OsmCityRef(name: "🏖️ İskele", nameEn: "🏖️ Iskele", lon: 33.95, lat: 35.32, important: true),
+  const OsmCityRef(name: "🍊 Güzelyurt", nameEn: "🍊 Morphou", lon: 33.00, lat: 35.20, important: true),
+  const OsmCityRef(name: "🌴 Lefke", nameEn: "🌴 Lefka", lon: 32.85, lat: 35.11, important: true),
+  const OsmCityRef(name: "✈️ Ercan", nameEn: "✈️ Ercan", lon: 33.50, lat: 35.16, important: true),
+  const OsmCityRef(name: "🧭 Dipkarpaz", nameEn: "🧭 Dipkarpaz", lon: 34.38, lat: 35.61, important: true),
+  const OsmCityRef(name: "📍 Geçitkale", nameEn: "📍 Gecitkale", lon: 33.75, lat: 35.27),
+  const OsmCityRef(name: "📍 Alsancak", nameEn: "📍 Alsancak", lon: 33.20, lat: 35.35),
+  const OsmCityRef(name: "📍 Lapta", nameEn: "📍 Lapta", lon: 33.05, lat: 35.37),
+  const OsmCityRef(name: "📍 Yenierenköy", nameEn: "📍 Yenierenkoy", lon: 34.25, lat: 35.56),
+];
+
+// ==========================================
+// 🎨 OPENSTREETMAP DİNAMİK VEKTÖR TABAN ÇİZİCİSİ
+// (Harita açılır açılmaz anında ve tam net görünür)
+// ==========================================
+class KktcOsmVectorBasePainter extends CustomPainter {
+  final double centerLon;
+  final double centerLat;
+  final double zoom;
+  final double width;
+  final double height;
+  final int mapStyle;
+
+  KktcOsmVectorBasePainter({
+    required this.centerLon,
+    required this.centerLat,
+    required this.zoom,
+    required this.width,
+    required this.height,
+    required this.mapStyle,
+  });
+
+  Offset project(double lon, double lat) {
+    final double centerTileX = osmLonToTileX(centerLon, zoom);
+    final double centerTileY = osmLatToTileY(centerLat, zoom);
+    final double px = width / 2.0 + (osmLonToTileX(lon, zoom) - centerTileX) * 256.0;
+    final double py = height / 2.0 + (osmLatToTileY(lat, zoom) - centerTileY) * 256.0;
+    return Offset(px, py);
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 🌊 Akdeniz Koordinat Izgarası
+    final gridPaint = Paint()
+      ..color = const Color(0xFF1E293B).withValues(alpha: 0.45)
+      ..strokeWidth = 0.7;
+
+    for (double x = 0; x < size.width; x += 40) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
+    }
+    for (double y = 0; y < size.height; y += 40) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+
+    // 🏝️ 1. GÜNEY KIBRIS SİLUETİ
+    final southPaint = Paint()
+      ..color = const Color(0xFF0F172A).withValues(alpha: 0.85)
+      ..style = PaintingStyle.fill;
+    final southBorder = Paint()
+      ..color = const Color(0xFF334155).withValues(alpha: 0.6)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    final Path southPath = Path();
+    final sPts = [
+      [32.84, 35.08],
+      [33.00, 35.15],
+      [33.20, 35.18],
+      [33.36, 35.17],
+      [33.50, 35.15],
+      [33.72, 35.05],
+      [33.92, 35.08],
+      [34.05, 34.98], // Cape Greco
+      [33.63, 34.91], // Larnaka
+      [33.04, 34.67], // Limasol
+      [32.42, 34.77], // Baf (Pafos)
+      [32.32, 35.04], // Poli
+      [32.75, 35.15],
+    ];
+    if (sPts.isNotEmpty) {
+      southPath.moveTo(project(sPts[0][0], sPts[0][1]).dx, project(sPts[0][0], sPts[0][1]).dy);
+      for (int i = 1; i < sPts.length; i++) {
+        final p = project(sPts[i][0], sPts[i][1]);
+        southPath.lineTo(p.dx, p.dy);
+      }
+      southPath.close();
+      canvas.drawPath(southPath, southPaint);
+      canvas.drawPath(southPath, southBorder);
+    }
+
+    // 🏝️ 2. KKTC COĞRAFİ ANA KARASI (OPENSTREETMAP KOORDİNATLARIYLA)
+    final kktcLandPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF162038), Color(0xFF111827), Color(0xFF131D38)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..style = PaintingStyle.fill;
+
+    final kktcBorderPaint = Paint()
+      ..color = const Color(0xFF10B981).withValues(alpha: 0.8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8;
+
+    final Path kktcPath = Path();
+    final kPts = [
+      [32.75, 35.15],
+      [32.84, 35.14],
+      [32.90, 35.18],
+      [32.93, 35.33],
+      [32.92, 35.40], // Koruçam Burnu
+      [33.05, 35.37], // Lapta
+      [33.20, 35.35], // Alsancak
+      [33.32, 35.34], // Girne
+      [33.45, 35.34], // Çatalköy
+      [33.60, 35.35], // Esentepe
+      [33.76, 35.43], // Tatlısu
+      [33.90, 35.44], // Mersinlik
+      [34.02, 35.48], // Kaplıca
+      [34.15, 35.52], // Kumyalı
+      [34.25, 35.56], // Yenierenköy
+      [34.38, 35.61], // Dipkarpaz
+      [34.58, 35.70], // Zafer Burnu
+      [34.55, 35.63],
+      [34.35, 35.55],
+      [34.15, 35.40],
+      [34.02, 35.36], // Bafra
+      [33.95, 35.32], // İskele Boğaz
+      [33.91, 35.19], // Glapsides
+      [33.94, 35.12], // Gazimağusa Liman
+      [33.92, 35.08], // Derinya
+      [33.72, 35.05], // Beyarmudu
+      [33.50, 35.15], // Ercan güneyi
+      [33.36, 35.17], // Lefkoşa Ledra
+      [33.20, 35.18], // Alayköy
+      [33.00, 35.15], // Güzelyurt güneyi
+      [32.84, 35.08], // Lefke güneyi
+    ];
+    if (kPts.isNotEmpty) {
+      kktcPath.moveTo(project(kPts[0][0], kPts[0][1]).dx, project(kPts[0][0], kPts[0][1]).dy);
+      for (int i = 1; i < kPts.length; i++) {
+        final p = project(kPts[i][0], kPts[i][1]);
+        kktcPath.lineTo(p.dx, p.dy);
+      }
+      kktcPath.close();
+      canvas.drawPath(kktcPath, kktcLandPaint);
+      canvas.drawPath(kktcPath, kktcBorderPaint);
+    }
+
+    // 🏔️ 3. BEŞPARMAK DAĞLARI SIRADAĞ SİLSİLESİ
+    final mountainPaint = Paint()
+      ..color = const Color(0xFF334155).withValues(alpha: 0.7)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 3.5;
+    final Path mPath = Path();
+    final mStart = project(33.15, 35.33);
+    final mMid = project(33.55, 35.33);
+    final mEnd = project(33.95, 35.38);
+    mPath.moveTo(mStart.dx, mStart.dy);
+    mPath.quadraticBezierTo(mMid.dx, mMid.dy, mEnd.dx, mEnd.dy);
+    canvas.drawPath(mPath, mountainPaint);
+
+    // 🛣️ 4. OPENSTREETMAP GERÇEK ANAYOLLAR VE DUBLE YOLLAR
+    final roadGlow = Paint()
+      ..color = const Color(0xFFFFB3AF).withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 3.6;
+
+    final roadCore = Paint()
+      ..color = const Color(0xFFEF4444)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 1.8;
+
+    final highways = [
+      // Lefkoşa -> Gönyeli -> Boğaz -> Girne
+      [[33.36, 35.18], [33.31, 35.21], [33.28, 35.28], [33.32, 35.34]],
+      // Lefkoşa -> Hamitköy -> Haspolat -> Ercan -> Dörtyol -> Gazimağusa
+      [[33.36, 35.18], [33.39, 35.21], [33.44, 35.22], [33.50, 35.16], [33.75, 35.18], [33.93, 35.13]],
+      // Gönyeli -> Yılmazköy -> Güzelyurt -> Kalkanlı -> Lefke
+      [[33.31, 35.21], [33.16, 35.21], [33.00, 35.20], [33.02, 35.22], [32.85, 35.11]],
+      // Gazimağusa -> Glapsides -> İskele Boğaz -> Bafra -> Yenierenköy -> Dipkarpaz -> Zafer Burnu
+      [[33.93, 35.13], [33.90, 35.19], [33.93, 35.32], [34.02, 35.36], [34.25, 35.56], [34.38, 35.61], [34.58, 35.70]],
+      // Girne -> Alsancak -> Lapta
+      [[33.32, 35.34], [33.20, 35.35], [33.05, 35.37]],
+      // Girne -> Çatalköy -> Esentepe -> Tatlısu
+      [[33.32, 35.34], [33.45, 35.34], [33.60, 35.35], [33.76, 35.43]],
+      // Haspolat -> Değirmenlik -> Geçitkale -> Tatlısu
+      [[33.44, 35.22], [33.50, 35.24], [33.75, 35.27], [33.76, 35.43]],
+    ];
+
+    for (var route in highways) {
+      final Path rPath = Path();
+      final p0 = project(route[0][0], route[0][1]);
+      rPath.moveTo(p0.dx, p0.dy);
+      for (int i = 1; i < route.length; i++) {
+        final p = project(route[i][0], route[i][1]);
+        rPath.lineTo(p.dx, p.dy);
+      }
+      canvas.drawPath(rPath, roadGlow);
+      canvas.drawPath(rPath, roadCore);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant KktcOsmVectorBasePainter oldDelegate) {
+    return oldDelegate.centerLon != centerLon ||
+        oldDelegate.centerLat != centerLat ||
+        oldDelegate.zoom != zoom ||
+        oldDelegate.width != width ||
+        oldDelegate.height != height ||
+        oldDelegate.mapStyle != mapStyle;
+  }
+}
+
+// ==========================================
 // 🗺️ OPENSTREETMAP VE TILE KONTROL MERKEZİ
 // ==========================================
 class KktcOpenStreetMapTileView extends StatefulWidget {
@@ -553,40 +816,77 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
               color: const Color(0xFF0B1426),
               child: Stack(
                 children: [
-                  // 1. OPENSTREETMAP TİLE IZGARASI
+                  // 1. ANLIK VE KESİNTİSİZ OPENSTREETMAP VEKTÖR HARİTA ALTYAPISI
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: KktcOsmVectorBasePainter(
+                        centerLon: _centerLon,
+                        centerLat: _centerLat,
+                        zoom: _zoom,
+                        width: width,
+                        height: height,
+                        mapStyle: _mapStyleIndex,
+                      ),
+                    ),
+                  ),
+
+                  // 2. OPENSTREETMAP CANLI TİLE KATMANI (DOĞRUDAN POSITIONED)
                   for (int tx = minTileX; tx <= maxTileX; tx++)
                     for (int ty = minTileY; ty <= maxTileY; ty++)
                       if (ty >= 0 && ty < numTiles)
-                        Builder(
-                          builder: (context) {
-                            final int wrappedX = ((tx % numTiles) + numTiles) % numTiles;
-                            final double left = width / 2.0 + (tx - centerTileX) * tileSize;
-                            final double top = height / 2.0 + (ty - centerTileY) * tileSize;
-
-                            final String url = template
+                        Positioned(
+                          left: width / 2.0 + (tx - centerTileX) * tileSize,
+                          top: height / 2.0 + (ty - centerTileY) * tileSize,
+                          width: tileSize + 0.6,
+                          height: tileSize + 0.6,
+                          child: Image.network(
+                            template
                                 .replaceAll('{z}', '$intZoom')
-                                .replaceAll('{x}', '$wrappedX')
-                                .replaceAll('{y}', '$ty');
-
-                            return Positioned(
-                              left: left,
-                              top: top,
-                              width: tileSize + 0.5,
-                              height: tileSize + 0.5,
-                              child: Image.network(
-                                url,
-                                headers: const {'User-Agent': 'KktcTrafikCezaRadar/1.0'},
-                                fit: BoxFit.fill,
-                                errorBuilder: (c, e, s) => Container(
-                                  color: const Color(0xFF131D38),
-                                  child: const Center(
-                                    child: Icon(Icons.map_outlined, color: Colors.white12, size: 28),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
+                                .replaceAll('{x}', '${((tx % numTiles) + numTiles) % numTiles}')
+                                .replaceAll('{y}', '$ty'),
+                            headers: const {'User-Agent': 'KktcTrafikCezaRadar/1.0'},
+                            fit: BoxFit.fill,
+                            errorBuilder: (c, e, s) => const SizedBox.shrink(),
+                          ),
                         ),
+
+                  // 3. OPENSTREETMAP ŞEHİR İSİM ROZETLERİ
+                  ...osmCityLabels.map((c) {
+                    final double cTileX = osmLonToTileX(c.lon, intZoom.toDouble());
+                    final double cTileY = osmLatToTileY(c.lat, intZoom.toDouble());
+                    final double px = width / 2.0 + (cTileX - centerTileX) * tileSize;
+                    final double py = height / 2.0 + (cTileY - centerTileY) * tileSize;
+
+                    if (px < -60 || px > width + 60 || py < -30 || py > height + 30) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Positioned(
+                      left: px - 28,
+                      top: py - 10,
+                      child: IgnorePointer(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: c.important ? const Color(0xFF10B981) : Colors.white24,
+                              width: c.important ? 1.0 : 0.6,
+                            ),
+                          ),
+                          child: Text(
+                            widget.turkceMi ? c.name : c.nameEn,
+                            style: TextStyle(
+                              color: c.important ? Colors.white : const Color(0xFFCBD5E1),
+                              fontSize: c.important ? 8.5 : 7.5,
+                              fontWeight: c.important ? FontWeight.bold : FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
 
                   // 2. RADAR İŞARETÇİLERİ (HIZ TABELASI PINLERI)
                   ...widget.radarlar.map((radar) {
