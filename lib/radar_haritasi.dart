@@ -721,15 +721,15 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
   late final AnimationController _pulseController;
 
   final List<String> _tileProviders = [
-    'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
     'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+    'https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.jpg',
   ];
 
   final List<String> _tileStyleNames = [
-    'Carto Renkli',
-    'Standart OSM',
-    'Koyu Mod',
+    'OpenStreetMap',
+    'Canlı Renkli',
+    'Gerçek Uydu',
   ];
 
   @override
