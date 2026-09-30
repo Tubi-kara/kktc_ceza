@@ -1443,11 +1443,14 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
           ),
           child: SafeArea(
             bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                   // KKTC e-Trafik brand logo & pulse
                   Row(
                     children: [
@@ -1617,8 +1620,16 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
           ),
         ),
       ),
-      body: sayfalar[_seciliIndex],
+    ),
+  ),
+  body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: sayfalar[_seciliIndex],
+        ),
+      ),
       bottomNavigationBar: Container(
+        height: 64,
         decoration: BoxDecoration(
           color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.95),
           border: Border(
@@ -1633,17 +1644,23 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
           ],
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _navItem(0, Icons.dashboard_rounded, widget.turkceMi ? 'Panel' : 'Dashboard'),
-                _navItem(1, Icons.radar_rounded, widget.turkceMi ? 'Radarlar' : 'Radars'),
-                _navItem(2, Icons.receipt_long_rounded, widget.turkceMi ? 'Cezalar' : 'Fines', rozet: odenmemisCezaSayisi),
-                _navItem(3, Icons.shield_rounded, widget.turkceMi ? 'Sigorta' : 'Insurance'),
-                _navItem(4, Icons.badge_rounded, widget.turkceMi ? 'Profil & QR' : 'Profile & QR'),
-              ],
+          top: false,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _navItem(0, Icons.dashboard_rounded, widget.turkceMi ? 'Panel' : 'Dashboard'),
+                    _navItem(1, Icons.radar_rounded, widget.turkceMi ? 'Radarlar' : 'Radars'),
+                    _navItem(2, Icons.receipt_long_rounded, widget.turkceMi ? 'Cezalar' : 'Fines', rozet: odenmemisCezaSayisi),
+                    _navItem(3, Icons.shield_rounded, widget.turkceMi ? 'Sigorta' : 'Insurance'),
+                    _navItem(4, Icons.badge_rounded, widget.turkceMi ? 'Profil & QR' : 'Profile & QR'),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -1658,6 +1675,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         onTap: () => setState(() => _seciliIndex = index),
         behavior: HitTestBehavior.opaque,
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Stack(
@@ -1673,10 +1691,10 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                     top: -4,
                     right: -6,
                     child: Container(
-                      padding: const EdgeInsets.all(3),
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                       decoration: const BoxDecoration(
                         color: _HtmlColors.primaryContainer,
-                        shape: BoxShape.circle,
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
                       child: Text(
                         '$rozet',
@@ -1686,7 +1704,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                   ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               etiket,
               style: TextStyle(
