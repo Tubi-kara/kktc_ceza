@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 
 // ==========================================
@@ -18,11 +17,11 @@ class RadarKamerasi {
   final String aciklama;
   final String aciklamaEn;
   final bool aktif;
-  final double mapX; // 0.0 - 1.0 (Harita üzerindeki bağıl X konumu)
-  final double mapY; // 0.0 - 1.0 (Harita üzerindeki bağıl Y konumu)
+  final double mapX;
+  final double mapY;
+  final double posX; // 0 - 700 piksel konumu
+  final double posY; // 0 - 340 piksel konumu
   final String mesafe;
-  final double latitude;
-  final double longitude;
 
   const RadarKamerasi({
     required this.id,
@@ -39,9 +38,9 @@ class RadarKamerasi {
     required this.aktif,
     required this.mapX,
     required this.mapY,
+    required this.posX,
+    required this.posY,
     required this.mesafe,
-    this.latitude = 35.2065,
-    this.longitude = 33.3150,
   });
 }
 
@@ -65,8 +64,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.38,
     mapY: 0.52,
-    latitude: 35.2065,
-    longitude: 33.3150,
+    posX: 252,
+    posY: 195,
     mesafe: "1.4 km",
   ),
   const RadarKamerasi(
@@ -84,8 +83,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.40,
     mapY: 0.54,
-    latitude: 35.1970,
-    longitude: 33.3320,
+    posX: 262,
+    posY: 205,
     mesafe: "2.1 km",
   ),
   const RadarKamerasi(
@@ -103,8 +102,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.44,
     mapY: 0.52,
-    latitude: 35.2150,
-    longitude: 33.3850,
+    posX: 290,
+    posY: 210,
     mesafe: "4.3 km",
   ),
   const RadarKamerasi(
@@ -122,8 +121,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.48,
     mapY: 0.53,
-    latitude: 35.2120,
-    longitude: 33.4350,
+    posX: 325,
+    posY: 212,
     mesafe: "6.7 km",
   ),
   const RadarKamerasi(
@@ -141,8 +140,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.37,
     mapY: 0.56,
-    latitude: 35.1780,
-    longitude: 33.3280,
+    posX: 265,
+    posY: 222,
     mesafe: "3.2 km",
   ),
 
@@ -162,8 +161,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.41,
     mapY: 0.38,
-    latitude: 35.2850,
-    longitude: 33.3280,
+    posX: 255,
+    posY: 155,
     mesafe: "11.2 km",
   ),
   const RadarKamerasi(
@@ -181,8 +180,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.33,
     mapY: 0.33,
-    latitude: 35.3410,
-    longitude: 33.2650,
+    posX: 205,
+    posY: 125,
     mesafe: "16.4 km",
   ),
   const RadarKamerasi(
@@ -200,8 +199,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.36,
     mapY: 0.34,
-    latitude: 35.3450,
-    longitude: 33.2850,
+    posX: 235,
+    posY: 127,
     mesafe: "14.8 km",
   ),
   const RadarKamerasi(
@@ -219,8 +218,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.43,
     mapY: 0.35,
-    latitude: 35.3280,
-    longitude: 33.3550,
+    posX: 280,
+    posY: 140,
     mesafe: "15.9 km",
   ),
 
@@ -240,8 +239,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.70,
     mapY: 0.55,
-    latitude: 35.1480,
-    longitude: 33.9110,
+    posX: 465,
+    posY: 218,
     mesafe: "48.0 km",
   ),
   const RadarKamerasi(
@@ -259,8 +258,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.60,
     mapY: 0.53,
-    latitude: 35.1850,
-    longitude: 33.7250,
+    posX: 410,
+    posY: 222,
     mesafe: "32.5 km",
   ),
   const RadarKamerasi(
@@ -278,8 +277,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.71,
     mapY: 0.50,
-    latitude: 35.1720,
-    longitude: 33.9160,
+    posX: 460,
+    posY: 195,
     mesafe: "51.2 km",
   ),
   const RadarKamerasi(
@@ -297,8 +296,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.57,
     mapY: 0.44,
-    latitude: 35.2850,
-    longitude: 33.7450,
+    posX: 395,
+    posY: 165,
     mesafe: "38.0 km",
   ),
 
@@ -318,8 +317,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.28,
     mapY: 0.54,
-    latitude: 35.1980,
-    longitude: 33.1550,
+    posX: 205,
+    posY: 205,
     mesafe: "18.3 km",
   ),
   const RadarKamerasi(
@@ -337,8 +336,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.22,
     mapY: 0.50,
-    latitude: 35.2350,
-    longitude: 33.0250,
+    posX: 145,
+    posY: 180,
     mesafe: "28.5 km",
   ),
   const RadarKamerasi(
@@ -356,8 +355,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.14,
     mapY: 0.59,
-    latitude: 35.1150,
-    longitude: 32.8520,
+    posX: 80,
+    posY: 240,
     mesafe: "44.0 km",
   ),
 
@@ -377,8 +376,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.73,
     mapY: 0.43,
-    latitude: 35.2950,
-    longitude: 33.9020,
+    posX: 470,
+    posY: 160,
     mesafe: "59.0 km",
   ),
   const RadarKamerasi(
@@ -396,8 +395,8 @@ final List<RadarKamerasi> kktcRadarListesi = [
     aktif: true,
     mapX: 0.86,
     mapY: 0.28,
-    latitude: 35.5350,
-    longitude: 34.2250,
+    posX: 585,
+    posY: 70,
     mesafe: "88.0 km",
   ),
 ];
@@ -449,7 +448,6 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
   bool _sesliUyariAktif = true;
   int _canliHiz = 62;
   Timer? _speedTimer;
-  String _haritaStili = "dark"; // "dark" (CartoDB Dark) veya "osm" (OpenStreetMap)
 
   late final AnimationController _pulseController;
   final TransformationController _transformController = TransformationController();
@@ -472,10 +470,8 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
       duration: const Duration(milliseconds: 1400),
     )..repeat();
 
-    // KKTC merkez koridoru (Lefkoşa & Girne) başlangıç konumu
-    _transformController.value = Matrix4.identity()
-      ..translateByDouble(-460.0, -420.0, 0.0, 1.0)
-      ..scaleByDouble(0.85, 0.85, 1.0, 1.0);
+    // Harita başlangıçta tam ortalı olarak görünür
+    _transformController.value = Matrix4.identity();
 
     _speedTimer = Timer.periodic(const Duration(milliseconds: 2800), (t) {
       if (mounted) {
@@ -531,28 +527,10 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
 
   void _locateMe() {
     setState(() {
-      _transformController.value = Matrix4.identity()
-        ..translateByDouble(-460.0, -420.0, 0.0, 1.0)
-        ..scaleByDouble(0.85, 0.85, 1.0, 1.0);
+      _transformController.value = Matrix4.identity();
       if (kktcRadarListesi.isNotEmpty) {
         _seciliRadar = kktcRadarListesi.first;
       }
-    });
-  }
-
-  void _haritaStiliDegistir() {
-    setState(() {
-      _haritaStili = _haritaStili == "dark" ? "osm" : "dark";
-    });
-  }
-
-  void _odaklanRadar(RadarKamerasi radar) {
-    setState(() {
-      _seciliRadar = radar;
-      final pos = KktcHaritaProjeksiyon.latLonToPixel(radar.latitude, radar.longitude);
-      _transformController.value = Matrix4.identity()
-        ..translateByDouble(180.0 - pos.dx * 1.1, 160.0 - pos.dy * 1.1, 0.0, 1.0)
-        ..scaleByDouble(1.1, 1.1, 1.0, 1.0);
     });
   }
 
@@ -574,6 +552,8 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
       aktif: true,
       mapX: 0.40,
       mapY: 0.52,
+      posX: 252,
+      posY: 195,
       mesafe: "350m",
     ));
 
@@ -961,11 +941,12 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
               Container(
                 height: 370,
                 decoration: BoxDecoration(
-                  color: _RadarHtmlColors.surfaceContainerLowest,
+                  color: const Color(0xFF070E22),
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF212942), width: 1.5),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.45),
+                      color: Colors.black.withValues(alpha: 0.5),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -975,27 +956,147 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                   borderRadius: BorderRadius.circular(20),
                   child: Stack(
                     children: [
-                      // Gerçek Canlı KKTC Haritası (OpenStreetMap & CartoDB Tile Engine)
+                      // KKTC Otantik Haritası (InteractiveViewer ile sürükle/yakınlaştır)
                       InteractiveViewer(
                         transformationController: _transformController,
-                        minScale: 0.40,
-                        maxScale: 3.5,
-                        boundaryMargin: const EdgeInsets.all(350),
-                        child: SizedBox(
-                          width: KktcHaritaProjeksiyon.totalWidth,
-                          height: KktcHaritaProjeksiyon.totalHeight,
-                          child: KktcGercekHaritaView(
-                            haritaStili: _haritaStili,
-                            radarlar: radarlar,
-                            seciliRadar: secili,
-                            pulseAnimation: _pulseController,
-                            turkceMi: widget.turkceMi,
-                            onRadarSec: (radar) => _odaklanRadar(radar),
+                        minScale: 0.75,
+                        maxScale: 3.0,
+                        boundaryMargin: const EdgeInsets.all(80),
+                        child: Center(
+                          child: SizedBox(
+                            width: 700,
+                            height: 340,
+                            child: Stack(
+                              children: [
+                                // 1. Kıbrıs Coğrafi Konturu, Dağlar & Yollar
+                                Positioned.fill(
+                                  child: CustomPaint(
+                                    painter: KktcOtantikHaritaPainter(),
+                                  ),
+                                ),
+
+                                // 2. KKTC Şehir İsim Rozetleri
+                                ...kktcSehirleri.map((sehir) {
+                                  return Positioned(
+                                    left: sehir.posX - 32,
+                                    top: sehir.posY - 12,
+                                    child: IgnorePointer(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: (sehir.onemli ? const Color(0xFF131A33) : Colors.black).withValues(alpha: 0.85),
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(
+                                            color: sehir.onemli ? const Color(0xFF4EDEA3).withValues(alpha: 0.8) : Colors.white24,
+                                            width: 0.8,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          widget.turkceMi ? sehir.ad : sehir.adEn,
+                                          style: TextStyle(
+                                            color: sehir.onemli ? const Color(0xFFDBE1FF) : Colors.white70,
+                                            fontSize: sehir.onemli ? 9 : 8,
+                                            fontWeight: sehir.onemli ? FontWeight.bold : FontWeight.normal,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }),
+
+                                // 3. KKTC 18 Sabit Radar Pinleri (Hız Tabelaları & İkaz)
+                                ...radarlar.map((radar) {
+                                  final bool isFocused = secili.id == radar.id;
+                                  return Positioned(
+                                    left: radar.posX - 16,
+                                    top: radar.posY - 16,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () => setState(() => _seciliRadar = radar),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              if (isFocused) ...[
+                                                FadeTransition(
+                                                  opacity: _pulseController,
+                                                  child: Container(
+                                                    width: 44,
+                                                    height: 44,
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(0xFFFFB3AF).withValues(alpha: 0.45),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                              Container(
+                                                width: 26,
+                                                height: 26,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: const Color(0xFFD90429),
+                                                    width: 2.5,
+                                                  ),
+                                                  boxShadow: const [
+                                                    BoxShadow(
+                                                      color: Colors.black45,
+                                                      blurRadius: 4,
+                                                      offset: Offset(0, 1),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Center(
+                                                  child: Text(
+                                                    '${radar.hizLimiti}',
+                                                    style: const TextStyle(
+                                                      fontFamily: 'monospace',
+                                                      color: Color(0xFFD90429),
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.w900,
+                                                      letterSpacing: -0.5,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF050D25).withValues(alpha: 0.92),
+                                              borderRadius: BorderRadius.circular(4),
+                                              border: Border.all(
+                                                color: isFocused ? const Color(0xFFFFB3AF) : Colors.white12,
+                                                width: isFocused ? 1.0 : 0.5,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              radar.ad.split(' ').first,
+                                              style: TextStyle(
+                                                color: isFocused ? Colors.white : const Color(0xFFBDC5E9),
+                                                fontSize: 8,
+                                                fontWeight: isFocused ? FontWeight.bold : FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ],
+                            ),
                           ),
                         ),
                       ),
 
-                      // Top Overlay: Status badge & Map Style Switcher
+                      // Top Overlay: Status badge & Title
                       Positioned(
                         top: 10,
                         left: 10,
@@ -1048,45 +1149,29 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                                 ],
                               ),
                             ),
-                            // Map Style Switcher Button
-                            GestureDetector(
-                              onTap: _haritaStiliDegistir,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: _RadarHtmlColors.surfaceContainerHigh.withValues(alpha: 0.95),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: _haritaStili == "dark" ? _RadarHtmlColors.tertiary.withValues(alpha: 0.5) : const Color(0xFFFFB3AF),
-                                    width: 1.2,
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: _RadarHtmlColors.surfaceContainerHigh.withValues(alpha: 0.92),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: _RadarHtmlColors.tertiary.withValues(alpha: 0.4),
+                                  width: 1.0,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.explore_rounded, color: _RadarHtmlColors.tertiary, size: 14),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    widget.turkceMi ? 'Kıbrıs Haritası' : 'Cyprus Map',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.3),
-                                      blurRadius: 6,
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      _haritaStili == "dark" ? Icons.nightlight_round : Icons.map_rounded,
-                                      color: _haritaStili == "dark" ? _RadarHtmlColors.tertiary : const Color(0xFFFFB3AF),
-                                      size: 14,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      _haritaStili == "dark"
-                                          ? (widget.turkceMi ? 'Karanlık Taktik' : 'Dark Mode')
-                                          : (widget.turkceMi ? 'Canlı Sokak' : 'Street Map'),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                ],
                               ),
                             ),
                           ],
@@ -1113,7 +1198,7 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                                   const Icon(Icons.satellite_alt_rounded, color: _RadarHtmlColors.tertiary, size: 14),
                                   const SizedBox(width: 4),
                                   Text(
-                                    widget.turkceMi ? 'Canlı Uydu & Harita Senkronize' : 'Live Satellite Synced',
+                                    widget.turkceMi ? 'GPS Radarları & Anayol Ağı' : 'GPS Radars & Highways',
                                     style: const TextStyle(color: _RadarHtmlColors.secondary, fontSize: 9, fontWeight: FontWeight.bold),
                                   ),
                                 ],
@@ -1718,330 +1803,232 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
 }
 
 // ==========================================
-// 🌐 KKTC COĞRAFİ PROJEKSİYON & HARİTA MOTORU
-// Web Mercator (EPSG:3857) Canlı Karo Motoru
-// ==========================================
-class KktcHaritaProjeksiyon {
-  static const int zoom = 10;
-  static const int minTileX = 604;
-  static const int maxTileX = 610; // 7 sütun
-  static const int minTileY = 394;
-  static const int maxTileY = 398; // 5 satır
-  static const double tileSize = 256.0;
-
-  static const double totalWidth = (maxTileX - minTileX + 1) * tileSize; // 1792.0
-  static const double totalHeight = (maxTileY - minTileY + 1) * tileSize; // 1280.0
-
-  static Offset latLonToPixel(double lat, double lon) {
-    final double x = (lon + 180.0) / 360.0 * (1 << zoom);
-    final double latRad = lat * pi / 180.0;
-    final double y = (1.0 - log(tan(latRad) + 1.0 / cos(latRad)) / pi) / 2.0 * (1 << zoom);
-    return Offset((x - minTileX) * tileSize, (y - minTileY) * tileSize);
-  }
-}
-
 // ==========================================
 // 📍 KKTC ŞEHİR & MERKEZ REFERANS NOKTALARI
 // ==========================================
 class KktcSehirNoktasi {
   final String ad;
   final String adEn;
-  final double lat;
-  final double lon;
+  final double posX;
+  final double posY;
   final bool onemli;
 
   const KktcSehirNoktasi({
     required this.ad,
     required this.adEn,
-    required this.lat,
-    required this.lon,
+    required this.posX,
+    required this.posY,
     this.onemli = false,
   });
 }
 
 final List<KktcSehirNoktasi> kktcSehirleri = [
-  const KktcSehirNoktasi(ad: "Lefkoşa (Başkent)", adEn: "Nicosia (Capital)", lat: 35.1856, lon: 33.3823, onemli: true),
-  const KktcSehirNoktasi(ad: "Girne", adEn: "Kyrenia", lat: 35.3382, lon: 33.3173, onemli: true),
-  const KktcSehirNoktasi(ad: "Gazimağusa", adEn: "Famagusta", lat: 35.1250, lon: 33.9417, onemli: true),
-  const KktcSehirNoktasi(ad: "Güzelyurt", adEn: "Morphou", lat: 35.1989, lon: 32.9928, onemli: true),
-  const KktcSehirNoktasi(ad: "İskele", adEn: "Trikomo", lat: 35.2897, lon: 33.8906, onemli: true),
-  const KktcSehirNoktasi(ad: "Lefke", adEn: "Lefka", lat: 35.1114, lon: 32.8489),
-  const KktcSehirNoktasi(ad: "Ercan Havalimanı ✈️", adEn: "Ercan Airport ✈️", lat: 35.1550, lon: 33.5020, onemli: true),
-  const KktcSehirNoktasi(ad: "Dipkarpaz", adEn: "Rizokarpaso", lat: 35.5980, lon: 34.3820),
-  const KktcSehirNoktasi(ad: "Alsancak", adEn: "Alsancak", lat: 35.3520, lon: 33.2080),
-  const KktcSehirNoktasi(ad: "Tatlısu", adEn: "Tatlisu", lat: 35.3850, lon: 33.7650),
+  const KktcSehirNoktasi(ad: "🏛️ Lefkoşa", adEn: "🏛️ Nicosia", posX: 270, posY: 215, onemli: true),
+  const KktcSehirNoktasi(ad: "🏰 Girne", adEn: "🏰 Kyrenia", posX: 260, posY: 130, onemli: true),
+  const KktcSehirNoktasi(ad: "⚓ Gazimağusa", adEn: "⚓ Famagusta", posX: 465, posY: 230, onemli: true),
+  const KktcSehirNoktasi(ad: "🍊 Güzelyurt", adEn: "🍊 Morphou", posX: 135, posY: 205, onemli: true),
+  const KktcSehirNoktasi(ad: "🏖️ İskele", adEn: "🏖️ Trikomo", posX: 470, posY: 160, onemli: true),
+  const KktcSehirNoktasi(ad: "🌴 Lefke", adEn: "🌴 Lefka", posX: 80, posY: 245),
+  const KktcSehirNoktasi(ad: "✈️ Ercan", adEn: "✈️ Ercan", posX: 355, posY: 220, onemli: true),
+  const KktcSehirNoktasi(ad: "🧭 Dipkarpaz", adEn: "🧭 Dipkarpaz", posX: 625, posY: 50),
 ];
 
 // ==========================================
-// 🗺️ GERÇEK CANLI KKTC HARİTASI WIDGETI
-// OpenStreetMap & CartoDB Canlı Karo Katmanı
+// 🎨 KKTC OTANTİK COĞRAFİ HARİTA ÇİZİCİSİ
+// Karpaz Boynuzu, Girne Kıyıları & Anayollar
 // ==========================================
-class KktcGercekHaritaView extends StatelessWidget {
-  final String haritaStili; // 'dark' veya 'osm'
-  final List<RadarKamerasi> radarlar;
-  final RadarKamerasi? seciliRadar;
-  final Animation<double> pulseAnimation;
-  final bool turkceMi;
-  final ValueChanged<RadarKamerasi> onRadarSec;
-
-  const KktcGercekHaritaView({
-    super.key,
-    required this.haritaStili,
-    required this.radarlar,
-    required this.seciliRadar,
-    required this.pulseAnimation,
-    required this.turkceMi,
-    required this.onRadarSec,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // 1. Akdeniz Derin Deniz Zemini
-        Positioned.fill(
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF070E22), Color(0xFF0F172E), Color(0xFF0A122A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-          ),
-        ),
-
-        // 2. Yedek Kıbrıs Gerçek Kıyı Konturu (Çevrimdışıyken veya yüklenirken görünür)
-        Positioned.fill(
-          child: CustomPaint(
-            painter: KktcKiyiPainter(),
-          ),
-        ),
-
-        // 3. Canlı Harita Karoları (CartoDB Dark veya OpenStreetMap)
-        ..._buildTiles(),
-
-        // 4. KKTC Şehir & Merkez İşaretçileri
-        ...kktcSehirleri.map((sehir) {
-          final pos = KktcHaritaProjeksiyon.latLonToPixel(sehir.lat, sehir.lon);
-          return Positioned(
-            left: pos.dx - 36,
-            top: pos.dy - 12,
-            child: IgnorePointer(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
-                decoration: BoxDecoration(
-                  color: (sehir.onemli ? const Color(0xFF131A33) : Colors.black).withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: sehir.onemli ? const Color(0xFF4EDEA3).withValues(alpha: 0.7) : Colors.white24,
-                    width: 0.8,
-                  ),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black54, blurRadius: 4, offset: Offset(0, 1)),
-                  ],
-                ),
-                child: Text(
-                  turkceMi ? sehir.ad : sehir.adEn,
-                  style: TextStyle(
-                    color: sehir.onemli ? const Color(0xFFDBE1FF) : Colors.white70,
-                    fontSize: sehir.onemli ? 9 : 8,
-                    fontWeight: sehir.onemli ? FontWeight.bold : FontWeight.normal,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }),
-
-        // 5. KKTC Sabit Radar İşaretçileri (Gerçek GPS Konumlarında)
-        ...radarlar.map((radar) {
-          final pos = KktcHaritaProjeksiyon.latLonToPixel(radar.latitude, radar.longitude);
-          final bool isFocused = seciliRadar?.id == radar.id;
-          return Positioned(
-            left: pos.dx - 18,
-            top: pos.dy - 18,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => onRadarSec(radar),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      if (isFocused) ...[
-                        FadeTransition(
-                          opacity: pulseAnimation,
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFB3AF).withValues(alpha: 0.45),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      ],
-                      Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFFD90429),
-                            width: 3.0,
-                          ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black54,
-                              blurRadius: 6,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${radar.hizLimiti}',
-                            style: const TextStyle(
-                              fontFamily: 'monospace',
-                              color: Color(0xFFD90429),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF050D25).withValues(alpha: 0.92),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: isFocused ? const Color(0xFFFFB3AF) : Colors.white12,
-                        width: isFocused ? 1.2 : 0.5,
-                      ),
-                    ),
-                    child: Text(
-                      radar.ad.split(' ').first,
-                      style: TextStyle(
-                        color: isFocused ? Colors.white : const Color(0xFFBDC5E9),
-                        fontSize: 8,
-                        fontWeight: isFocused ? FontWeight.bold : FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }),
-      ],
-    );
-  }
-
-  List<Widget> _buildTiles() {
-    final List<Widget> tiles = [];
-    for (int x = KktcHaritaProjeksiyon.minTileX; x <= KktcHaritaProjeksiyon.maxTileX; x++) {
-      for (int y = KktcHaritaProjeksiyon.minTileY; y <= KktcHaritaProjeksiyon.maxTileY; y++) {
-        final double left = (x - KktcHaritaProjeksiyon.minTileX) * KktcHaritaProjeksiyon.tileSize;
-        final double top = (y - KktcHaritaProjeksiyon.minTileY) * KktcHaritaProjeksiyon.tileSize;
-        final String tileUrl = haritaStili == "dark"
-            ? 'https://a.basemaps.cartocdn.com/rastertiles/dark_all/10/$x/$y.png'
-            : 'https://tile.openstreetmap.org/10/$x/$y.png';
-
-        tiles.add(
-          Positioned(
-            left: left,
-            top: top,
-            width: KktcHaritaProjeksiyon.tileSize,
-            height: KktcHaritaProjeksiyon.tileSize,
-            child: Image.network(
-              tileUrl,
-              fit: BoxFit.cover,
-              headers: const {'User-Agent': 'KKTCTrafikRadar/1.0 (https://kktc.gov.ct)'},
-              errorBuilder: (context, error, stackTrace) {
-                return const SizedBox.shrink();
-              },
-            ),
-          ),
-        );
-      }
-    }
-    return tiles;
-  }
-}
-
-// ==========================================
-// 🎨 KKTC GERÇEK KIYI VE YOL ÇİZİCİSİ (FALLBACK)
-// ==========================================
-class KktcKiyiPainter extends CustomPainter {
+class KktcOtantikHaritaPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // Deniz Izgarası
+    // 🌊 Akdeniz Koordinat Izgarası
     final gridPaint = Paint()
-      ..color = const Color(0xFF212942).withValues(alpha: 0.3)
-      ..strokeWidth = 0.5;
-    for (double i = 0; i < size.width; i += 64) {
+      ..color = const Color(0xFF1B243F).withValues(alpha: 0.4)
+      ..strokeWidth = 0.6;
+    for (double i = 0; i < size.width; i += 50) {
       canvas.drawLine(Offset(i, 0), Offset(i, size.height), gridPaint);
     }
-    for (double j = 0; j < size.height; j += 64) {
+    for (double j = 0; j < size.height; j += 50) {
       canvas.drawLine(Offset(0, j), Offset(size.width, j), gridPaint);
     }
 
-    // Kıbrıs Gerçek Coğrafi Silueti
-    final landPaint = Paint()
-      ..color = const Color(0xFF131A33)
+    // 🌊 Deniz Metinleri
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+    void drawSeaText(String text, Offset pos, {double fontSize = 9}) {
+      textPainter.text = TextSpan(
+        text: text,
+        style: TextStyle(
+          color: const Color(0xFF2C385A),
+          fontSize: fontSize,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 2.0,
+        ),
+      );
+      textPainter.layout();
+      textPainter.paint(canvas, pos);
+    }
+
+    drawSeaText("AKDENİZ (MEDITERRANEAN SEA)", const Offset(230, 20), fontSize: 10);
+    drawSeaText("GÜZELYURT KÖRFEZİ", const Offset(65, 140), fontSize: 8);
+    drawSeaText("MAĞUSA KÖRFEZİ", const Offset(490, 195), fontSize: 8);
+
+    // 🏝️ 1. GÜNEY KIBRIS ARKA PLAN SILUETI (TAM KIBRIS ADASI HİSSİ)
+    final southCyprusPaint = Paint()
+      ..color = const Color(0xFF0F172E).withValues(alpha: 0.7)
+      ..style = PaintingStyle.fill;
+    final southBorderPaint = Paint()
+      ..color = const Color(0xFF212942)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    final Path southIsland = Path();
+    southIsland.moveTo(80, 255); // Lefke güneyi
+    southIsland.lineTo(140, 245);
+    southIsland.lineTo(210, 230);
+    southIsland.lineTo(270, 225);
+    southIsland.lineTo(350, 235);
+    southIsland.lineTo(415, 245);
+    southIsland.lineTo(465, 230); // Mağusa güneyi
+    // Güney sahil kıvrımları: Larnaka, Limasol, Baf
+    southIsland.lineTo(470, 270); // Ayia Napa
+    southIsland.lineTo(430, 290); // Larnaka
+    southIsland.lineTo(340, 320); // Limasol
+    southIsland.lineTo(230, 335); // Akrotiri
+    southIsland.lineTo(120, 310); // Baf
+    southIsland.lineTo(70, 280);  // Poli
+    southIsland.close();
+
+    canvas.drawPath(southIsland, southCyprusPaint);
+    canvas.drawPath(southIsland, southBorderPaint);
+
+    // 🏝️ 2. KKTC COĞRAFİ ANA KARA PARÇASI (BİREBİR KUZEY KIBRIS)
+    final kktcLandPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF192342), Color(0xFF131A33), Color(0xFF161E38)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..style = PaintingStyle.fill;
 
-    final landBorderPaint = Paint()
-      ..color = const Color(0xFF4EDEA3).withValues(alpha: 0.4)
+    final kktcBorderPaint = Paint()
+      ..color = const Color(0xFF4EDEA3).withValues(alpha: 0.55)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 1.8;
 
-    final Path cyprus = Path();
-    cyprus.moveTo(313, 856); // Erenköy
-    cyprus.lineTo(449, 680); // Güzelyurt Körfezi
-    cyprus.lineTo(428, 429); // Koruçam Burnu
-    cyprus.lineTo(623, 498); // Alsancak
-    cyprus.lineTo(709, 532); // Girne
-    cyprus.lineTo(891, 532); // Esentepe
-    cyprus.lineTo(1016, 464); // Tatlısu
-    cyprus.lineTo(1121, 412); // Kantara
-    cyprus.lineTo(1274, 377); // Kumyalı
-    cyprus.lineTo(1316, 203); // Yenierenköy
-    cyprus.lineTo(1448, 80);  // Dipkarpaz
-    cyprus.lineTo(1588, 0);   // Zafer Burnu Ucu
-    cyprus.lineTo(1546, 50);  // Golden Beach
-    cyprus.lineTo(1218, 429); // Bafra
-    cyprus.lineTo(1127, 603); // İskele Boğaz
-    cyprus.lineTo(1121, 804); // Glapsides
-    cyprus.lineTo(1142, 908); // Gazimağusa
-    cyprus.lineTo(751, 804);  // Lefkoşa
-    cyprus.lineTo(478, 770);  // Güzelyurt
-    cyprus.lineTo(382, 925);  // Lefke
-    cyprus.close();
+    final Path kktcPath = Path();
+    kktcPath.moveTo(50, 240);  // Erenköy batısı
+    kktcPath.lineTo(80, 245);  // Gemikonağı / Lefke
+    kktcPath.lineTo(105, 220); // Gaziveren
+    kktcPath.lineTo(125, 190); // Güzelyurt Körfezi iç kıvrımı
+    kktcPath.lineTo(155, 115); // Koruçam Burnu (Cape Kormakitis)
+    kktcPath.lineTo(205, 125); // Lapta / Alsancak
+    kktcPath.lineTo(260, 130); // Girne Limanı
+    kktcPath.lineTo(310, 135); // Çatalköy
+    kktcPath.lineTo(365, 140); // Esentepe
+    kktcPath.lineTo(420, 135); // Tatlısu
+    kktcPath.lineTo(475, 115); // Kantara / Mersinlik
+    kktcPath.lineTo(515, 100); // Kaplıca
+    kktcPath.lineTo(550, 85);  // Kumyalı
+    kktcPath.lineTo(585, 70);  // Yenierenköy
+    kktcPath.lineTo(625, 50);  // Dipkarpaz
+    kktcPath.lineTo(670, 30);  // Zafer Burnu Ucu (Cape Apostolos Andreas)
+    kktcPath.lineTo(668, 42);  // Zafer burnu alt dönüş
+    kktcPath.lineTo(620, 68);  // Karpaz Güney Sahili (Altın Kumsal)
+    kktcPath.lineTo(570, 95);  // Ziyamet güneyi
+    kktcPath.lineTo(515, 130); // Bafra Çemberi
+    kktcPath.lineTo(470, 160); // Boğaz & İskele Sahili
+    kktcPath.lineTo(460, 195); // Salamis / Glapsides
+    kktcPath.lineTo(465, 230); // Gazimağusa Liman & Surlar
+    // Yeşil Hat (BM Sınır Hattı)
+    kktcPath.lineTo(415, 245); // Beyarmudu / Pile
+    kktcPath.lineTo(350, 235); // Ercan güneyi
+    kktcPath.lineTo(270, 225); // Lefkoşa Ledra Sınırı
+    kktcPath.lineTo(210, 230); // Alayköy
+    kktcPath.lineTo(140, 245); // Güzelyurt güneyi
+    kktcPath.lineTo(80, 255);  // Lefke güneyi
+    kktcPath.close();
 
-    canvas.drawPath(cyprus, landPaint);
-    canvas.drawPath(cyprus, landBorderPaint);
+    canvas.drawPath(kktcPath, kktcLandPaint);
+    canvas.drawPath(kktcPath, kktcBorderPaint);
 
-    // Beşparmak Dağları Sıradağ Hattı
+    // 🏔️ 3. BEŞPARMAK DAĞLARI SIRADAĞ HATTI
     final mountainPaint = Paint()
-      ..color = const Color(0xFF3D4664).withValues(alpha: 0.5)
+      ..color = const Color(0xFF3B4668).withValues(alpha: 0.6)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 6.0;
+      ..strokeWidth = 5.5;
 
-    final Path mountainPath = Path();
-    mountainPath.moveTo(600, 520);
-    mountainPath.quadraticBezierTo(850, 510, 1100, 430);
-    canvas.drawPath(mountainPath, mountainPaint);
+    final Path mountainRidge = Path();
+    mountainRidge.moveTo(180, 135);
+    mountainRidge.quadraticBezierTo(260, 145, 360, 150);
+    mountainRidge.quadraticBezierTo(440, 140, 520, 105);
+    canvas.drawPath(mountainRidge, mountainPaint);
+
+    // 🛣️ 4. KKTC ANAYOL VE OTOYOL AĞI
+    final roadGlow = Paint()
+      ..color = const Color(0xFFFFB3AF).withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 3.5;
+
+    final roadCore = Paint()
+      ..color = const Color(0xFFE53935)
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 1.8;
+
+    final Path roads = Path();
+
+    // Yol 1: Lefkoşa - Girne (Boğaz Dağ Yolu)
+    roads.moveTo(270, 215); // Lefkoşa
+    roads.lineTo(252, 195); // Gönyeli
+    roads.lineTo(255, 155); // Boğaz
+    roads.lineTo(260, 130); // Girne
+
+    // Yol 2: Lefkoşa - Gazimağusa (Duble Yol)
+    roads.moveTo(270, 215); // Lefkoşa
+    roads.lineTo(290, 210); // Hamitköy
+    roads.lineTo(325, 212); // Haspolat / UKÜ
+    roads.lineTo(355, 220); // Ercan Kavşağı
+    roads.lineTo(410, 222); // Dörtyol
+    roads.lineTo(465, 230); // Gazimağusa
+
+    // Yol 3: Lefkoşa - Güzelyurt - Lefke
+    roads.moveTo(252, 195); // Gönyeli
+    roads.lineTo(205, 205); // Yılmazköy
+    roads.lineTo(135, 205); // Güzelyurt
+    roads.lineTo(80, 240);  // Lefke
+
+    // Yol 4: Girne Sahil Yolu (Alsancak -> Girne -> Tatlısu)
+    roads.moveTo(205, 125); // Alsancak
+    roads.lineTo(235, 127); // Karaoğlanoğlu
+    roads.lineTo(260, 130); // Girne
+    roads.lineTo(280, 140); // Doğanköy / Bellapais
+    roads.lineTo(310, 135); // Çatalköy
+    roads.lineTo(420, 135); // Tatlısu
+
+    // Yol 5: Gazimağusa - İskele - Karpaz Anayolu
+    roads.moveTo(465, 230); // Mağusa
+    roads.lineTo(460, 195); // Glapsides
+    roads.lineTo(470, 160); // İskele Boğaz
+    roads.lineTo(515, 130); // Bafra
+    roads.lineTo(585, 70);  // Yenierenköy
+    roads.lineTo(625, 50);  // Dipkarpaz
+    roads.lineTo(670, 30);  // Zafer Burnu
+
+    // Yol 6: Değirmenlik Dağ Yolu Bağlantısı
+    roads.moveTo(325, 212); // Haspolat
+    roads.lineTo(345, 180); // Değirmenlik
+    roads.lineTo(395, 165); // Geçitkale ayrımı
+    roads.lineTo(420, 135); // Tatlısu sahil
+
+    canvas.drawPath(roads, roadGlow);
+    canvas.drawPath(roads, roadCore);
+
+    // ✈️ Ercan Havalimanı Pisti & Yonca Kavşak
+    final runwayPaint = Paint()
+      ..color = const Color(0xFF6FFBBE).withValues(alpha: 0.8)
+      ..strokeWidth = 2.0;
+    canvas.drawLine(const Offset(350, 218), const Offset(365, 224), runwayPaint);
   }
 
   @override
