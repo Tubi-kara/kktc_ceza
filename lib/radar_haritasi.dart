@@ -486,13 +486,13 @@ class KktcOsmVectorBasePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     // 🌊 Akdeniz Derin Mavi Arka Planı
-    final seaPaint = Paint()..color = const Color(0xFF0C192E);
+    final seaPaint = Paint()..color = const Color(0xFF0D223A);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), seaPaint);
 
     // 🌊 Akdeniz Koordinat Izgarası
     final gridPaint = Paint()
-      ..color = const Color(0xFF1E293B).withValues(alpha: 0.5)
-      ..strokeWidth = 0.7;
+      ..color = const Color(0xFF1E3A5F).withValues(alpha: 0.6)
+      ..strokeWidth = 0.8;
 
     for (double x = 0; x < size.width; x += 40) {
       canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
@@ -507,7 +507,7 @@ class KktcOsmVectorBasePainter extends CustomPainter {
       textPainter.text = TextSpan(
         text: text,
         style: TextStyle(
-          color: const Color(0xFF283858),
+          color: const Color(0xFF3B6790),
           fontSize: fontSize,
           fontWeight: FontWeight.w700,
           letterSpacing: 2.0,
@@ -526,12 +526,12 @@ class KktcOsmVectorBasePainter extends CustomPainter {
 
     // 🏝️ 1. GÜNEY KIBRIS SİLUETİ
     final southPaint = Paint()
-      ..color = const Color(0xFF111827).withValues(alpha: 0.90)
+      ..color = const Color(0xFF1A2636)
       ..style = PaintingStyle.fill;
     final southBorder = Paint()
-      ..color = const Color(0xFF334155).withValues(alpha: 0.7)
+      ..color = const Color(0xFF475569)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 1.2;
 
     final Path southPath = Path();
     final sPts = [
@@ -563,16 +563,16 @@ class KktcOsmVectorBasePainter extends CustomPainter {
     // 🏝️ 2. KKTC COĞRAFİ ANA KARASI (OPENSTREETMAP KOORDİNATLARIYLA)
     final kktcLandPaint = Paint()
       ..shader = const LinearGradient(
-        colors: [Color(0xFF162038), Color(0xFF111827), Color(0xFF131D38)],
+        colors: [Color(0xFF16382C), Color(0xFF122E24), Color(0xFF1A4234)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..style = PaintingStyle.fill;
 
     final kktcBorderPaint = Paint()
-      ..color = const Color(0xFF10B981).withValues(alpha: 0.8)
+      ..color = const Color(0xFF10B981)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8;
+      ..strokeWidth = 2.0;
 
     final Path kktcPath = Path();
     final kPts = [
