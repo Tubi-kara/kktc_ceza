@@ -485,9 +485,13 @@ class KktcOsmVectorBasePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    // 🌊 Akdeniz Derin Mavi Arka Planı
+    final seaPaint = Paint()..color = const Color(0xFF0C192E);
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), seaPaint);
+
     // 🌊 Akdeniz Koordinat Izgarası
     final gridPaint = Paint()
-      ..color = const Color(0xFF1E293B).withValues(alpha: 0.45)
+      ..color = const Color(0xFF1E293B).withValues(alpha: 0.5)
       ..strokeWidth = 0.7;
 
     for (double x = 0; x < size.width; x += 40) {
@@ -497,12 +501,35 @@ class KktcOsmVectorBasePainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
     }
 
+    // 🌊 Akdeniz ve Körfez İsimleri
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+    void drawSeaText(String text, Offset pos, {double fontSize = 8.5}) {
+      textPainter.text = TextSpan(
+        text: text,
+        style: TextStyle(
+          color: const Color(0xFF283858),
+          fontSize: fontSize,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 2.0,
+        ),
+      );
+      textPainter.layout();
+      textPainter.paint(canvas, pos);
+    }
+
+    final pAkdeniz = project(33.50, 35.50);
+    drawSeaText("AKDENİZ (MEDITERRANEAN SEA)", Offset(pAkdeniz.dx - 80, pAkdeniz.dy - 35), fontSize: 9.5);
+    final pGuzelyurt = project(32.88, 35.25);
+    drawSeaText("GÜZELYURT KÖRFEZİ", Offset(pGuzelyurt.dx - 45, pGuzelyurt.dy), fontSize: 7.5);
+    final pMagusa = project(34.05, 35.22);
+    drawSeaText("MAĞUSA KÖRFEZİ", Offset(pMagusa.dx, pMagusa.dy), fontSize: 7.5);
+
     // 🏝️ 1. GÜNEY KIBRIS SİLUETİ
     final southPaint = Paint()
-      ..color = const Color(0xFF0F172A).withValues(alpha: 0.85)
+      ..color = const Color(0xFF111827).withValues(alpha: 0.90)
       ..style = PaintingStyle.fill;
     final southBorder = Paint()
-      ..color = const Color(0xFF334155).withValues(alpha: 0.6)
+      ..color = const Color(0xFF334155).withValues(alpha: 0.7)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
@@ -694,14 +721,14 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
   late final AnimationController _pulseController;
 
   final List<String> _tileProviders = [
-    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
   ];
 
   final List<String> _tileStyleNames = [
-    'OpenStreetMap',
     'Carto Renkli',
+    'Standart OSM',
     'Koyu Mod',
   ];
 
@@ -743,13 +770,13 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
 
   void zoomIn() {
     setState(() {
-      _zoom = (_zoom + 0.75).clamp(8.0, 14.5);
+      _zoom = (_zoom + 1.0).clamp(8.0, 14.0);
     });
   }
 
   void zoomOut() {
     setState(() {
-      _zoom = (_zoom - 0.75).clamp(8.0, 14.5);
+      _zoom = (_zoom - 1.0).clamp(8.0, 14.0);
     });
   }
 
@@ -761,7 +788,7 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
     });
   }
 
-  void flyToLocation(double lat, double lon, {double zoom = 11.5}) {
+  void flyToLocation(double lat, double lon, {double zoom = 10.5}) {
     setState(() {
       _centerLat = lat;
       _centerLon = lon;
@@ -1082,12 +1109,12 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                       child: Row(
                         children: [
                           _buildCityChip('🧭 Tüm KKTC', () => centerOnKktc()),
-                          _buildCityChip('⚓ Gazimağusa', () => flyToLocation(35.1450, 33.9140, zoom: 11.5)),
-                          _buildCityChip('🏛️ Lefkoşa', () => flyToLocation(35.2132, 33.3400, zoom: 11.5)),
-                          _buildCityChip('🏰 Girne', () => flyToLocation(35.3370, 33.3200, zoom: 11.5)),
-                          _buildCityChip('🏖️ İskele & Karpaz', () => flyToLocation(35.4000, 34.0500, zoom: 10.5)),
-                          _buildCityChip('🍊 Güzelyurt', () => flyToLocation(35.2065, 33.0230, zoom: 11.5)),
-                          _buildCityChip('🌴 Lefke', () => flyToLocation(35.1120, 32.8520, zoom: 11.5)),
+                          _buildCityChip('⚓ Gazimağusa', () => flyToLocation(35.1650, 33.8800, zoom: 10.5)),
+                          _buildCityChip('🏛️ Lefkoşa', () => flyToLocation(35.2132, 33.3500, zoom: 10.5)),
+                          _buildCityChip('🏰 Girne', () => flyToLocation(35.3370, 33.3000, zoom: 10.5)),
+                          _buildCityChip('🏖️ İskele & Karpaz', () => flyToLocation(35.3500, 33.9800, zoom: 10.0)),
+                          _buildCityChip('🍊 Güzelyurt', () => flyToLocation(35.2065, 33.0500, zoom: 10.5)),
+                          _buildCityChip('🌴 Lefke', () => flyToLocation(35.1120, 32.8520, zoom: 10.5)),
                         ],
                       ),
                     ),
@@ -1646,15 +1673,15 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                         // Haritada o şehre odaklan
                         if (_osmKey.currentState != null) {
                           if (sehir == "Gazimağusa") {
-                            _osmKey.currentState!.flyToLocation(35.1450, 33.9140, zoom: 11.5);
+                            _osmKey.currentState!.flyToLocation(35.1650, 33.8800, zoom: 10.5);
                           } else if (sehir == "Lefkoşa") {
-                            _osmKey.currentState!.flyToLocation(35.2132, 33.3400, zoom: 11.5);
+                            _osmKey.currentState!.flyToLocation(35.2132, 33.3500, zoom: 10.5);
                           } else if (sehir == "Girne") {
-                            _osmKey.currentState!.flyToLocation(35.3370, 33.3200, zoom: 11.5);
+                            _osmKey.currentState!.flyToLocation(35.3370, 33.3000, zoom: 10.5);
                           } else if (sehir == "Güzelyurt") {
-                            _osmKey.currentState!.flyToLocation(35.2065, 33.0230, zoom: 11.5);
+                            _osmKey.currentState!.flyToLocation(35.2065, 33.0500, zoom: 10.5);
                           } else if (sehir == "İskele") {
-                            _osmKey.currentState!.flyToLocation(35.3210, 33.9310, zoom: 11.0);
+                            _osmKey.currentState!.flyToLocation(35.3500, 33.9800, zoom: 10.0);
                           } else {
                             _osmKey.currentState!.centerOnKktc();
                           }
