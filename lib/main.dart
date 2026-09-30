@@ -1776,11 +1776,11 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
               String model = _aracBilgileriVeritabani[p]?['markaModel'] ?? p;
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
+                child: Material(
                   color: aktif ? _HtmlColors.primaryContainer : _HtmlColors.surfaceContainer,
                   borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
+                  clipBehavior: Clip.antiAlias,
+                  child: ListTile(
                   leading: Icon(
                     Icons.directions_car_rounded,
                     color: aktif ? _HtmlColors.onPrimaryContainer : _HtmlColors.secondary,
@@ -1810,8 +1810,9 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                     Navigator.pop(ctx);
                   },
                 ),
-              );
-            }),
+              ),
+            );
+          }),
           ],
         ),
       ),
@@ -5295,12 +5296,15 @@ class DekontlarSayfasi extends StatelessWidget {
           String islemAdi = turkceMi ? dekont['islem']! : (dekont['islemEn'] ?? dekont['islem']!);
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
+            child: Material(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.slate200),
-            ),
-            child: ListTile(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: const BorderSide(color: AppColors.slate200),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               leading: Container(
                 padding: const EdgeInsets.all(10),
@@ -5325,7 +5329,8 @@ class DekontlarSayfasi extends StatelessWidget {
                 );
               },
             ),
-          );
+          ),
+        );
         },
       ),
     );

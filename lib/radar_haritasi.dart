@@ -697,63 +697,62 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
 
                   // 3. ÜST BAR: OSM ROZETİ & HARİTA TÜRÜ SEÇİCİ
                   Positioned(
-                    top: 10,
-                    left: 10,
-                    right: 10,
+                    top: 8,
+                    left: 8,
+                    right: 8,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0F172A).withValues(alpha: 0.90),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white12, width: 0.8),
-                          ),
-                          child: Row(
-                            children: [
-                              FadeTransition(
-                                opacity: _pulseController,
-                                child: Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF10B981),
-                                    shape: BoxShape.circle,
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white12, width: 0.8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                FadeTransition(
+                                  opacity: _pulseController,
+                                  child: Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF10B981),
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                widget.turkceMi ? 'Canlı OpenStreetMap' : 'Live OpenStreetMap',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                                const SizedBox(width: 5),
+                                Flexible(
+                                  child: Text(
+                                    widget.turkceMi ? 'OpenStreetMap • 18 Radar' : 'OpenStreetMap • 18 Radars',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '• 18 Radar',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.7),
-                                  fontSize: 9.5,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 6),
                         // Harita Stili Değiştirme Butonu (OSM / Carto / Gece)
                         GestureDetector(
                           onTap: toggleMapStyle,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+                              color: const Color(0xFF0F172A).withValues(alpha: 0.92),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.6), width: 0.8),
                             ),
                             child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Icon(Icons.layers_rounded, color: Color(0xFF38BDF8), size: 13),
                                 const SizedBox(width: 4),
@@ -761,7 +760,7 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                                   _tileStyleNames[_mapStyleIndex],
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 9.5,
+                                    fontSize: 9,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -1068,13 +1067,16 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                                 children: [
                                   Row(
                                     children: [
-                                      Text(
-                                        widget.turkceMi ? 'EN YAKIN SABİT RADAR' : 'NEAREST RADAR',
-                                        style: const TextStyle(
-                                          color: _RadarHtmlColors.primary,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: 0.5,
+                                      Flexible(
+                                        child: Text(
+                                          widget.turkceMi ? 'EN YAKIN SABİT RADAR' : 'NEAREST RADAR',
+                                          style: const TextStyle(
+                                            color: _RadarHtmlColors.primary,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 0.5,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                       const SizedBox(width: 6),
@@ -1444,12 +1446,17 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                     bool isSelected = secili.id == r.id;
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
+                      child: Material(
                         color: isSelected ? _RadarHtmlColors.surfaceContainer : _RadarHtmlColors.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(14),
-                        border: isSelected ? Border.all(color: _RadarHtmlColors.primaryContainer, width: 1.2) : null,
-                      ),
-                      child: ListTile(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          side: isSelected
+                              ? const BorderSide(color: _RadarHtmlColors.primaryContainer, width: 1.2)
+                              : BorderSide.none,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: ListTile(
                         onTap: () => setState(() => _seciliRadar = r),
                         leading: Container(
                           width: 40,
@@ -1508,7 +1515,8 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                           ],
                         ),
                       ),
-                    );
+                    ),
+                  );
                   }),
                 ],
               ),
