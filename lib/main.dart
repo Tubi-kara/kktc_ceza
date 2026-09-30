@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'radar_haritasi.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -844,6 +845,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs> {
         odenmemisCezaSayisi: odenmemisCezaSayisi,
         toplamBorc: toplamBorc,
       ),
+      RadarHaritasiSayfasi(turkceMi: widget.turkceMi),
       _cezalarimGorunumu(cezalar: cezalar),
       _sigortaGorunumu(markaModel: markaModel, sigortaGun: sigortaGun, muayeneGun: muayeneGun),
       _profilGorunumu(ehliyetPuani: ehliyetPuani),
@@ -907,14 +909,15 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _navItem(0, Icons.dashboard_rounded, Icons.dashboard_outlined, widget.turkceMi ? 'Özet' : 'Overview'),
-                _navItem(1, Icons.receipt_long_rounded, Icons.receipt_long_outlined, widget.turkceMi ? 'Cezalar' : 'Fines', rozet: odenmemisCezaSayisi),
-                _navItem(2, Icons.verified_user_rounded, Icons.verified_user_outlined, widget.turkceMi ? 'Sigorta' : 'Insurance'),
-                _navItem(3, Icons.person_rounded, Icons.person_outline_rounded, widget.turkceMi ? 'Profil' : 'Profile'),
+                _navItem(1, Icons.radar_rounded, Icons.radar_outlined, widget.turkceMi ? 'Radarlar' : 'Radars'),
+                _navItem(2, Icons.receipt_long_rounded, Icons.receipt_long_outlined, widget.turkceMi ? 'Cezalar' : 'Fines', rozet: odenmemisCezaSayisi),
+                _navItem(3, Icons.verified_user_rounded, Icons.verified_user_outlined, widget.turkceMi ? 'Sigorta' : 'Insurance'),
+                _navItem(4, Icons.person_rounded, Icons.person_outline_rounded, widget.turkceMi ? 'Profil' : 'Profile'),
               ],
             ),
           ),
@@ -1249,6 +1252,77 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs> {
               ],
             ),
           ),
+          const SizedBox(height: 20),
+
+          // 📍 KKTC CANLI RADAR & KAMERA HARİTASI BANNERI
+          GestureDetector(
+            onTap: () => setState(() => _seciliIndex = 1),
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDC2626).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFDC2626).withValues(alpha: 0.5)),
+                    ),
+                    child: const Icon(Icons.radar_rounded, color: Color(0xFFDC2626), size: 28),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              widget.turkceMi ? 'KKTC Canlı Radar Haritası' : 'TRNC Live Radar Map',
+                              style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text('CANLI', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          widget.turkceMi
+                              ? '18 Sabit Hız & Kırmızı Işık Kamerası Aktif'
+                              : '18 Speed & Traffic Cameras Active',
+                          style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 16),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: 22),
 
           // Hızlı İşlemler
@@ -1261,8 +1335,17 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs> {
             children: [
               Expanded(
                 child: _hizliIslemButon(
+                  ikon: Icons.radar_rounded,
+                  baslik: widget.turkceMi ? 'Radarlar' : 'Radars',
+                  renk: AppColors.primary,
+                  onTap: () => setState(() => _seciliIndex = 1),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _hizliIslemButon(
                   ikon: Icons.qr_code_2_rounded,
-                  baslik: widget.turkceMi ? 'Barkodlu Belge' : 'QR Certificate',
+                  baslik: widget.turkceMi ? 'Barkodlu' : 'QR Doc',
                   renk: AppColors.info,
                   onTap: () => Navigator.push(
                     context,
@@ -1276,11 +1359,11 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs> {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 child: _hizliIslemButon(
                   ikon: Icons.receipt_long_rounded,
-                  baslik: widget.turkceMi ? 'Dekontlarım' : 'Receipts',
+                  baslik: widget.turkceMi ? 'Dekont' : 'Receipts',
                   renk: AppColors.success,
                   onTap: () => Navigator.push(
                     context,
@@ -1290,11 +1373,11 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs> {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 child: _hizliIslemButon(
                   ikon: Icons.gavel_rounded,
-                  baslik: widget.turkceMi ? 'Cezaya İtiraz' : 'Appeal Fine',
+                  baslik: widget.turkceMi ? 'İtiraz' : 'Appeal',
                   renk: AppColors.warning,
                   onTap: () => Navigator.push(
                     context,
@@ -1317,7 +1400,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs> {
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.slate900),
               ),
               TextButton(
-                onPressed: () => setState(() => _seciliIndex = 1),
+                onPressed: () => setState(() => _seciliIndex = 2),
                 child: Text(
                   widget.turkceMi ? 'Tümünü Gör' : 'View All',
                   style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700),
@@ -2046,17 +2129,19 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs> {
     if (widget.turkceMi) {
       switch (index) {
         case 0: return 'e-Trafik Özet';
-        case 1: return 'Trafik Cezalarım';
-        case 2: return 'Sigorta Poliçeleri';
-        case 3: return 'Sürücü Profilim';
+        case 1: return 'KKTC Radar & Kameralar';
+        case 2: return 'Trafik Cezalarım';
+        case 3: return 'Sigorta Poliçeleri';
+        case 4: return 'Sürücü Profilim';
         default: return 'e-Trafik';
       }
     } else {
       switch (index) {
         case 0: return 'e-Traffic Overview';
-        case 1: return 'My Traffic Fines';
-        case 2: return 'Insurance Policies';
-        case 3: return 'Driver Profile';
+        case 1: return 'TRNC Radars & Cameras';
+        case 2: return 'My Traffic Fines';
+        case 3: return 'Insurance Policies';
+        case 4: return 'Driver Profile';
         default: return 'e-Traffic';
       }
     }
