@@ -5298,7 +5298,6 @@ class DekontlarSayfasi extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 12),
             child: Material(
               color: AppColors.surface,
-              borderRadius: BorderRadius.circular(20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: const BorderSide(color: AppColors.slate200),

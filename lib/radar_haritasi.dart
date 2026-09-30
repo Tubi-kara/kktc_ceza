@@ -1775,7 +1775,6 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                       margin: const EdgeInsets.only(bottom: 8),
                       child: Material(
                         color: isSelected ? _RadarHtmlColors.surfaceContainer : _RadarHtmlColors.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                           side: isSelected
