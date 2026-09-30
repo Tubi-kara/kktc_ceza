@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:math';
 import 'radar_haritasi.dart';
 
 void main() {
@@ -153,6 +154,8 @@ class _HtmlColors {
   static const Color onPrimaryContainer = Color(0xFFFFEAE8);
   static const Color onSurfaceVariant = Color(0xFFE7BCBA);
   static const Color outlineVariant = Color(0xFF5D3F3D);
+  static const Color onSecondaryContainer = Color(0xFFABB4D7);
+  static const Color tertiaryFixedDim = Color(0xFF4EDEA3);
 }
 
 class GirisSayfasi extends StatefulWidget {
@@ -1230,6 +1233,9 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
   String _secilenPlaka = "";
   String _cezaFiltre = "hepsi"; // hepsi, odenmedi, odendi
   bool _cezaOdeniyor = false;
+  String _sigortaSekmesi = "wallet"; // 'wallet' or 'police'
+  bool _sigortaQrBuyuk = false;
+  String _sigortaOtpKodu = "KKTC-TRF-9921-OK";
 
   late final AnimationController _pingController;
 
@@ -4655,185 +4661,1024 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
     );
   }
 
-  // --- TAB 3: SÄ°GORTA VE POLÄ°Ã‡E YÃ–NETÄ°MÄ° ---
-  Widget _sigortaGorunumu({required String markaModel, required int sigortaGun, required int muayeneGun}) {
-    bool aktif = sigortaGun > 0;
+  // --- TAB 3: SİGORTA VE POLİÇE YÖNETİMİ / POLİS QR DENETİM ---
+  Widget _sigortaGorunumu({
+    required String markaModel,
+    required int sigortaGun,
+    required int muayeneGun,
+  }) {
+    final bool aktif = sigortaGun > 0;
+    final String plakaGosterim = _secilenPlaka.isNotEmpty ? _secilenPlaka : "RZ 123";
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Apple Wallet tarzÄ± Modern Dijital PoliÃ§e KartÄ±
+          // Üst Segment Switcher (Apple Wallet Sigorta & Polis QR Denetim)
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF1E1B4B), Color(0xFF312E81)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF1E1B4B).withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
+              color: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (_sigortaSekmesi != 'wallet') {
+                        setState(() => _sigortaSekmesi = 'wallet');
+                      }
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: _sigortaSekmesi == 'wallet' ? _HtmlColors.primaryContainer : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: _sigortaSekmesi == 'wallet'
+                            ? [
+                                BoxShadow(
+                                  color: _HtmlColors.primaryContainer.withValues(alpha: 0.4),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                )
+                              ]
+                            : [],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.account_balance_wallet_outlined,
+                            size: 18,
+                            color: _sigortaSekmesi == 'wallet' ? _HtmlColors.onPrimaryContainer : _HtmlColors.secondary,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              widget.turkceMi ? 'Apple Wallet Sigorta' : 'Apple Wallet Insurance',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: _sigortaSekmesi == 'wallet' ? _HtmlColors.onPrimaryContainer : _HtmlColors.secondary,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (_sigortaSekmesi != 'police') {
+                        setState(() => _sigortaSekmesi = 'police');
+                      }
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: _sigortaSekmesi == 'police' ? _HtmlColors.primaryContainer : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: _sigortaSekmesi == 'police'
+                            ? [
+                                BoxShadow(
+                                  color: _HtmlColors.primaryContainer.withValues(alpha: 0.4),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                )
+                              ]
+                            : [],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.verified_user_outlined,
+                            size: 18,
+                            color: _sigortaSekmesi == 'police' ? _HtmlColors.onPrimaryContainer : _HtmlColors.secondary,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              widget.turkceMi ? 'Polis QR Denetim' : 'Police QR Inspection',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: _sigortaSekmesi == 'police' ? _HtmlColors.onPrimaryContainer : _HtmlColors.secondary,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
+          ),
+          const SizedBox(height: 14),
+
+          // SEÇİLEN SEKMEYE GÖRE İÇERİK
+          if (_sigortaSekmesi == 'wallet') ...[
+            // 1. APPLE WALLET DİJİTAL SİGORTA KARTI
+            Container(
+              width: double.infinity,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF1C274C),
+                    Color(0xFF0E1630),
+                    Color(0xFF070B1A),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.40),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // Kıbrıs Harita Watermark Silüeti
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _KibrisWatermarkPainter(),
+                    ),
+                  ),
+                  // Sağ üst yumuşak glowing blur
+                  Positioned(
+                    top: -30,
+                    right: -30,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _HtmlColors.primary.withValues(alpha: 0.08),
+                      ),
+                    ),
+                  ),
+                  // Kart İçeriği
+                  Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.shield_rounded, color: Colors.white, size: 28),
-                        const SizedBox(width: 10),
-                        Column(
+                        // Başlık & Logo Satırı
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              widget.turkceMi ? 'KKTC TRAFÄ°K SÄ°GORTASI' : 'TRNC TRAFFIC INSURANCE',
-                              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: _HtmlColors.surfaceBright.withValues(alpha: 0.40),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                                  ),
+                                  child: const Icon(
+                                    Icons.shield_outlined,
+                                    color: _HtmlColors.primary,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      widget.turkceMi ? 'KKTC ZORUNLU TRAFİK SİGORTASI' : 'TRNC MANDATORY MOTOR INSURANCE',
+                                      style: const TextStyle(
+                                        color: Color(0xFFD4AF37),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.1,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      widget.turkceMi ? 'Kıbrıs Sigorta Kooperatifi A.Ş.' : 'Cyprus Insurance Co-op Ltd.',
+                                      style: const TextStyle(
+                                        color: _HtmlColors.secondary,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: _HtmlColors.surfaceContainerHighest.withValues(alpha: 0.8),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: aktif ? _HtmlColors.tertiary.withValues(alpha: 0.3) : _HtmlColors.primary.withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Text(
+                                aktif ? (widget.turkceMi ? 'AKTİF' : 'ACTIVE') : (widget.turkceMi ? 'SÜRESİ DOLDU' : 'EXPIRED'),
+                                style: TextStyle(
+                                  color: aktif ? _HtmlColors.tertiary : _HtmlColors.primary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 22),
+
+                        // Plaka & Geri Sayım Satırı
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.turkceMi ? 'ARAÇ PLAKASI' : 'LICENSE PLATE',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.0,
+                                    color: _HtmlColors.secondary,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  plakaGosterim,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 2.0,
+                                    fontFamily: 'monospace',
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  markaModel,
+                                  style: const TextStyle(
+                                    color: _HtmlColors.onSecondaryContainer,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFD97706).withValues(alpha: 0.20),
+                                    borderRadius: BorderRadius.circular(999),
+                                    border: Border.all(color: const Color(0xFFFBBF24).withValues(alpha: 0.3)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.timer_outlined, size: 14, color: Color(0xFFFBBF24)),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        aktif
+                                            ? '$sigortaGun ${widget.turkceMi ? 'GÜN KALDI' : 'DAYS LEFT'}'
+                                            : (widget.turkceMi ? 'SÜRESİ BİTTİ' : 'EXPIRED'),
+                                        style: const TextStyle(
+                                          color: Color(0xFFFBBF24),
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  widget.turkceMi ? 'Bitiş: 30 Mayıs 2026' : 'Expiry: May 30, 2026',
+                                  style: const TextStyle(
+                                    color: _HtmlColors.secondary,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+
+                        // Alt Bilgi Şeridi: Poliçe No & Azami Hasar
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.45),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.turkceMi ? 'POLİÇE NO' : 'POLICY NO',
+                                    style: const TextStyle(
+                                      color: _HtmlColors.secondary,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text(
+                                    'POL-2023-889102-K',
+                                    style: TextStyle(
+                                      color: _HtmlColors.onSurface,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      fontFamily: 'monospace',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    widget.turkceMi ? 'AZAMİ HASAR' : 'MAX COVERAGE',
+                                    style: const TextStyle(
+                                      color: _HtmlColors.secondary,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.8,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text(
+                                    '₺1.500.000',
+                                    style: TextStyle(
+                                      color: _HtmlColors.tertiary,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      fontFamily: 'monospace',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // 2. İKİLİ HIZLI AKSİYON BUTONLARI
+            Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _HtmlColors.surfaceContainerHigh,
+                        foregroundColor: _HtmlColors.onSurface,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
+                        ),
+                      ),
+                      onPressed: () {
+                        _showSigortaToast(
+                          widget.turkceMi ? "Apple Wallet'a başarıyla eklendi!" : "Successfully added to Apple Wallet!",
+                          Icons.check_circle_outline,
+                        );
+                      },
+                      icon: const Icon(Icons.wallet, size: 20, color: Colors.white),
+                      label: Text(
+                        widget.turkceMi ? "Apple Wallet'a Ekle" : "Add to Apple Wallet",
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [_HtmlColors.primaryContainer, Color(0xFFB50220)],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _HtmlColors.primaryContainer.withValues(alpha: 0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () => _sigortaYenile(_secilenPlaka),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.autorenew, size: 18, color: _HtmlColors.onPrimaryContainer),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                widget.turkceMi ? '365 Gün Yenile (₺4.500)' : 'Renew 365 Days (₺4,500)',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: _HtmlColors.onPrimaryContainer,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // 3. POLİÇE TEMİNAT & ASİSTANLIK KARTI
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _HtmlColors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.turkceMi ? 'Poliçe Teminat & Asistanlık' : 'Coverage & Assistance',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: _HtmlColors.onSurface,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.30),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          widget.turkceMi ? 'TAM KORUMA' : 'FULL COVERAGE',
+                          style: const TextStyle(
+                            color: _HtmlColors.tertiaryFixedDim,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _sigortaTeminatRow(
+                    icon: Icons.directions_car_outlined,
+                    baslik: widget.turkceMi ? '3. Şahıs Maddi Zararlar' : '3rd Party Property Damage',
+                    aciklama: widget.turkceMi ? 'Kaza başı yasal zorunlu azami teminat' : 'Statutory mandatory coverage per accident',
+                    deger: '₺500.000',
+                  ),
+                  const SizedBox(height: 10),
+                  _sigortaTeminatRow(
+                    icon: Icons.medical_services_outlined,
+                    baslik: widget.turkceMi ? 'Bedeni Tedavi & Kaza' : 'Bodily Injury & Medical',
+                    aciklama: widget.turkceMi ? 'Yolcu ve sürücü tam sağlık kapsamı' : 'Full medical coverage for passenger and driver',
+                    deger: '₺1.000.000',
+                  ),
+                  const SizedBox(height: 10),
+                  _sigortaTeminatRow(
+                    icon: Icons.car_repair_outlined,
+                    baslik: widget.turkceMi ? 'KKTC Geneli 7/24 Yol Yardım' : 'TRNC 24/7 Roadside Assistance',
+                    aciklama: widget.turkceMi ? 'Girne, Lefkoşa, Gazimağusa, İskele' : 'Kyrenia, Nicosia, Famagusta, Iskele',
+                    deger: widget.turkceMi ? 'Ücretsiz / Sınırsız' : 'Free / Unlimited',
+                    isBadge: true,
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            // 2. POLİS QR DENETİM EKRANI
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: _HtmlColors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Başlık & Canlı Senkron Durumu
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _HtmlColors.primaryContainer.withValues(alpha: 0.20),
+                            ),
+                            child: const Icon(
+                              Icons.badge_outlined,
+                              color: _HtmlColors.primaryContainer,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.turkceMi ? 'Trafik Denetim Ekranı' : 'Traffic Inspection Screen',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: _HtmlColors.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                widget.turkceMi ? 'KKTC Polis Genel Müdürlüğü' : 'TRNC Police General Directorate',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: _HtmlColors.secondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.30),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AnimatedBuilder(
+                              animation: _pingController,
+                              builder: (context, child) {
+                                return Container(
+                                  width: 7,
+                                  height: 7,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _HtmlColors.tertiary.withValues(
+                                      alpha: 0.4 + (_pingController.value * 0.6),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(width: 5),
                             Text(
-                              widget.turkceMi ? 'Zorunlu Karayolu Mali Mesuliyet' : 'Mandatory Motor Third Party',
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 10),
+                              widget.turkceMi ? 'CANLI SENKRON' : 'LIVE SYNC',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: _HtmlColors.tertiaryFixedDim,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Beyaz QR Kod Kartı
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: CustomPaint(
+                      size: Size(_sigortaQrBuyuk ? 230 : 180, _sigortaQrBuyuk ? 230 : 180),
+                      painter: _PolisQrPainter(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Dinamik Kod & Onay İkonu
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _HtmlColors.surfaceContainer,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _sigortaOtpKodu,
+                              style: const TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: _HtmlColors.onSurface,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.verified,
+                              size: 18,
+                              color: _HtmlColors.tertiary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Canlı Denetim Verisi Tablosu
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: _HtmlColors.surfaceContainer,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              widget.turkceMi ? 'Canlı Denetim Verisi' : 'Live Inspection Data',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: _HtmlColors.onSurface,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                widget.turkceMi ? 'UYGUN / GEÇERLİ' : 'VALID / COMPLIANT',
+                                style: const TextStyle(
+                                  color: _HtmlColors.tertiary,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _polisDenetimMaddesi(
+                                widget.turkceMi ? 'Muayene' : 'Inspection',
+                                '14.11.2026',
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _polisDenetimMaddesi(
+                                widget.turkceMi ? 'Sigorta' : 'Insurance',
+                                sigortaGun > 0
+                                    ? (widget.turkceMi ? 'Aktif (${sigortaGun}G)' : 'Active (${sigortaGun}D)')
+                                    : (widget.turkceMi ? 'Geçersiz' : 'Expired'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _polisDenetimMaddesi(
+                                widget.turkceMi ? 'Sürücü' : 'Driver',
+                                widget.kullaniciAdi.isNotEmpty ? widget.kullaniciAdi : 'Ahmet Demir',
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _polisDenetimMaddesi(
+                                widget.turkceMi ? 'Ceza Puanı' : 'Demerit Points',
+                                widget.turkceMi ? '0 Puan' : '0 Pts',
+                              ),
                             ),
                           ],
                         ),
                       ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: aktif ? AppColors.success.withValues(alpha: 0.25) : AppColors.danger.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: aktif ? AppColors.success : AppColors.danger, width: 1),
-                      ),
-                      child: Text(
-                        aktif ? (widget.turkceMi ? 'POLÄ°Ã‡E AKTÄ°F' : 'ACTIVE') : (widget.turkceMi ? 'SÃœRESÄ° DOLMUÅ' : 'EXPIRED'),
-                        style: TextStyle(
-                          color: aktif ? AppColors.success : AppColors.danger,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Alt Butonlar: QR Büyüt & OTP Yenile
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 44,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _HtmlColors.surfaceContainerHigh,
+                              foregroundColor: _HtmlColors.onSurface,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _sigortaQrBuyuk = !_sigortaQrBuyuk;
+                              });
+                            },
+                            icon: Icon(
+                              _sigortaQrBuyuk ? Icons.zoom_out : Icons.zoom_in,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                            label: Text(
+                              _sigortaQrBuyuk
+                                  ? (widget.turkceMi ? 'Normale Döndür' : 'Normal Size')
+                                  : (widget.turkceMi ? 'QR Kodu Büyüt' : 'Zoom QR Code'),
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-                Text(
-                  _secilenPlaka,
-                  style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 1.5),
-                ),
-                Text(
-                  markaModel,
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 13, fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.turkceMi ? 'Kalan GÃ¼n' : 'Days Remaining', style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11)),
-                        const SizedBox(height: 2),
-                        Text('$sigortaGun ${widget.turkceMi ? 'GÃ¼n' : 'Days'}', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(widget.turkceMi ? 'PoliÃ§e No' : 'Policy No', style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 11)),
-                        const SizedBox(height: 2),
-                        const Text('TRNC-SIG-2026', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 44,
+                        height: 44,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _HtmlColors.surfaceContainerHigh,
+                            foregroundColor: _HtmlColors.onSurface,
+                            elevation: 0,
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
+                            ),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              final rnd = (1000 + Random().nextInt(8999)).toString();
+                              _sigortaOtpKodu = "KKTC-TRF-$rnd-OK";
+                            });
+                            _showSigortaToast(
+                              widget.turkceMi ? "Canlı QR Güvenlik Kodu Yenilendi" : "Live QR Security Code Refreshed",
+                              Icons.sync,
+                            );
+                          },
+                          child: const Icon(Icons.sync, size: 20, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
+          ],
+        ],
+      ),
+    );
+  }
 
-          // Teminat Bilgileri
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.slate200),
+  // Floating Toast Bildirim Helper
+  void _showSigortaToast(String message, IconData icon) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF2C344D),
+        elevation: 12,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(bottom: 84, left: 24, right: 24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.12), width: 1),
+        ),
+        duration: const Duration(milliseconds: 2800),
+        content: Row(
+          children: [
+            Icon(icon, color: const Color(0xFF4EDEA3), size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Color(0xFFDBE1FF),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Poliçe Teminat Satırı Helper
+  Widget _sigortaTeminatRow({
+    required IconData icon,
+    required String baslik,
+    required String aciklama,
+    required String deger,
+    bool isBadge = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: _HtmlColors.surfaceContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: _HtmlColors.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 18, color: _HtmlColors.secondary),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.turkceMi ? 'Teminat KapsamÄ±' : 'Coverage Scope',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.slate900),
+                  baslik,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _HtmlColors.onSurface,
+                  ),
                 ),
-                const SizedBox(height: 12),
-                _teminatSatiri(widget.turkceMi ? '3. ÅahÄ±s Maddi Zararlar' : '3rd Party Material Damage', '500.000 TL'),
-                _teminatSatiri(widget.turkceMi ? 'Bedeni Zararlar ve Tedavi' : 'Bodily Harm & Medical', '1.000.000 TL'),
-                _teminatSatiri(widget.turkceMi ? 'Hukuksal Koruma & Ã‡ekici' : 'Legal & Towing Support', widget.turkceMi ? 'Dahil' : 'Included'),
-                const Divider(height: 24, color: AppColors.slate200),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      widget.turkceMi ? 'YÄ±llÄ±k PoliÃ§e Ãœcreti' : 'Annual Fee',
-                      style: const TextStyle(fontSize: 14, color: AppColors.slate500, fontWeight: FontWeight.w600),
-                    ),
-                    const Text('4.500 TL', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.primary)),
-                  ],
+                const SizedBox(height: 2),
+                Text(
+                  aciklama,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: _HtmlColors.secondary,
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 20),
-
-          // Yenileme Butonu
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          const SizedBox(width: 8),
+          if (isBadge)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.30),
+                borderRadius: BorderRadius.circular(6),
               ),
-              onPressed: () => _sigortaYenile(_secilenPlaka),
-              icon: const Icon(Icons.flash_on_rounded),
-              label: Text(
-                widget.turkceMi ? 'Hemen SigortayÄ± Yenile (4500 TL)' : 'Instantly Renew Policy (4500 TL)',
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              child: Text(
+                deger,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: _HtmlColors.tertiary,
+                ),
+              ),
+            )
+          else
+            Text(
+              deger,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: _HtmlColors.onSurface,
+                fontFamily: 'monospace',
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  // Polis Denetim Maddesi Helper
+  Widget _polisDenetimMaddesi(String etiket, String deger) {
+    return Row(
+      children: [
+        Container(
+          width: 6,
+          height: 6,
+          decoration: const BoxDecoration(
+            color: _HtmlColors.tertiary,
+            shape: BoxShape.circle,
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 6),
+        Flexible(
+          child: RichText(
+            overflow: TextOverflow.ellipsis,
+            text: TextSpan(
+              style: const TextStyle(fontSize: 11, color: _HtmlColors.secondary),
+              children: [
+                TextSpan(text: '$etiket: '),
+                TextSpan(
+                  text: deger,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: _HtmlColors.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _teminatSatiri(String baslik, String deger) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(baslik, style: const TextStyle(fontSize: 13, color: AppColors.slate700)),
-          Text(deger, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.slate900)),
-        ],
-      ),
-    );
-  }
-
-  // --- TAB 4: PROFÄ°L & BELGELER ---
+  // --- TAB 4: PROFİL & BELGELER ---
   Widget _profilGorunumu({required int ehliyetPuani}) {
     return ListView(
       padding: const EdgeInsets.all(18),
@@ -5841,4 +6686,90 @@ class _BildirimAyarlariSayfasiState extends State<BildirimAyarlariSayfasi> {
       ),
     );
   }
+}
+
+class _PolisQrPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final scale = size.width / 100.0;
+    canvas.scale(scale, scale);
+
+    final bgPaint = Paint()..color = Colors.white;
+    canvas.drawRect(const Rect.fromLTWH(0, 0, 100, 100), bgPaint);
+
+    final darkPaint = Paint()..color = const Color(0xFF0A122A);
+    final whitePaint = Paint()..color = Colors.white;
+    final redPaint = Paint()..color = const Color(0xFFD90429);
+
+    // Finder Eye 1 (Top-Left)
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(10, 10, 28, 28), const Radius.circular(4)), darkPaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(15, 15, 18, 18), const Radius.circular(2)), whitePaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(19, 19, 10, 10), const Radius.circular(1)), darkPaint);
+
+    // Finder Eye 2 (Top-Right)
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(62, 10, 28, 28), const Radius.circular(4)), darkPaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(67, 15, 18, 18), const Radius.circular(2)), whitePaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(71, 19, 10, 10), const Radius.circular(1)), darkPaint);
+
+    // Finder Eye 3 (Bottom-Left)
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(10, 62, 28, 28), const Radius.circular(4)), darkPaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(15, 67, 18, 18), const Radius.circular(2)), whitePaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(19, 71, 10, 10), const Radius.circular(1)), darkPaint);
+
+    // Matrix dots & patterns
+    canvas.drawRect(const Rect.fromLTWH(44, 12, 6, 6), darkPaint);
+    canvas.drawRect(const Rect.fromLTWH(52, 18, 6, 6), darkPaint);
+    canvas.drawRect(const Rect.fromLTWH(44, 24, 6, 6), darkPaint);
+
+    canvas.drawRect(const Rect.fromLTWH(14, 44, 6, 6), darkPaint);
+    canvas.drawRect(const Rect.fromLTWH(22, 48, 6, 6), darkPaint);
+    canvas.drawRect(const Rect.fromLTWH(32, 44, 6, 6), darkPaint);
+
+    // Center Red TRNC security chip
+    canvas.drawRRect(RRect.fromRectAndRadius(const Rect.fromLTWH(44, 44, 12, 12), const Radius.circular(2)), redPaint);
+    canvas.drawRect(const Rect.fromLTWH(47, 47, 6, 6), whitePaint);
+
+    canvas.drawRect(const Rect.fromLTWH(62, 44, 6, 6), darkPaint);
+    canvas.drawRect(const Rect.fromLTWH(74, 48, 6, 6), darkPaint);
+    canvas.drawRect(const Rect.fromLTWH(84, 44, 6, 6), darkPaint);
+
+    canvas.drawRect(const Rect.fromLTWH(44, 62, 6, 6), darkPaint);
+    canvas.drawRect(const Rect.fromLTWH(52, 70, 6, 6), darkPaint);
+    canvas.drawRect(const Rect.fromLTWH(44, 80, 6, 6), darkPaint);
+
+    canvas.drawRect(const Rect.fromLTWH(62, 62, 6, 6), darkPaint);
+    canvas.drawRect(const Rect.fromLTWH(74, 66, 8, 8), darkPaint);
+    canvas.drawRect(const Rect.fromLTWH(66, 78, 8, 8), darkPaint);
+    canvas.drawRect(const Rect.fromLTWH(80, 80, 6, 6), darkPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _KibrisWatermarkPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.07)
+      ..style = PaintingStyle.fill;
+
+    final scaleX = size.width / 200.0;
+    final scaleY = size.height / 120.0;
+    canvas.scale(scaleX, scaleY);
+
+    final path = Path()
+      ..moveTo(20, 60)
+      ..quadraticBezierTo(50, 30, 90, 45)
+      ..quadraticBezierTo(130, 60, 160, 25)
+      ..quadraticBezierTo(185, 50, 170, 75)
+      ..quadraticBezierTo(140, 80, 110, 85)
+      ..quadraticBezierTo(60, 95, 20, 60)
+      ..close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
