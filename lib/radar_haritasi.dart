@@ -839,12 +839,14 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
           },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
-            child: Container(
-              color: const Color(0xFF0B1426),
+            child: SizedBox(
+              width: width,
+              height: height,
               child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  // 1. ANLIK VE KESİNTİSİZ OPENSTREETMAP VEKTÖR HARİTA ALTYAPISI
-                  Positioned.fill(
+                  // 1. ANLIK VE KESİNTİSİZ OPENSTREETMAP VEKTÖR HARİTA ALTYAPISI (ANA KATMAN)
+                  SizedBox.expand(
                     child: CustomPaint(
                       painter: KktcOsmVectorBasePainter(
                         centerLon: _centerLon,
@@ -1723,8 +1725,9 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
             if (_haritaGorunumu) ...[
               Container(
                 height: 380,
+                width: double.infinity,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF070E22),
+                  color: const Color(0xFF0D223A),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: const Color(0xFF212942), width: 1.5),
                   boxShadow: [
