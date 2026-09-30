@@ -15,7 +15,7 @@ void main() {
 }
 
 // ==========================================
-// ğŸ¨ MODERN DESIGN TOKENS & THEME
+// 🎨 MODERN DESIGN TOKENS & THEME
 // ==========================================
 class AppColors {
   static const Color primary = Color(0xFFDC2626); // Modern Crimson
@@ -126,17 +126,17 @@ class _KktcCezaAppState extends State<KktcCezaApp> {
 }
 
 // ==========================================
-// ğŸš€ 1. MODERN GÄ°RÄ°Å SAYFASI (HTML TasarÄ±m Uyumu)
+// 🚀 1. MODERN GİRİŞ SAYFASI (HTML Tasarım Uyumu)
 // ==========================================
 
-// Design tokens â€” HTML renk paletine birebir eÅŸleÅŸtirildi
+// Design tokens — HTML renk paletine birebir eşleştirildi
 class _HtmlColors {
   static const Color background = Color(0xFF0A122A);
   static const Color surfaceContainer = Color(0xFF171E37);
   static const Color surfaceContainerLow = Color(0xFF131A33);
   static const Color surfaceContainerHigh = Color(0xFF212942);
   static const Color surfaceBright = Color(0xFF313852);
-  static const Color primaryContainer = Color(0xFFD90429); // kÄ±rmÄ±zÄ± buton
+  static const Color primaryContainer = Color(0xFFD90429); // kırmızı buton
   static const Color primary = Color(0xFFFFB3AF);
   static const Color secondary = Color(0xFFBDC5E9);
   static const Color tertiary = Color(0xFF4EDEA3);
@@ -184,7 +184,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
   bool _biyometrikBasarili = false;
   bool _girisYukleniyor = false;
   bool _girisBasariliAnimasyon = false;
-  // Auth method: 0 = Kimlik&Åifre, 1 = SMS
+  // Auth method: 0 = Kimlik&Şifre, 1 = SMS
   int _authMethod = 0;
 
   late final AnimationController _pingController;
@@ -213,7 +213,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
     if (numara.isEmpty || sifre.isEmpty) {
       _snack(
         widget.turkceMi
-            ? 'LÃ¼tfen kimlik no ve ÅŸifre girin.'
+            ? 'Lütfen kimlik no ve şifre girin.'
             : 'Please enter credentials to proceed.',
         isError: true,
       );
@@ -230,7 +230,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
 
       if (!_kktcVatandasiMi) {
         if (numara.toLowerCase() == "tubi" && sifre == "tugkan3517") {
-          adSoyad = widget.turkceMi ? "Tubi (Ã–ÄŸrenci)" : "Tubi (Student)";
+          adSoyad = widget.turkceMi ? "Tubi (Öğrenci)" : "Tubi (Student)";
           tanimliAraclar = ["ST 999", "GM 202"];
         } else {
           setState(() {
@@ -238,7 +238,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
           });
           _snack(
             widget.turkceMi
-                ? 'HatalÄ± Ã¶ÄŸrenci adÄ± veya ÅŸifre! (tubi / tugkan3517)'
+                ? 'Hatalı öğrenci adı veya şifre! (tubi / tugkan3517)'
                 : 'Invalid student username or password!',
             isError: true,
           );
@@ -285,7 +285,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
       _biyometrikYukleniyor = false;
       _biyometrikBasarili = true;
       _girisController.text = '21894019284';
-      _sifreController.text = 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢';
+      _sifreController.text = '••••••••••••';
     });
     await Future.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
@@ -320,7 +320,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
       backgroundColor: _HtmlColors.background,
       body: Stack(
         children: [
-          // â”€â”€ Ambient glow orbs (HTML'e birebir) â”€â”€
+          // ── Ambient glow orbs (HTML'e birebir) ──
           Positioned(
             top: -96,
             left: -80,
@@ -358,14 +358,14 @@ class _GirisSayfasiState extends State<GirisSayfasi>
             ),
           ),
 
-          // â”€â”€ Main content â”€â”€
+          // ── Main content ──
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // â”€â”€ Top Bar â”€â”€
+                  // ── Top Bar ──
                   Padding(
                     padding: const EdgeInsets.only(top: 8, bottom: 12),
                     child: Row(
@@ -403,7 +403,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                widget.turkceMi ? 'KKTC Kamu AÄŸÄ± Aktif' : 'TRNC Network Active',
+                                widget.turkceMi ? 'KKTC Kamu Ağı Aktif' : 'TRNC Network Active',
                                 style: const TextStyle(
                                   color: _HtmlColors.tertiary,
                                   fontSize: 10,
@@ -432,7 +432,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                     ),
                   ),
 
-                  // â”€â”€ Institutional Crest & Branding â”€â”€
+                  // ── Institutional Crest & Branding ──
                   Center(
                     child: Column(
                       children: [
@@ -505,7 +505,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                         const SizedBox(height: 12),
                         // Sub-label
                         Text(
-                          widget.turkceMi ? 'KKTC RESMÄ° GEÃ‡Ä°T' : 'TRNC OFFICIAL PORTAL',
+                          widget.turkceMi ? 'KKTC RESMİ GEÇİT' : 'TRNC OFFICIAL PORTAL',
                           style: const TextStyle(
                             color: _HtmlColors.primary,
                             fontSize: 10,
@@ -527,7 +527,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                         const SizedBox(height: 4),
                         Text(
                           widget.turkceMi
-                              ? 'KKTC Polis Genel MÃ¼dÃ¼rlÃ¼ÄŸÃ¼ & BayÄ±ndÄ±rlÄ±k ve\nUlaÅŸtÄ±rma BakanlÄ±ÄŸÄ± Trafik PortalÄ±'
+                              ? 'KKTC Polis Genel Müdürlüğü & Bayındırlık ve\nUlaştırma Bakanlığı Trafik Portalı'
                               : 'TRNC Police HQ & Ministry of Public Works\nand Transportation Traffic Portal',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
@@ -542,7 +542,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                   ),
                   const SizedBox(height: 16),
 
-                  // â”€â”€ Role Selector Tabs â”€â”€
+                  // ── Role Selector Tabs ──
                   Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
@@ -553,13 +553,13 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                       children: [
                         _roleTab(
                           icon: Icons.badge,
-                          label: widget.turkceMi ? 'KKTC VatandaÅŸ' : 'TRNC Citizen',
+                          label: widget.turkceMi ? 'KKTC Vatandaşı' : 'TRNC Citizen',
                           selected: _kktcVatandasiMi,
                           onTap: () => setState(() => _kktcVatandasiMi = true),
                         ),
                         _roleTab(
                           icon: Icons.school,
-                          label: widget.turkceMi ? 'Ã–ÄŸrenci / Misafir' : 'Student / Guest',
+                          label: widget.turkceMi ? 'Öğrenci / Misafir' : 'Student / Guest',
                           selected: !_kktcVatandasiMi,
                           onTap: () => setState(() => _kktcVatandasiMi = false),
                         ),
@@ -568,7 +568,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                   ),
                   const SizedBox(height: 12),
 
-                  // â”€â”€ Authentication Form Card (glassmorphism) â”€â”€
+                  // ── Authentication Form Card (glassmorphism) ──
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -601,13 +601,13 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                             children: [
                               _authMethodTab(
                                 icon: Icons.pin,
-                                label: widget.turkceMi ? 'Kimlik & Åifre' : 'ID & Password',
+                                label: widget.turkceMi ? 'Kimlik & Şifre' : 'ID & Password',
                                 selected: _authMethod == 0,
                                 onTap: () => setState(() => _authMethod = 0),
                               ),
                               _authMethodTab(
                                 icon: Icons.sms,
-                                label: widget.turkceMi ? 'SMS / Mobil Ä°mza' : 'SMS / Mobile Sign',
+                                label: widget.turkceMi ? 'SMS / Mobil İmza' : 'SMS / Mobile Sign',
                                 selected: _authMethod == 1,
                                 onTap: () => setState(() => _authMethod = 1),
                               ),
@@ -622,7 +622,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                           children: [
                             Text(
                               widget.turkceMi
-                                  ? (_kktcVatandasiMi ? 'KKTC KÄ°MLÄ°K NO' : 'PASAPORT / Ã–ÄRENCÄ° NO')
+                                  ? (_kktcVatandasiMi ? 'KKTC KİMLİK NO' : 'PASAPORT / ÖĞRENCİ NO')
                                   : (_kktcVatandasiMi ? 'TRNC IDENTITY NO' : 'PASSPORT / STUDENT NO'),
                               style: const TextStyle(
                                 color: _HtmlColors.secondary,
@@ -647,8 +647,8 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                         _darkInputField(
                           controller: _girisController,
                           hint: _kktcVatandasiMi
-                              ? (widget.turkceMi ? 'Ã–rn: 123456 (KKTC Kimlik No)' : 'E.g.: 123456')
-                              : (widget.turkceMi ? 'U12345678 (Pasaport / Ã–ÄŸrenci No)' : 'U12345678'),
+                              ? (widget.turkceMi ? 'Örn: 123456 (KKTC Kimlik No)' : 'E.g.: 123456')
+                              : (widget.turkceMi ? 'U12345678 (Pasaport / Öğrenci No)' : 'U12345678'),
                           prefixIcon: Icons.person,
                           obscure: false,
                         ),
@@ -659,7 +659,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              widget.turkceMi ? 'PORTAL ÅÄ°FRESÄ° / PIN' : 'PORTAL PASSWORD / PIN',
+                              widget.turkceMi ? 'PORTAL ŞİFRESİ / PIN' : 'PORTAL PASSWORD / PIN',
                               style: const TextStyle(
                                 color: _HtmlColors.secondary,
                                 fontSize: 10,
@@ -668,7 +668,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                               ),
                             ),
                             Text(
-                              widget.turkceMi ? 'SMS ile Åifre Al' : 'Get SMS Code',
+                              widget.turkceMi ? 'SMS ile Şifre Al' : 'Get SMS Code',
                               style: const TextStyle(
                                 color: _HtmlColors.primary,
                                 fontSize: 10,
@@ -681,7 +681,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                         // Password Input
                         _darkInputField(
                           controller: _sifreController,
-                          hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+                          hint: '••••••••••••',
                           prefixIcon: Icons.lock,
                           obscure: _sifreGizli,
                           suffixIcon: IconButton(
@@ -696,7 +696,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                         ),
                         const SizedBox(height: 16),
 
-                        // â”€â”€ Primary Login Button (Gradient Red) â”€â”€
+                        // ── Primary Login Button (Gradient Red) ──
                         SizedBox(
                           width: double.infinity,
                           height: 52,
@@ -751,8 +751,8 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                                         const SizedBox(width: 8),
                                         Text(
                                           _girisBasariliAnimasyon
-                                              ? (widget.turkceMi ? 'GiriÅŸ BaÅŸarÄ±lÄ±' : 'Login Successful')
-                                              : (widget.turkceMi ? 'GÃ¼venli GiriÅŸ Yap' : 'Secure Login'),
+                                              ? (widget.turkceMi ? 'Giriş Başarılı' : 'Login Successful')
+                                              : (widget.turkceMi ? 'Güvenli Giriş Yap' : 'Secure Login'),
                                           style: const TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w700,
@@ -765,7 +765,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                         ),
                         const SizedBox(height: 10),
 
-                        // â”€â”€ Biometric / Face ID Button â”€â”€
+                        // ── Biometric / Face ID Button ──
                         SizedBox(
                           width: double.infinity,
                           height: 48,
@@ -802,10 +802,10 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                                 const SizedBox(width: 8),
                                 Text(
                                   _biyometrikYukleniyor
-                                      ? (widget.turkceMi ? 'Kimlik DoÄŸrulanÄ±yor...' : 'Verifying...')
+                                      ? (widget.turkceMi ? 'Kimlik Doğrulanıyor...' : 'Verifying...')
                                       : _biyometrikBasarili
-                                          ? (widget.turkceMi ? 'Biyometri DoÄŸrulandÄ±' : 'Biometrics Verified')
-                                          : (widget.turkceMi ? 'YÃ¼z TanÄ±ma (Face ID) ile GiriÅŸ' : 'Login with Face ID'),
+                                          ? (widget.turkceMi ? 'Biyometri Doğrulandı' : 'Biometrics Verified')
+                                          : (widget.turkceMi ? 'Yüz Tanıma (Face ID) ile Giriş' : 'Login with Face ID'),
                                   style: TextStyle(
                                     color: _biyometrikBasarili ? _HtmlColors.tertiary : _HtmlColors.onSurface,
                                     fontSize: 13,
@@ -821,13 +821,13 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                   ),
                   const SizedBox(height: 16),
 
-                  // â”€â”€ Demo Preset Cards â”€â”€
+                  // ── Demo Preset Cards ──
                   Row(
                     children: [
                       const Icon(Icons.touch_app, color: _HtmlColors.tertiary, size: 14),
                       const SizedBox(width: 6),
                       Text(
-                        widget.turkceMi ? 'HIZLI TEST & DEMO SÄ°MÃœLATÃ–RÃœ' : 'QUICK DEMO SIMULATOR',
+                        widget.turkceMi ? 'HIZLI TEST & DEMO SİMÜLATÖRÜ' : 'QUICK DEMO SIMULATOR',
                         style: const TextStyle(
                           color: _HtmlColors.secondary,
                           fontSize: 9,
@@ -839,12 +839,12 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                   ),
                   const SizedBox(height: 8),
 
-                  // Demo Card â€” Ahmet Demir
+                  // Demo Card — Ahmet Demir
                   _demoCard(
                     icon: Icons.directions_car,
                     name: 'Ahmet Demir',
-                    badge: widget.turkceMi ? 'VatandaÅŸ' : 'Citizen',
-                    subtitle: 'BMW 3.20i & Mercedes E220d (Aktif KoÃ§an)',
+                    badge: widget.turkceMi ? 'Vatandaş' : 'Citizen',
+                    subtitle: 'BMW 3.20i & Mercedes E220d (Aktif Koçan)',
                     iconBg: _HtmlColors.primaryContainer.withValues(alpha: 0.20),
                     iconColor: _HtmlColors.primary,
                     badgeBg: _HtmlColors.surfaceBright,
@@ -853,12 +853,12 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                   ),
                   const SizedBox(height: 8),
 
-                  // Demo Card â€” Tubi
+                  // Demo Card — Tubi
                   _demoCard(
                     icon: Icons.school,
-                    name: widget.turkceMi ? 'Tubi Ã–ÄŸrenci Profili' : 'Tubi Student Profile',
-                    badge: widget.turkceMi ? 'Misafir Ä°zin' : 'Guest Access',
-                    subtitle: 'VW Polo & Toyota Corolla (GeÃ§ici KayÄ±t)',
+                    name: widget.turkceMi ? 'Tubi Öğrenci Profili' : 'Tubi Student Profile',
+                    badge: widget.turkceMi ? 'Misafir İzin' : 'Guest Access',
+                    subtitle: 'VW Polo & Toyota Corolla (Geçici Kayıt)',
                     iconBg: const Color(0xFF007C55).withValues(alpha: 0.20),
                     iconColor: _HtmlColors.tertiary,
                     badgeBg: const Color(0xFF007C55).withValues(alpha: 0.30),
@@ -867,7 +867,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                   ),
                   const SizedBox(height: 24),
 
-                  // â”€â”€ Security Footer â”€â”€
+                  // ── Security Footer ──
                   Center(
                     child: Column(
                       children: [
@@ -877,7 +877,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                             Icon(Icons.lock_outline, color: _HtmlColors.tertiary, size: 14),
                             SizedBox(width: 6),
                             Text(
-                              '256-Bit SSL UÃ§tan Uca Åifreleme',
+                              '256-Bit SSL Uçtan Uca Şifreleme',
                               style: TextStyle(
                                 color: _HtmlColors.secondary,
                                 fontSize: 11,
@@ -889,7 +889,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                         ),
                         const SizedBox(height: 6),
                         const Text(
-                          'KKTC Polis Genel MÃ¼dÃ¼rlÃ¼ÄŸÃ¼ & BayÄ±ndÄ±rlÄ±k\nve UlaÅŸtÄ±rma BakanlÄ±ÄŸÄ± Trafik PortalÄ±',
+                          'KKTC Polis Genel Müdürlüğü & Bayındırlık\nve Ulaştırma Bakanlığı Trafik Portalı',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: _HtmlColors.secondary,
@@ -902,7 +902,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              widget.turkceMi ? 'YardÄ±m MasasÄ±' : 'Help Desk',
+                              widget.turkceMi ? 'Yardım Masası' : 'Help Desk',
                               style: const TextStyle(
                                 color: _HtmlColors.secondary,
                                 fontSize: 11,
@@ -912,10 +912,10 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                             ),
                             const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 12),
-                              child: Text('â€¢', style: TextStyle(color: _HtmlColors.outlineVariant)),
+                              child: Text('•', style: TextStyle(color: _HtmlColors.outlineVariant)),
                             ),
                             Text(
-                              widget.turkceMi ? 'Trafik Ã‡aÄŸrÄ±: 155' : 'Traffic Hotline: 155',
+                              widget.turkceMi ? 'Trafik Çağrı: 155' : 'Traffic Hotline: 155',
                               style: const TextStyle(
                                 color: _HtmlColors.secondary,
                                 fontSize: 11,
@@ -938,7 +938,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
     );
   }
 
-  // â”€â”€ Helper widgets â”€â”€
+  // ── Helper widgets ──
 
   Widget _langButton(String label, bool selected, VoidCallback onTap) {
     return GestureDetector(
@@ -1205,7 +1205,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
 }
 
 // ==========================================
-// ğŸ  2. MODERN ANA SAYFA & TABS
+// 🏠 2. MODERN ANA SAYFA & TABS
 // ==========================================
 class AnaSayfaTabs extends StatefulWidget {
   final String kullaniciAdi;
@@ -1267,13 +1267,13 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         {
           "id": "1",
           "tarih": "15.05.2026",
-          "tur": "HÄ±z SÄ±nÄ±rÄ± AÅŸÄ±mÄ± (Radar)",
+          "tur": "Hız Sınırı Aşımı (Radar)",
           "turEn": "Speed Limit Violation (Radar)",
-          "kategori": "HÄ±z",
+          "kategori": "Hız",
           "tutar": "2450 TL",
           "odendi": false,
-          "konum": "LefkoÅŸa - GÃ¼zelyurt Anayolu",
-          "puan": "10 Ceza PuanÄ±",
+          "konum": "Lefkoşa - Güzelyurt Anayolu",
+          "puan": "10 Ceza Puanı",
           "polis": "Trafik Ekipleri",
           "kanit": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800"
         },
@@ -1297,13 +1297,13 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         {
           "id": "2",
           "tarih": "20.04.2026",
-          "tur": "Muayenesiz AraÃ§ KullanÄ±mÄ±",
+          "tur": "Muayenesiz Araç Kullanımı",
           "turEn": "Driving Uninspected Vehicle",
           "kategori": "Evrak",
           "tutar": "1850 TL",
           "odendi": false,
-          "konum": "GÃ¼zelyurt KalkanlÄ± Yolu",
-          "puan": "5 Ceza PuanÄ±",
+          "konum": "Güzelyurt Kalkanlı Yolu",
+          "puan": "5 Ceza Puanı",
           "polis": "Trafik Denetleme Ekipleri",
           "kanit": "https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=800"
         }
@@ -1321,13 +1321,13 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
 
   final List<Map<String, String>> _dekontlar = [
     {
-      "islem": "YanlÄ±ÅŸ Park CezasÄ± Ã–demesi",
+      "islem": "Yanlış Park Cezası Ödemesi",
       "islemEn": "Illegal Parking Fine Payment",
       "tarih": "10.02.2026",
       "tutar": "1200 TL",
       "kod": "DEKONT-99821",
-      "kurum": "KKTC Maliye BakanlÄ±ÄŸÄ± Veznesi",
-      "durum": "OnaylandÄ± / BaÅŸarÄ±lÄ±"
+      "kurum": "KKTC Maliye Bakanlığı Veznesi",
+      "durum": "Onaylandı / Başarılı"
     },
   ];
 
@@ -1338,13 +1338,13 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         _aracBilgileriVeritabani[plaka]!['sigortaAktif'] = true;
       }
       _dekontlar.insert(0, {
-        "islem": "$plaka Nolu AraÃ§ Zorunlu Sigorta Yenileme",
+        "islem": "$plaka Nolu Araç Zorunlu Sigorta Yenileme",
         "islemEn": "$plaka Vehicle Mandatory Insurance Renewal",
-        "tarih": "BugÃ¼n / Today",
+        "tarih": "Bugün / Today",
         "tutar": "4500 TL",
         "kod": "SIGORTA-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}",
-        "kurum": "KKTC Sigortalar BirliÄŸi Havuzu",
-        "durum": "OnaylandÄ± / PoliÃ§e Aktif"
+        "kurum": "KKTC Sigortalar Birliği Havuzu",
+        "durum": "Onaylandı / Poliçe Aktif"
       });
     });
 
@@ -1357,7 +1357,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
             Expanded(
               child: Text(
                 widget.turkceMi
-                    ? 'PoliÃ§e 365 gÃ¼n olarak baÅŸarÄ±yla yenilendi!'
+                    ? 'Poliçe 365 gün olarak başarıyla yenilendi!'
                     : 'Insurance successfully renewed for 365 days!',
               ),
             ),
@@ -1384,11 +1384,11 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
       _dekontlar.insert(0, {
         "islem": cezaAdi,
         "islemEn": cezaAdiEn,
-        "tarih": "BugÃ¼n / Today",
+        "tarih": "Bugün / Today",
         "tutar": tutar,
         "kod": "DEKONT-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}",
-        "kurum": "KKTC Polis Genel MÃ¼dÃ¼rlÃ¼ÄŸÃ¼ Maliyesi",
-        "durum": "Ã–dendi / ArÅŸivlendi"
+        "kurum": "KKTC Polis Genel Müdürlüğü Maliyesi",
+        "durum": "Ödendi / Arşivlendi"
       });
     });
   }
@@ -5683,7 +5683,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
     return ListView(
       padding: const EdgeInsets.all(18),
       children: [
-        // SÃ¼rÃ¼cÃ¼ KartÄ±
+        // Sürücü Kartı
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
@@ -5709,7 +5709,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      widget.turkceMi ? 'KKTC KayÄ±tlÄ± SÃ¼rÃ¼cÃ¼ Belgesi Sahibi' : 'TRNC Registered Driver License Holder',
+                      widget.turkceMi ? 'KKTC Kayıtlı Sürücü Belgesi Sahibi' : 'TRNC Registered Driver License Holder',
                       style: const TextStyle(fontSize: 12, color: AppColors.slate500),
                     ),
                   ],
@@ -5720,14 +5720,14 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         ),
         const SizedBox(height: 20),
 
-        // MenÃ¼ Ã–ÄŸeleri
+        // Menü Öğeleri
         _profilMenuKutusu(
           children: [
             _profilMenuItem(
               ikon: Icons.qr_code_2_rounded,
               ikonRenk: AppColors.info,
-              baslik: widget.turkceMi ? 'Barkodlu SÃ¼rÃ¼cÃ¼ Belgesi' : 'Barcoded Driver Certificate',
-              altBaslik: widget.turkceMi ? 'Taranabilir ve Ã§alÄ±ÅŸÄ±r QR doÄŸrulamasÄ±' : 'Interactive QR verification code',
+              baslik: widget.turkceMi ? 'Barkodlu Sürücü Belgesi' : 'Barcoded Driver Certificate',
+              altBaslik: widget.turkceMi ? 'Taranabilir ve çalışır QR doğrulaması' : 'Interactive QR verification code',
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -5743,8 +5743,8 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
             _profilMenuItem(
               ikon: Icons.receipt_long_rounded,
               ikonRenk: AppColors.success,
-              baslik: widget.turkceMi ? 'Ã–deme DekontlarÄ±' : 'Payment Receipts',
-              altBaslik: widget.turkceMi ? 'Resmi tahsilat makbuzlarÄ± ve PDF arÅŸivi' : 'Official payment slips & archive',
+              baslik: widget.turkceMi ? 'Ödeme Dekontları' : 'Payment Receipts',
+              altBaslik: widget.turkceMi ? 'Resmi tahsilat makbuzları ve PDF arşivi' : 'Official payment slips & archive',
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -5756,8 +5756,8 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
             _profilMenuItem(
               ikon: Icons.gavel_rounded,
               ikonRenk: AppColors.warning,
-              baslik: widget.turkceMi ? 'Cezaya Ä°tiraz BaÅŸvurusu' : 'Fine Objection Application',
-              altBaslik: widget.turkceMi ? 'HatalÄ± veya radar itiraz dilekÃ§esi gÃ¶nder' : 'Submit petition for incorrect fines',
+              baslik: widget.turkceMi ? 'Cezaya İtiraz Başvurusu' : 'Fine Objection Application',
+              altBaslik: widget.turkceMi ? 'Hatalı veya radar itiraz dilekçesi gönder' : 'Submit petition for incorrect fines',
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -5769,8 +5769,8 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
             _profilMenuItem(
               ikon: Icons.notifications_active_outlined,
               ikonRenk: Colors.purple,
-              baslik: widget.turkceMi ? 'Bildirim ve HatÄ±rlatÄ±cÄ±lar' : 'Notifications & Reminders',
-              altBaslik: widget.turkceMi ? 'Sigorta ve muayene son gÃ¼n uyarÄ±larÄ±' : 'Insurance & inspection alerts',
+              baslik: widget.turkceMi ? 'Bildirim ve Hatırlatıcılar' : 'Notifications & Reminders',
+              altBaslik: widget.turkceMi ? 'Sigorta ve muayene son gün uyarıları' : 'Insurance & inspection alerts',
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -5782,7 +5782,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         ),
         const SizedBox(height: 20),
 
-        // Ã‡Ä±kÄ±ÅŸ Yap
+        // Çıkış Yap
         Container(
           decoration: BoxDecoration(
             color: AppColors.surface,
@@ -5799,7 +5799,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
               child: const Icon(Icons.logout_rounded, color: AppColors.danger, size: 20),
             ),
             title: Text(
-              widget.turkceMi ? 'GÃ¼venli Ã‡Ä±kÄ±ÅŸ Yap' : 'Secure Logout',
+              widget.turkceMi ? 'Güvenli Çıkış Yap' : 'Secure Logout',
               style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.danger, fontSize: 14),
             ),
             onTap: widget.onCikisYap,
@@ -5812,12 +5812,12 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
           child: Column(
             children: [
               Text(
-                widget.turkceMi ? 'KKTC Polis Genel MÃ¼dÃ¼rlÃ¼ÄŸÃ¼ Bilgi Ä°ÅŸlem PortalÄ±' : 'TRNC Police Headquarters IT Portal',
+                widget.turkceMi ? 'KKTC Polis Genel Müdürlüğü Bilgi İşlem Portalı' : 'TRNC Police Headquarters IT Portal',
                 style: const TextStyle(fontSize: 11, color: AppColors.slate400, fontWeight: FontWeight.w500),
               ),
               const SizedBox(height: 4),
               Text(
-                widget.turkceMi ? 'GeliÅŸtiren: TuÄŸberk Kara' : 'Developed by: TuÄŸberk Kara',
+                widget.turkceMi ? 'Geliştiren: Tuğberk Kara' : 'Developed by: Tuğberk Kara',
                 style: const TextStyle(fontSize: 12, color: AppColors.slate700, fontWeight: FontWeight.w700),
               ),
             ],
@@ -5866,11 +5866,11 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
   String _baslikDondur(int index) {
     if (widget.turkceMi) {
       switch (index) {
-        case 0: return 'e-Trafik Ã–zet';
+        case 0: return 'e-Trafik Özet';
         case 1: return 'KKTC Radar & Kameralar';
-        case 2: return 'Trafik CezalarÄ±m';
-        case 3: return 'Sigorta PoliÃ§eleri';
-        case 4: return 'SÃ¼rÃ¼cÃ¼ Profilim';
+        case 2: return 'Trafik Cezalarım';
+        case 3: return 'Sigorta Poliçeleri';
+        case 4: return 'Sürücü Profilim';
         default: return 'e-Trafik';
       }
     } else {
@@ -5930,7 +5930,7 @@ class _RadialGaugePainter extends CustomPainter {
 }
 
 // ==========================================
-// ğŸ” 3. MODERN CEZA DETAY SAYFASI
+// 🔍 3. MODERN CEZA DETAY SAYFASI
 // ==========================================
 class CezaDetaySayfasi extends StatelessWidget {
   final Map<String, dynamic> ceza;
@@ -5952,7 +5952,7 @@ class CezaDetaySayfasi extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          turkceMi ? 'Ceza ve KanÄ±t DetayÄ±' : 'Violation & Evidence',
+          turkceMi ? 'Ceza ve Kanıt Detayı' : 'Violation & Evidence',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
         ),
       ),
@@ -5961,7 +5961,7 @@ class CezaDetaySayfasi extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Kamera / KanÄ±t GÃ¶rseli KartÄ±
+            // Kamera / Kanıt Görseli Kartı
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
@@ -5992,7 +5992,7 @@ class CezaDetaySayfasi extends StatelessWidget {
                               const Icon(Icons.camera_alt_outlined, size: 40, color: AppColors.slate500),
                               const SizedBox(height: 8),
                               Text(
-                                turkceMi ? 'Radar KanÄ±t GÃ¶rseli' : 'Radar Evidence Image',
+                                turkceMi ? 'Radar Kanıt Görseli' : 'Radar Evidence Image',
                                 style: const TextStyle(color: AppColors.slate500, fontWeight: FontWeight.w600),
                               ),
                             ],
@@ -6028,7 +6028,7 @@ class CezaDetaySayfasi extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Bilgi KartÄ±
+            // Bilgi Kartı
             Container(
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
@@ -6049,7 +6049,7 @@ class CezaDetaySayfasi extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          odendiMi ? (turkceMi ? 'Ã–DENDÄ°' : 'PAID') : (turkceMi ? 'Ã–DENMEDÄ°' : 'UNPAID'),
+                          odendiMi ? (turkceMi ? 'ÖDENDİ' : 'PAID') : (turkceMi ? 'ÖDENMEDİ' : 'UNPAID'),
                           style: TextStyle(
                             color: odendiMi ? AppColors.success : AppColors.danger,
                             fontWeight: FontWeight.w800,
@@ -6069,9 +6069,9 @@ class CezaDetaySayfasi extends StatelessWidget {
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.slate900),
                   ),
                   const Divider(height: 28, color: AppColors.slate200),
-                  _detaySatiri(turkceMi ? 'Ä°hlal Tarihi' : 'Date', ceza['tarih']),
+                  _detaySatiri(turkceMi ? 'İhlal Tarihi' : 'Date', ceza['tarih']),
                   _detaySatiri(turkceMi ? 'Konum' : 'Location', ceza['konum']),
-                  _detaySatiri(turkceMi ? 'Ceza PuanÄ± Etkisi' : 'Penalty Points', ceza['puan']),
+                  _detaySatiri(turkceMi ? 'Ceza Puanı Etkisi' : 'Penalty Points', ceza['puan']),
                   _detaySatiri(turkceMi ? 'Yetkili Birim' : 'Enforcing Unit', ceza['polis']),
                   _detaySatiri(turkceMi ? 'Kategori' : 'Category', ceza['kategori']),
                 ],
@@ -6079,7 +6079,7 @@ class CezaDetaySayfasi extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Ã–deme Butonu
+            // Ödeme Butonu
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -6103,7 +6103,7 @@ class CezaDetaySayfasi extends StatelessWidget {
                                 Expanded(
                                   child: Text(
                                     turkceMi
-                                        ? 'Ã–deme simÃ¼lasyonu baÅŸarÄ±lÄ±! Dekontlar sayfasÄ±na makbuz eklendi.'
+                                        ? 'Ödeme simülasyonu başarılı! Dekontlar sayfasına makbuz eklendi.'
                                         : 'Payment completed! Receipt added to your records.',
                                   ),
                                 ),
@@ -6124,8 +6124,8 @@ class CezaDetaySayfasi extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       odendiMi
-                          ? (turkceMi ? 'Bu Ceza Ã–denmiÅŸ' : 'This Fine is Paid')
-                          : (turkceMi ? 'Åimdi Ã–de (Kart ile SimÃ¼lasyon)' : 'Pay Now (Card Simulation)'),
+                          ? (turkceMi ? 'Bu Ceza Ödenmiş' : 'This Fine is Paid')
+                          : (turkceMi ? 'Şimdi Öde (Kart ile Simülasyon)' : 'Pay Now (Card Simulation)'),
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                     ),
                   ],
@@ -6153,7 +6153,7 @@ class CezaDetaySayfasi extends StatelessWidget {
 }
 
 // ==========================================
-// ğŸ†” 4. MODERN BARKODLU SÃœRÃœCÃœ BELGESÄ° & Ã‡ALIÅIR QR
+// 🆔 4. MODERN BARKODLU SÜRÜCÜ BELGESİ & ÇALIŞIR QR
 // ==========================================
 class BarkodluBelgeSayfasi extends StatefulWidget {
   final String kullanici;
@@ -6188,7 +6188,7 @@ class _BarkodluBelgeSayfasiState extends State<BarkodluBelgeSayfasi> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    widget.turkceMi ? 'Resmi DoÄŸrulama BaÅŸarÄ±lÄ±' : 'Verification Successful',
+                    widget.turkceMi ? 'Resmi Doğrulama Başarılı' : 'Verification Successful',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                   ),
                 ),
@@ -6196,7 +6196,7 @@ class _BarkodluBelgeSayfasiState extends State<BarkodluBelgeSayfasi> {
             ),
             content: Text(
               widget.turkceMi
-                  ? 'Bu belge KKTC Polis Genel MÃ¼dÃ¼rlÃ¼ÄŸÃ¼ merkezi veri tabanÄ±nda resmi olarak doÄŸrulanmÄ±ÅŸtÄ±r. Ehliyet puanÄ± ve kayÄ±t durumu onaylÄ±dÄ±r.'
+                  ? 'Bu belge KKTC Polis Genel Müdürlüğü merkezi veri tabanında resmi olarak doğrulanmıştır. Ehliyet puanı ve kayıt durumu onaylıdır.'
                   : 'This certificate has been officially validated in the TRNC Police Headquarters central database.',
               style: const TextStyle(fontSize: 13, color: AppColors.slate700),
             ),
@@ -6218,7 +6218,7 @@ class _BarkodluBelgeSayfasiState extends State<BarkodluBelgeSayfasi> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          widget.turkceMi ? 'Resmi SÃ¼rÃ¼cÃ¼ Belgesi' : 'Official Driver Certificate',
+          widget.turkceMi ? 'Resmi Sürücü Belgesi' : 'Official Driver Certificate',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
         ),
       ),
@@ -6252,23 +6252,23 @@ class _BarkodluBelgeSayfasiState extends State<BarkodluBelgeSayfasi> {
                 ),
                 const SizedBox(height: 14),
                 const Text(
-                  'KUZEY KIBRIS TÃœRK CUMHURÄ°YETÄ°',
+                  'KUZEY KIBRIS TÜRK CUMHURİYETİ',
                   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.slate500, letterSpacing: 1),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.turkceMi ? 'Polis Genel MÃ¼dÃ¼rlÃ¼ÄŸÃ¼ Trafik Belgesi' : 'Police Traffic Certification',
+                  widget.turkceMi ? 'Polis Genel Müdürlüğü Trafik Belgesi' : 'Police Traffic Certification',
                   style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AppColors.slate900),
                   textAlign: TextAlign.center,
                 ),
                 const Divider(height: 32, color: AppColors.slate200),
 
                 _bilgiSatiri(widget.turkceMi ? 'Ad Soyad' : 'Full Name', widget.kullanici),
-                _bilgiSatiri(widget.turkceMi ? 'SÃ¼rÃ¼cÃ¼ PuanÄ±' : 'Driver Score', '${widget.puan} / 100'),
-                _bilgiSatiri(widget.turkceMi ? 'Belge Durumu' : 'Status', widget.turkceMi ? 'Aktif / GeÃ§erli' : 'Active / Valid'),
+                _bilgiSatiri(widget.turkceMi ? 'Sürücü Puanı' : 'Driver Score', '${widget.puan} / 100'),
+                _bilgiSatiri(widget.turkceMi ? 'Belge Durumu' : 'Status', widget.turkceMi ? 'Aktif / Geçerli' : 'Active / Valid'),
                 const SizedBox(height: 24),
 
-                // Ã‡ALIÅIR QR KOD
+                // ÇALIŞIR QR KOD
                 GestureDetector(
                   onTap: _qriDogrula,
                   child: Container(
@@ -6291,7 +6291,7 @@ class _BarkodluBelgeSayfasiState extends State<BarkodluBelgeSayfasi> {
                             : const Icon(Icons.qr_code_2_rounded, size: 110, color: AppColors.slate900),
                         const SizedBox(height: 8),
                         Text(
-                          widget.turkceMi ? 'ğŸ” DoÄŸrulamak iÃ§in QR Koda Dokunun' : 'ğŸ” Tap QR to Verify Online',
+                          widget.turkceMi ? '🔍 Doğrulamak için QR Koda Dokunun' : '🔍 Tap QR to Verify Online',
                           style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w800),
                         ),
                       ],
@@ -6326,7 +6326,7 @@ class _BarkodluBelgeSayfasiState extends State<BarkodluBelgeSayfasi> {
 }
 
 // ==========================================
-// ğŸ§¾ 5. RESMÄ° Ã–DEME DEKONTU SAYFALARI
+// 🧾 5. RESMİ ÖDEME DEKONTU SAYFALARI
 // ==========================================
 class DekontlarSayfasi extends StatelessWidget {
   final List<Map<String, String>> dekontlar;
@@ -6340,7 +6340,7 @@ class DekontlarSayfasi extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          turkceMi ? 'Ã–deme DekontlarÄ±' : 'Payment Receipts',
+          turkceMi ? 'Ödeme Dekontları' : 'Payment Receipts',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
         ),
       ),
@@ -6403,7 +6403,7 @@ class DekontDetaySayfasi extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          turkceMi ? 'Resmi Ã–deme Makbuzu' : 'Official Payment Receipt',
+          turkceMi ? 'Resmi Ödeme Makbuzu' : 'Official Payment Receipt',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
         ),
       ),
@@ -6439,7 +6439,7 @@ class DekontDetaySayfasi extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        turkceMi ? 'ONAYLANDI / TAHSÄ°L EDÄ°LDÄ°' : 'APPROVED & COLLECTED',
+                        turkceMi ? 'ONAYLANDI / TAHSİL EDİLDİ' : 'APPROVED & COLLECTED',
                         style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.w800, fontSize: 11),
                       ),
                     ),
@@ -6447,20 +6447,20 @@ class DekontDetaySayfasi extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 const Text(
-                  'KUZEY KIBRIS TÃœRK CUMHURÄ°YETÄ°',
+                  'KUZEY KIBRIS TÜRK CUMHURİYETİ',
                   style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: AppColors.slate500, letterSpacing: 0.5),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  turkceMi ? 'Maliye BakanlÄ±ÄŸÄ± Elektronik Tahsilat Makbuzu' : 'Ministry of Finance Electronic Receipt',
+                  turkceMi ? 'Maliye Bakanlığı Elektronik Tahsilat Makbuzu' : 'Ministry of Finance Electronic Receipt',
                   style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.slate900),
                 ),
                 const Divider(height: 32, color: AppColors.slate200),
-                _dekontSatiri(turkceMi ? 'Ä°ÅŸlem TÃ¼rÃ¼' : 'Type', islemAdi),
-                _dekontSatiri(turkceMi ? 'Ä°ÅŸlem Kodu' : 'Ref Code', dekont['kod']!),
-                _dekontSatiri(turkceMi ? 'Ä°ÅŸlem Tarihi' : 'Date', dekont['tarih']!),
-                _dekontSatiri(turkceMi ? 'Ä°lgili Kurum' : 'Authority', dekont['kurum'] ?? 'KKTC Maliye BakanlÄ±ÄŸÄ±'),
-                _dekontSatiri(turkceMi ? 'Durum' : 'Status', dekont['durum'] ?? 'BaÅŸarÄ±lÄ±'),
+                _dekontSatiri(turkceMi ? 'İşlem Türü' : 'Type', islemAdi),
+                _dekontSatiri(turkceMi ? 'İşlem Kodu' : 'Ref Code', dekont['kod']!),
+                _dekontSatiri(turkceMi ? 'İşlem Tarihi' : 'Date', dekont['tarih']!),
+                _dekontSatiri(turkceMi ? 'İlgili Kurum' : 'Authority', dekont['kurum'] ?? 'KKTC Maliye Bakanlığı'),
+                _dekontSatiri(turkceMi ? 'Durum' : 'Status', dekont['durum'] ?? 'Başarılı'),
                 const Divider(height: 32, color: AppColors.slate200),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -6482,7 +6482,7 @@ class DekontDetaySayfasi extends StatelessWidget {
                       const Icon(Icons.qr_code_rounded, size: 70, color: AppColors.slate900),
                       const SizedBox(height: 6),
                       Text(
-                        turkceMi ? 'Resmi e-Devlet DoÄŸrulama Kodu' : 'Official e-Government Verification Code',
+                        turkceMi ? 'Resmi e-Devlet Doğrulama Kodu' : 'Official e-Government Verification Code',
                         style: const TextStyle(fontSize: 10, color: AppColors.slate400, fontWeight: FontWeight.w600),
                       ),
                     ],
@@ -6517,7 +6517,7 @@ class DekontDetaySayfasi extends StatelessWidget {
 }
 
 // ==========================================
-// âš–ï¸ 6. Ä°TÄ°RAZ VE BÄ°LDÄ°RÄ°M SAYFALARI
+// ⚖️ 6. İTİRAZ VE BİLDİRİM SAYFALARI
 // ==========================================
 class ItirazSayfasi extends StatelessWidget {
   final bool turkceMi;
@@ -6529,7 +6529,7 @@ class ItirazSayfasi extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          turkceMi ? 'Cezaya Ä°tiraz DilekÃ§esi' : 'Fine Appeal Form',
+          turkceMi ? 'Cezaya İtiraz Dilekçesi' : 'Fine Appeal Form',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
         ),
       ),
@@ -6539,13 +6539,13 @@ class ItirazSayfasi extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              turkceMi ? 'Resmi Ä°tiraz BaÅŸvuru Formu' : 'Official Appeal Form',
+              turkceMi ? 'Resmi İtiraz Başvuru Formu' : 'Official Appeal Form',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.slate900),
             ),
             const SizedBox(height: 6),
             Text(
               turkceMi
-                  ? 'Plaka veya ceza tutanaÄŸÄ±nda hata olduÄŸunu dÃ¼ÅŸÃ¼nÃ¼yorsanÄ±z, gerekÃ§enizi belirterek KKTC Trafik Dairesi Hakem Kurulu\'na baÅŸvurabilirsiniz.'
+                  ? 'Plaka veya ceza tutanağında hata olduğunu düşünüyorsanız, gerekçenizi belirterek KKTC Trafik Dairesi Hakem Kurulu\'na başvurabilirsiniz.'
                   : 'If you think there is an error in the issued fine, explain your reasoning to submit to the Arbitration Board.',
               style: const TextStyle(fontSize: 13, color: AppColors.slate500),
             ),
@@ -6563,7 +6563,7 @@ class ItirazSayfasi extends StatelessWidget {
                     maxLines: 6,
                     decoration: InputDecoration(
                       hintText: turkceMi
-                          ? 'Ä°tiraz gerekÃ§enizi ve olayÄ±n detaylarÄ±nÄ± detaylÄ±ca buraya yazÄ±n...'
+                          ? 'İtiraz gerekçenizi ve olayın detaylarını detaylıca buraya yazın...'
                           : 'Describe your objection and the details of the incident...',
                       hintStyle: const TextStyle(color: AppColors.slate400, fontSize: 14),
                       filled: true,
@@ -6593,7 +6593,7 @@ class ItirazSayfasi extends StatelessWidget {
                                 Expanded(
                                   child: Text(
                                     turkceMi
-                                        ? 'Ä°tiraz baÅŸvurunuz alÄ±ndÄ±. Dosya No: KKTC-ITR-9921'
+                                        ? 'İtiraz başvurunuz alındı. Dosya No: KKTC-ITR-9921'
                                         : 'Your appeal has been submitted. Case No: KKTC-ITR-9921',
                                   ),
                                 ),
@@ -6607,7 +6607,7 @@ class ItirazSayfasi extends StatelessWidget {
                         );
                       },
                       child: Text(
-                        turkceMi ? 'DilekÃ§eyi GÃ¶nder' : 'Submit Petition',
+                        turkceMi ? 'Dilekçeyi Gönder' : 'Submit Petition',
                         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                       ),
                     ),
@@ -6641,7 +6641,7 @@ class _BildirimAyarlariSayfasiState extends State<BildirimAyarlariSayfasi> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          widget.turkceMi ? 'Bildirim AyarlarÄ±' : 'Notification Preferences',
+          widget.turkceMi ? 'Bildirim Ayarları' : 'Notification Preferences',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
         ),
       ),
@@ -6658,24 +6658,24 @@ class _BildirimAyarlariSayfasiState extends State<BildirimAyarlariSayfasi> {
               children: [
                 SwitchListTile(
                   activeThumbColor: AppColors.primary,
-                  title: Text(widget.turkceMi ? 'Sigorta HatÄ±rlatÄ±cÄ±sÄ±' : 'Insurance Reminders', style: const TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Text(widget.turkceMi ? 'PoliÃ§e bitimine 15 gÃ¼n kala uyar' : 'Alert 15 days before expiration', style: const TextStyle(fontSize: 12, color: AppColors.slate500)),
+                  title: Text(widget.turkceMi ? 'Sigorta Hatırlatıcısı' : 'Insurance Reminders', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: Text(widget.turkceMi ? 'Poliçe bitimine 15 gün kala uyar' : 'Alert 15 days before expiration', style: const TextStyle(fontSize: 12, color: AppColors.slate500)),
                   value: sigorta,
                   onChanged: (v) => setState(() => sigorta = v),
                 ),
                 const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.slate200),
                 SwitchListTile(
                   activeThumbColor: AppColors.primary,
-                  title: Text(widget.turkceMi ? 'Muayene HatÄ±rlatÄ±cÄ±sÄ±' : 'Inspection Reminders', style: const TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Text(widget.turkceMi ? 'Muayene sÃ¼resi yaklaÅŸtÄ±ÄŸÄ±nda uyar' : 'Alert when vehicle inspection is due', style: const TextStyle(fontSize: 12, color: AppColors.slate500)),
+                  title: Text(widget.turkceMi ? 'Muayene Hatırlatıcısı' : 'Inspection Reminders', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: Text(widget.turkceMi ? 'Muayene süresi yaklaştığında uyar' : 'Alert when vehicle inspection is due', style: const TextStyle(fontSize: 12, color: AppColors.slate500)),
                   value: muayene,
                   onChanged: (v) => setState(() => muayene = v),
                 ),
                 const Divider(height: 1, indent: 16, endIndent: 16, color: AppColors.slate200),
                 SwitchListTile(
                   activeThumbColor: AppColors.primary,
-                  title: Text(widget.turkceMi ? 'Yeni Ceza UyarÄ±larÄ±' : 'New Violation Alerts', style: const TextStyle(fontWeight: FontWeight.w700)),
-                  subtitle: Text(widget.turkceMi ? 'Plakaya radar veya ceza yazÄ±ldÄ±ÄŸÄ±nda anÄ±nda SMS ve bildirim' : 'Instant notification on new tickets', style: const TextStyle(fontSize: 12, color: AppColors.slate500)),
+                  title: Text(widget.turkceMi ? 'Yeni Ceza Uyarıları' : 'New Violation Alerts', style: const TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: Text(widget.turkceMi ? 'Plakaya radar veya ceza yazıldığında anında SMS ve bildirim' : 'Instant notification on new tickets', style: const TextStyle(fontSize: 12, color: AppColors.slate500)),
                   value: radar,
                   onChanged: (v) => setState(() => radar = v),
                 ),
