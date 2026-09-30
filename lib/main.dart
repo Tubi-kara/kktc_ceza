@@ -1629,7 +1629,6 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         ),
       ),
       bottomNavigationBar: Container(
-        height: 64,
         decoration: BoxDecoration(
           color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.95),
           border: Border(
@@ -1645,20 +1644,23 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         ),
         child: SafeArea(
           top: false,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _navItem(0, Icons.dashboard_rounded, widget.turkceMi ? 'Panel' : 'Dashboard'),
-                    _navItem(1, Icons.radar_rounded, widget.turkceMi ? 'Radarlar' : 'Radars'),
-                    _navItem(2, Icons.receipt_long_rounded, widget.turkceMi ? 'Cezalar' : 'Fines', rozet: odenmemisCezaSayisi),
-                    _navItem(3, Icons.shield_rounded, widget.turkceMi ? 'Sigorta' : 'Insurance'),
-                    _navItem(4, Icons.badge_rounded, widget.turkceMi ? 'Profil & QR' : 'Profile & QR'),
-                  ],
+          child: SizedBox(
+            height: 60,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _navItem(0, Icons.dashboard_rounded, widget.turkceMi ? 'Panel' : 'Dashboard'),
+                      _navItem(1, Icons.radar_rounded, widget.turkceMi ? 'Radarlar' : 'Radars'),
+                      _navItem(2, Icons.receipt_long_rounded, widget.turkceMi ? 'Cezalar' : 'Fines', rozet: odenmemisCezaSayisi),
+                      _navItem(3, Icons.shield_rounded, widget.turkceMi ? 'Sigorta' : 'Insurance'),
+                      _navItem(4, Icons.badge_rounded, widget.turkceMi ? 'Profil & QR' : 'Profile & QR'),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1674,49 +1676,52 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
       child: GestureDetector(
         onTap: () => setState(() => _seciliIndex = index),
         behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Icon(
-                  ikon,
-                  size: 24,
-                  color: secili ? _HtmlColors.primaryContainer : _HtmlColors.secondary,
-                ),
-                if (rozet > 0)
-                  Positioned(
-                    top: -4,
-                    right: -6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                      decoration: const BoxDecoration(
-                        color: _HtmlColors.primaryContainer,
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                      ),
-                      child: Text(
-                        '$rozet',
-                        style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+        child: SizedBox(
+          height: 56,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(
+                    ikon,
+                    size: 22,
+                    color: secili ? _HtmlColors.primaryContainer : _HtmlColors.secondary,
+                  ),
+                  if (rozet > 0)
+                    Positioned(
+                      top: -4,
+                      right: -8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: const BoxDecoration(
+                          color: _HtmlColors.primaryContainer,
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                        child: Text(
+                          '$rozet',
+                          style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 3),
-            Text(
-              etiket,
-              style: TextStyle(
-                color: secili ? _HtmlColors.primaryContainer : _HtmlColors.secondary,
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.2,
+                ],
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                etiket,
+                style: TextStyle(
+                  color: secili ? _HtmlColors.primaryContainer : _HtmlColors.secondary,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.2,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );
