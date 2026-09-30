@@ -1229,6 +1229,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
   int _seciliIndex = 0;
   String _secilenPlaka = "";
   String _cezaFiltre = "hepsi"; // hepsi, odenmedi, odendi
+  bool _cezaOdeniyor = false;
 
   late final AnimationController _pingController;
 
@@ -3135,194 +3136,1520 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
     );
   }
 
-  // --- TAB 2: CEZALARIM GÃ–RÃœNÃœMÃœ ---
-  Widget _cezalarimGorunumu({required List cezalar}) {
-    List filtrelenmis = cezalar.where((c) {
-      if (_cezaFiltre == "odenmedi") return c['odendi'] == false;
-      if (_cezaFiltre == "odendi") return c['odendi'] == true;
-      return true;
-    }).toList();
-
-    return Column(
-      children: [
-        // Filtre Sekmeleri
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: Row(
-            children: [
-              _cezaFiltreChip(etiket: widget.turkceMi ? 'TÃ¼mÃ¼' : 'All', deger: "hepsi"),
-              const SizedBox(width: 8),
-              _cezaFiltreChip(etiket: widget.turkceMi ? 'Ã–denmemiÅŸ' : 'Unpaid', deger: "odenmedi"),
-              const SizedBox(width: 8),
-              _cezaFiltreChip(etiket: widget.turkceMi ? 'Ã–denmiÅŸ' : 'Paid', deger: "odendi"),
-            ],
-          ),
-        ),
-
-        Expanded(
-          child: filtrelenmis.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: const BoxDecoration(
-                          color: AppColors.successLight,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.check_circle_outline, color: AppColors.success, size: 48),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        widget.turkceMi ? 'Bu filtrede ceza kaydÄ± bulunmuyor.' : 'No records found in this category.',
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.slate700),
-                      ),
-                    ],
+  void _aracDegistirSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: _HtmlColors.surfaceContainerHigh,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.turkceMi ? 'Aktif Araç Seçimi' : 'Select Active Vehicle',
+                  style: const TextStyle(
+                    color: _HtmlColors.onSurface,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: filtrelenmis.length,
-                  itemBuilder: (context, index) {
-                    final ceza = filtrelenmis[index];
-                    return _cezaKarti(ceza);
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  icon: const Icon(Icons.close, color: _HtmlColors.secondary),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...widget.araclar.map((p) {
+              bool aktif = p == _secilenPlaka;
+              String model = _aracBilgileriVeritabani[p]?['markaModel'] ?? p;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: aktif ? _HtmlColors.primaryContainer : _HtmlColors.surfaceContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  leading: Icon(
+                    Icons.directions_car_rounded,
+                    color: aktif ? _HtmlColors.onPrimaryContainer : _HtmlColors.secondary,
+                  ),
+                  title: Text(
+                    p,
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.bold,
+                      color: aktif ? _HtmlColors.onPrimaryContainer : _HtmlColors.onSurface,
+                    ),
+                  ),
+                  subtitle: Text(
+                    model,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: aktif
+                          ? _HtmlColors.onPrimaryContainer.withValues(alpha: 0.8)
+                          : _HtmlColors.secondary,
+                    ),
+                  ),
+                  trailing: aktif
+                      ? const Icon(Icons.check_circle_rounded, color: Colors.white)
+                      : null,
+                  onTap: () {
+                    setState(() => _secilenPlaka = p);
+                    Navigator.pop(ctx);
                   },
                 ),
+              );
+            }),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget _cezaFiltreChip({required String etiket, required String deger}) {
-    bool secili = _cezaFiltre == deger;
-    return GestureDetector(
-      onTap: () => setState(() => _cezaFiltre = deger),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: secili ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: secili ? AppColors.primary : AppColors.slate200),
+  void _delilDosyasiGoster() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: _HtmlColors.surfaceContainerHigh,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.verified_rounded, color: _HtmlColors.primary, size: 22),
+                    const SizedBox(width: 8),
+                    Text(
+                      widget.turkceMi ? 'Sertifikalı MOBESE Kanıtı' : 'Certified MOBESE Evidence',
+                      style: const TextStyle(
+                        color: _HtmlColors.onSurface,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  icon: const Icon(Icons.close, color: _HtmlColors.secondary),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 200,
+                child: Image.network(
+                  'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: _HtmlColors.surfaceContainerLowest,
+                    child: const Center(
+                      child: Icon(Icons.camera_alt_outlined, color: _HtmlColors.secondary, size: 48),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _HtmlColors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.turkceMi ? 'Kamera Model:' : 'Camera Model:',
+                        style: const TextStyle(color: _HtmlColors.secondary, fontSize: 12),
+                      ),
+                      const Text(
+                        'Truvelo D-Cam Pro 4K',
+                        style: TextStyle(color: _HtmlColors.onSurface, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.turkceMi ? 'Kalibrasyon Tarihi:' : 'Calibration Date:',
+                        style: const TextStyle(color: _HtmlColors.secondary, fontSize: 12),
+                      ),
+                      Text(
+                        widget.turkceMi ? '12.03.2024 (Geçerli)' : '12.03.2024 (Valid)',
+                        style: const TextStyle(color: _HtmlColors.onSurface, fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Dijital İmza (SHA-256):',
+                        style: TextStyle(color: _HtmlColors.secondary, fontSize: 12),
+                      ),
+                      const SizedBox(width: 8),
+                      const Flexible(
+                        child: Text(
+                          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4',
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            color: _HtmlColors.tertiaryFixed,
+                            fontSize: 11,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _HtmlColors.surfaceBright,
+                  foregroundColor: _HtmlColors.onSurface,
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: _HtmlColors.surfaceContainerHigh,
+                      content: Row(
+                        children: [
+                          const Icon(Icons.download_done_rounded, color: _HtmlColors.tertiary),
+                          const SizedBox(width: 8),
+                          Text(
+                            widget.turkceMi
+                                ? 'Resmi Delil Zaptı (PDF) cihazınıza indirildi.'
+                                : 'Official Evidence Report (PDF) downloaded.',
+                            style: const TextStyle(color: _HtmlColors.onSurface),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.download_rounded, size: 20),
+                label: Text(
+                  widget.turkceMi ? 'Resmi Delil Zaptını İndir (.PDF)' : 'Download Official Evidence (.PDF)',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
         ),
-        child: Text(
-          etiket,
-          style: TextStyle(
-            color: secili ? Colors.white : AppColors.slate700,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+
+  // --- TAB 2: CEZALARIM GÖRÜNÜMÜ (HTML MOCKUP UYUMLU) ---
+  Widget _cezalarimGorunumu({required List cezalar}) {
+    final odenmemisler = cezalar.where((c) => c['odendi'] == false).toList();
+    final odenmisler = cezalar.where((c) => c['odendi'] == true).toList();
+
+    int toplamSayi = cezalar.length;
+    int odenmemisSayi = odenmemisler.length;
+    int odenmisSayi = odenmisler.length;
+
+    final List<Map<String, dynamic>> gecmisOdenenCezalar = [
+      {
+        "baslik": "Haspolat Çevre Yolu Radarı",
+        "tarih": "24 Ocak 2024",
+        "kod": "#KKTC-2024-110294",
+        "tutar": "₺1.200,00",
+        "dekontNo": "#891",
+      },
+    ];
+
+    String seciliModel = _aracBilgileriVeritabani[_secilenPlaka]?['markaModel'] ?? 'BMW 3.20i M-Sport (2022)';
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Active Vehicle Selector Pill & Quick Info
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: _HtmlColors.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: _HtmlColors.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.directions_car_rounded,
+                        color: _HtmlColors.primary,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: _HtmlColors.surfaceContainerLowest,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                _secilenPlaka.isNotEmpty ? _secilenPlaka : "RZ 123",
+                                style: const TextStyle(
+                                  fontFamily: 'monospace',
+                                  color: _HtmlColors.onSurface,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Row(
+                              children: [
+                                FadeTransition(
+                                  opacity: _pingController,
+                                  child: Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: const BoxDecoration(
+                                      color: _HtmlColors.tertiary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  widget.turkceMi ? 'Aktif Kayıt' : 'Active Record',
+                                  style: const TextStyle(
+                                    color: _HtmlColors.tertiaryFixed,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          seciliModel,
+                          style: const TextStyle(
+                            color: _HtmlColors.secondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                GestureDetector(
+                  onTap: _aracDegistirSheet,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: _HtmlColors.surfaceContainer,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.swap_horiz_rounded,
+                      color: _HtmlColors.secondary,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // 2. Segmented Violation Filter Tabs
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: _HtmlColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                _segmentedFilterButton(
+                  deger: "hepsi",
+                  baslik: widget.turkceMi ? 'Tümü' : 'All',
+                  adet: toplamSayi,
+                ),
+                const SizedBox(width: 4),
+                _segmentedFilterButton(
+                  deger: "odenmedi",
+                  baslik: widget.turkceMi ? 'Ödenmemiş' : 'Unpaid',
+                  adet: odenmemisSayi,
+                  hasDot: true,
+                ),
+                const SizedBox(width: 4),
+                _segmentedFilterButton(
+                  deger: "odendi",
+                  baslik: widget.turkceMi ? 'Ödenmiş' : 'Paid',
+                  adet: odenmisSayi,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 3. Main Active Violation Dossier Card
+          if (_cezaFiltre != "odendi" && odenmemisler.isNotEmpty) ...[
+            ...odenmemisler.map((ceza) => _aktifCezaDosyaKarti(ceza)),
+          ] else if (_cezaFiltre == "odenmedi" && odenmemisler.isEmpty) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                color: _HtmlColors.surfaceContainer,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.check_circle_outline_rounded, color: _HtmlColors.tertiary, size: 40),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    widget.turkceMi ? 'Ödenmemiş cezanız bulunmamaktadır!' : 'No unpaid fines found!',
+                    style: const TextStyle(color: _HtmlColors.onSurface, fontWeight: FontWeight.bold, fontSize: 15),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.turkceMi ? 'Tüm trafik kurallarına uyduğunuz için teşekkür ederiz.' : 'Thank you for following all traffic regulations.',
+                    style: const TextStyle(color: _HtmlColors.secondary, fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 20),
+
+          // 4. Past Settled Fines Section (Ödenmiş Geçmiş Cezalar)
+          if (_cezaFiltre != "odenmedi") ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.history_rounded, color: _HtmlColors.tertiary, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      widget.turkceMi ? 'Ödenmiş Geçmiş Cezalar' : 'Settled Past Fines',
+                      style: const TextStyle(
+                        color: _HtmlColors.onSurface,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  widget.turkceMi ? 'Son 12 Ay' : 'Last 12 Months',
+                  style: const TextStyle(
+                    color: _HtmlColors.secondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ...gecmisOdenenCezalar.map((g) => Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: _HtmlColors.surfaceContainer,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.20),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.check, color: _HtmlColors.tertiary, size: 22),
+                          ),
+                          const SizedBox(width: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    g['baslik'],
+                                    style: const TextStyle(
+                                      color: _HtmlColors.onSurface,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.3),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Text(
+                                      'ÖDENDİ',
+                                      style: TextStyle(
+                                        color: _HtmlColors.tertiaryFixed,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${g['tarih']} • ${g['kod']}',
+                                style: const TextStyle(
+                                  color: _HtmlColors.secondary,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                g['tutar'],
+                                style: const TextStyle(
+                                  fontFamily: 'monospace',
+                                  color: _HtmlColors.onSurface,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                'Dekont No: ${g['dekontNo']}',
+                                style: const TextStyle(
+                                  color: _HtmlColors.secondary,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DekontlarSayfasi(dekontlar: _dekontlar, turkceMi: widget.turkceMi),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: _HtmlColors.surfaceContainerHigh,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.receipt_long_rounded, color: _HtmlColors.secondary, size: 18),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _segmentedFilterButton({
+    required String deger,
+    required String baslik,
+    required int adet,
+    bool hasDot = false,
+  }) {
+    bool secili = _cezaFiltre == deger;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _cezaFiltre = deger),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          decoration: BoxDecoration(
+            color: secili ? _HtmlColors.primaryContainer : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: secili
+                ? [
+                    BoxShadow(
+                      color: _HtmlColors.primaryContainer.withValues(alpha: 0.35),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                baslik,
+                style: TextStyle(
+                  color: secili ? _HtmlColors.onPrimaryContainer : _HtmlColors.secondary,
+                  fontSize: 12,
+                  fontWeight: secili ? FontWeight.bold : FontWeight.w600,
+                ),
+              ),
+              if (hasDot && secili) ...[
+                const SizedBox(width: 5),
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: _HtmlColors.onPrimaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ],
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: secili
+                      ? Colors.white.withValues(alpha: 0.20)
+                      : _HtmlColors.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '$adet',
+                  style: TextStyle(
+                    color: secili ? _HtmlColors.onPrimaryContainer : _HtmlColors.secondary,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _cezaKarti(Map<String, dynamic> ceza) {
-    bool odendi = ceza['odendi'] == true;
+  Widget _aktifCezaDosyaKarti(Map<String, dynamic> ceza) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.slate200),
+        color: _HtmlColors.surfaceContainer,
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CezaDetaySayfasi(
-                ceza: ceza,
-                turkceMi: widget.turkceMi,
-                onOdemeYap: () {
-                  _cezaOdemeGuncelle(_secilenPlaka, ceza['id'], ceza['tur'], ceza['turEn'], ceza['tutar']);
-                },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Ambient Alert Gradient Bar
+            Container(
+              height: 4,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    _HtmlColors.primaryContainer,
+                    _HtmlColors.errorContainer,
+                    _HtmlColors.primaryContainer,
+                  ],
+                ),
               ),
             ),
-          );
-          setState(() {});
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Header & Reference Number
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: _HtmlColors.errorContainer,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.warning_rounded, color: _HtmlColors.onPrimaryContainer, size: 13),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        widget.turkceMi ? 'HIZ İHLALİ' : 'SPEED VIOLATION',
+                                        style: const TextStyle(
+                                          color: _HtmlColors.onPrimaryContainer,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    widget.turkceMi ? 'Trafik Sicil Şubesi' : 'Traffic Records Dept.',
+                                    style: const TextStyle(
+                                      color: _HtmlColors.secondary,
+                                      fontSize: 11,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              ceza['tur'] ?? 'Sabit Radar Kameralı Tespit',
+                              style: const TextStyle(
+                                color: _HtmlColors.onSurface,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              '#KKTC-2024-884912',
+                              style: TextStyle(
+                                fontFamily: 'monospace',
+                                color: _HtmlColors.primaryFixedDim,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            widget.turkceMi ? 'CEZA PUANI' : 'PENALTY PTS',
+                            style: const TextStyle(
+                              color: _HtmlColors.secondary,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _HtmlColors.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.gavel_rounded, color: _HtmlColors.primary, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  ceza['puan'] != null && ceza['puan'].toString().contains('Puan')
+                                      ? '+${ceza['puan'].toString().replaceAll(RegExp(r'[^0-9]'), '')}'
+                                      : '+5',
+                                  style: const TextStyle(
+                                    color: _HtmlColors.primary,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Violation Data Grid
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: odendi ? AppColors.successLight : AppColors.dangerLight,
+                      color: _HtmlColors.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text(
-                      odendi ? (widget.turkceMi ? 'Ã–DENDÄ°' : 'PAID') : (widget.turkceMi ? 'Ã–DENMEDÄ°' : 'UNPAID'),
-                      style: TextStyle(
-                        color: odendi ? AppColors.success : AppColors.danger,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.location_on_outlined, size: 14, color: _HtmlColors.secondary),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    widget.turkceMi ? 'İhlal Noktası' : 'Violation Spot',
+                                    style: const TextStyle(color: _HtmlColors.secondary, fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                ceza['konum'] ?? 'Gönyeli Çemberi Girişi',
+                                style: const TextStyle(
+                                  color: _HtmlColors.onSurface,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                widget.turkceMi ? '2. Şerit / Lefkoşa' : 'Lane 2 / Nicosia',
+                                style: const TextStyle(color: _HtmlColors.secondary, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(width: 1, height: 38, color: _HtmlColors.surfaceContainerHigh),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.schedule_rounded, size: 14, color: _HtmlColors.secondary),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    widget.turkceMi ? 'İhlal Zamanı' : 'Violation Time',
+                                    style: const TextStyle(color: _HtmlColors.secondary, fontSize: 11),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                ceza['tarih'] ?? '18 Mayıs 2024',
+                                style: const TextStyle(
+                                  color: _HtmlColors.onSurface,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Text(
+                                '14:32:08 TSİ',
+                                style: TextStyle(color: _HtmlColors.secondary, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Telemetry & Speed Comparison Meter
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _HtmlColors.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.speed_rounded, color: _HtmlColors.primaryContainer, size: 18),
+                                const SizedBox(width: 6),
+                                Text(
+                                  widget.turkceMi ? 'Ölçülen Radar Hızı:' : 'Recorded Speed:',
+                                  style: const TextStyle(color: _HtmlColors.secondary, fontSize: 11),
+                                ),
+                                const SizedBox(width: 6),
+                                const Text(
+                                  '78 km/h',
+                                  style: TextStyle(
+                                    fontFamily: 'monospace',
+                                    color: _HtmlColors.primaryContainer,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'Limit: 65 km/h',
+                                style: TextStyle(
+                                  color: _HtmlColors.tertiaryFixed,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: SizedBox(
+                            height: 7,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 65,
+                                  child: Container(color: _HtmlColors.tertiaryContainer),
+                                ),
+                                Expanded(
+                                  flex: 35,
+                                  child: FadeTransition(
+                                    opacity: _pingController,
+                                    child: Container(color: _HtmlColors.primaryContainer),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('0 km/h', style: TextStyle(color: _HtmlColors.secondary, fontSize: 10)),
+                            const Text(
+                              'Yasal Limit 65 km/h',
+                              style: TextStyle(color: _HtmlColors.tertiaryFixed, fontSize: 10, fontWeight: FontWeight.w600),
+                            ),
+                            const Text(
+                              '+13 km/h Aşım',
+                              style: TextStyle(color: _HtmlColors.primaryContainer, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Official Radar Camera Evidence Showcase
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.camera_alt_outlined, color: _HtmlColors.primary, size: 18),
+                          const SizedBox(width: 6),
+                          Text(
+                            widget.turkceMi ? 'MOBESE / Radar Kanıt Kaydı' : 'Traffic Camera Evidence',
+                            style: const TextStyle(
+                              color: _HtmlColors.onSurface,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _HtmlColors.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                color: _HtmlColors.tertiary,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            const Text(
+                              'KRİPTOLU DELİL',
+                              style: TextStyle(
+                                color: _HtmlColors.tertiaryFixed,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Evidence Stage with Telemetry Stamp
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Stack(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          height: 180,
+                          child: Image.network(
+                            'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              color: _HtmlColors.surfaceContainerLowest,
+                              child: const Center(
+                                child: Icon(Icons.speed_rounded, color: _HtmlColors.secondary, size: 48),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  _HtmlColors.background.withValues(alpha: 0.85),
+                                  Colors.transparent,
+                                  _HtmlColors.background.withValues(alpha: 0.90),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.85),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.verified_user_rounded, color: _HtmlColors.tertiary, size: 12),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'CAM-04-GONYELI',
+                                            style: TextStyle(
+                                              fontFamily: 'monospace',
+                                              color: _HtmlColors.secondary,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: _HtmlColors.primaryContainer.withValues(alpha: 0.9),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        'DELİL NO: #884912',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.9),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.zoom_in_rounded, color: _HtmlColors.onSurface, size: 14),
+                                          const SizedBox(width: 4),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                'PLAKA ONAYI',
+                                                style: TextStyle(color: _HtmlColors.secondary, fontSize: 8),
+                                              ),
+                                              Text(
+                                                '${_secilenPlaka.isNotEmpty ? _secilenPlaka : "RZ 123"} [TRNC]',
+                                                style: const TextStyle(
+                                                  fontFamily: 'monospace',
+                                                  color: _HtmlColors.onSurface,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.8),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        '2024-05-18 14:32:08',
+                                        style: TextStyle(
+                                          fontFamily: 'monospace',
+                                          color: _HtmlColors.secondary,
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Inspect Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _HtmlColors.surfaceContainerHigh,
+                        foregroundColor: _HtmlColors.onSurface,
+                        padding: const EdgeInsets.symmetric(vertical: 11),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: _delilDosyasiGoster,
+                      icon: const Icon(Icons.search_rounded, size: 17),
+                      label: Text(
+                        widget.turkceMi
+                            ? 'Yüksek Çözünürlüklü Delil Dosyasını İncele (PDF & Fotoğraf)'
+                            : 'Inspect High-Res Evidence File (PDF & Photo)',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
-                  Text(
-                    ceza['tutar'],
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.slate900),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Text(
-                widget.turkceMi ? ceza['tur'] : ceza['turEn'],
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.slate900),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  const Icon(Icons.location_on_outlined, size: 14, color: AppColors.slate500),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      ceza['konum'] ?? '',
-                      style: const TextStyle(fontSize: 12, color: AppColors.slate500),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+
+                  const SizedBox(height: 14),
+
+                  // Pricing, Discount & Settlement Deadline
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: _HtmlColors.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.turkceMi ? 'Standart Ceza Tutarı' : 'Standard Fine Amount',
+                                  style: const TextStyle(color: _HtmlColors.secondary, fontSize: 11),
+                                ),
+                                Text(
+                                  ceza['tutar'] ?? '₺1.850,00',
+                                  style: const TextStyle(
+                                    fontFamily: 'monospace',
+                                    color: _HtmlColors.secondary,
+                                    fontSize: 13,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.25),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.local_offer_rounded, color: _HtmlColors.tertiaryFixed, size: 12),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        widget.turkceMi ? '%15 Erken İndirimi' : '15% Early Discount',
+                                        style: const TextStyle(
+                                          color: _HtmlColors.tertiaryFixed,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  '₺1.572,50',
+                                  style: TextStyle(
+                                    fontFamily: 'monospace',
+                                    color: _HtmlColors.onSurface,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: _HtmlColors.surfaceContainer,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.hourglass_top_rounded, color: _HtmlColors.primary, size: 15),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  widget.turkceMi
+                                      ? 'Son İndirimli Gün: 02 Haziran 2024 (14 Gün Kaldı)'
+                                      : 'Early Discount Deadline: June 02, 2024 (14 Days Left)',
+                                  style: const TextStyle(color: _HtmlColors.secondary, fontSize: 11),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+
+                  const SizedBox(height: 14),
+
+                  // Payment Simulation & Card Selection Tray
                   Row(
-                    children: [
-                      const Icon(Icons.calendar_today_outlined, size: 13, color: AppColors.slate400),
-                      const SizedBox(width: 5),
-                      Text(ceza['tarih'], style: const TextStyle(fontSize: 12, color: AppColors.slate500, fontWeight: FontWeight.w500)),
-                    ],
-                  ),
-                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        widget.turkceMi ? 'Detay & KanÄ±t' : 'Details & Evidence',
-                        style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w700),
+                        widget.turkceMi ? 'Ödeme Yöntemi' : 'Payment Method',
+                        style: const TextStyle(
+                          color: _HtmlColors.onSurface,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      const Icon(Icons.chevron_right_rounded, color: AppColors.primary, size: 18),
+                      TextButton.icon(
+                        style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(50, 30)),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: _HtmlColors.surfaceContainerHigh,
+                              content: Text(
+                                widget.turkceMi ? 'Yeni kart ekleme ekranı açılıyor...' : 'Opening add card screen...',
+                                style: const TextStyle(color: _HtmlColors.onSurface),
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.add_circle_outline_rounded, color: _HtmlColors.primary, size: 14),
+                        label: Text(
+                          widget.turkceMi ? 'Yeni Kart Ekle' : 'Add Card',
+                          style: const TextStyle(color: _HtmlColors.primary, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ],
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Selectable Stored Card Box
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: _HtmlColors.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: _HtmlColors.surfaceContainerLowest,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'BONUS',
+                                  style: TextStyle(
+                                    color: _HtmlColors.tertiaryFixed,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Garanti BBVA Bonus',
+                                  style: TextStyle(
+                                    color: _HtmlColors.onSurface,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  '•••• 4412 | 09/27',
+                                  style: TextStyle(
+                                    fontFamily: 'monospace',
+                                    color: _HtmlColors.secondary,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const Icon(Icons.check_circle_rounded, color: _HtmlColors.tertiary, size: 20),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Sovereign CTA Pay Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            _HtmlColors.primaryContainer,
+                            _HtmlColors.errorContainer,
+                            _HtmlColors.primaryContainer,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _HtmlColors.primaryContainer.withValues(alpha: 0.45),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                        onPressed: _cezaOdeniyor
+                            ? null
+                            : () async {
+                                setState(() => _cezaOdeniyor = true);
+                                await Future.delayed(const Duration(milliseconds: 900));
+                                if (mounted) {
+                                  _cezaOdemeGuncelle(
+                                    _secilenPlaka,
+                                    ceza['id'] ?? '1',
+                                    ceza['tur'] ?? 'Sabit Radar Kameralı Tespit',
+                                    ceza['turEn'] ?? 'Speed Limit Violation',
+                                    '1572.50 TL',
+                                  );
+                                  setState(() => _cezaOdeniyor = false);
+                                }
+                              },
+                        child: _cezaOdeniyor
+                            ? const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'İşleniyor...',
+                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                  ),
+                                ],
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.lock_rounded, color: _HtmlColors.onPrimaryContainer, size: 20),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    widget.turkceMi ? 'Güvenli Ödeme Yap (₺1.572,50)' : 'Pay Securely (₺1,572.50)',
+                                    style: const TextStyle(
+                                      color: _HtmlColors.onPrimaryContainer,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Dispute / Appeal Button
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ItirazSayfasi(turkceMi: widget.turkceMi),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.assignment_turned_in_outlined, color: _HtmlColors.secondary, size: 16),
+                      label: Text(
+                        widget.turkceMi
+                            ? 'Bu Cezaya Resmi İtiraz Dilekçesi Ver (Trafik Hakem Heyeti)'
+                            : 'Submit Official Dispute for this Fine',
+                        style: const TextStyle(
+                          color: _HtmlColors.secondary,
+                          fontSize: 11,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
