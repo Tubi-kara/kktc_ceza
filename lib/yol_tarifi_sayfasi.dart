@@ -1069,10 +1069,12 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
   Widget build(BuildContext context) {
     final rota = _rotaHesapla();
 
-    return Scaffold(
-      backgroundColor: NavHtmlColors.background,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+    return Container(
+      color: NavHtmlColors.background,
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1133,6 +1135,7 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
             const SizedBox(height: 24),
           ],
         ),
+      ),
       ),
     );
   }
@@ -1458,7 +1461,7 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
                     child: GestureDetector(
                       onTap: () => setState(() => _secilenRotaModu = 0),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
                         decoration: BoxDecoration(
                           color: _secilenRotaModu == 0
                               ? NavHtmlColors.tertiaryContainer.withValues(alpha: 0.45)
@@ -1475,18 +1478,22 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
                           children: [
                             Icon(
                               Icons.verified_rounded,
-                              size: 15,
+                              size: 14,
                               color: _secilenRotaModu == 0
                                   ? NavHtmlColors.tertiary
                                   : NavHtmlColors.secondary,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              widget.turkceMi ? 'Kuzey Çevre Yolu (Önerilen)' : 'North Bypass (Rec.)',
-                              style: TextStyle(
-                                color: _secilenRotaModu == 0 ? Colors.white : NavHtmlColors.secondary,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                widget.turkceMi ? 'Kuzey Çevre Yolu' : 'North Bypass',
+                                style: TextStyle(
+                                  color: _secilenRotaModu == 0 ? Colors.white : NavHtmlColors.secondary,
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                             ),
                           ],
@@ -1494,11 +1501,12 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
                       ),
                     ),
                   ),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: GestureDetector(
                       onTap: () => setState(() => _secilenRotaModu = 1),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
                         decoration: BoxDecoration(
                           color: _secilenRotaModu == 1
                               ? NavHtmlColors.surfaceContainerHighest
@@ -1515,18 +1523,22 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
                           children: [
                             Icon(
                               Icons.traffic_rounded,
-                              size: 15,
+                              size: 14,
                               color: _secilenRotaModu == 1
                                   ? NavHtmlColors.warning
                                   : NavHtmlColors.secondary,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              widget.turkceMi ? 'Gönyeli Şehir İçi' : 'City Center Route',
-                              style: TextStyle(
-                                color: _secilenRotaModu == 1 ? Colors.white : NavHtmlColors.secondary,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                widget.turkceMi ? 'Gönyeli Şehir İçi' : 'City Center',
+                                style: TextStyle(
+                                  color: _secilenRotaModu == 1 ? Colors.white : NavHtmlColors.secondary,
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
                             ),
                           ],
@@ -1756,12 +1768,17 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
             ],
           ),
           const SizedBox(height: 6),
-          Text(
-            deger,
-            style: TextStyle(
-              color: vurguluMu ? Colors.white : NavHtmlColors.onSurface,
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              deger,
+              style: TextStyle(
+                color: vurguluMu ? Colors.white : NavHtmlColors.onSurface,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+              ),
+              maxLines: 1,
             ),
           ),
         ],
@@ -2571,36 +2588,43 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                     Positioned(
                       top: 10,
                       left: 10,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: NavHtmlColors.surfaceContainerLowest.withValues(alpha: 0.90),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.white12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 7,
-                              height: 7,
-                              decoration: BoxDecoration(
-                                color: widget.canliRotaYukleniyor ? NavHtmlColors.warning : NavHtmlColors.tertiary,
-                                shape: BoxShape.circle,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: math.max(100.0, width - 80)),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: NavHtmlColors.surfaceContainerLowest.withValues(alpha: 0.90),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.white12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 7,
+                                height: 7,
+                                decoration: BoxDecoration(
+                                  color: widget.canliRotaYukleniyor ? NavHtmlColors.warning : NavHtmlColors.tertiary,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              widget.canliRotaYukleniyor
-                                  ? (widget.turkceMi ? 'OSRM Rota Alınıyor...' : 'Fetching OSRM...')
-                                  : (widget.turkceMi ? 'Canlı OpenStreetMap Verisi' : 'Live OpenStreetMap'),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  widget.canliRotaYukleniyor
+                                      ? (widget.turkceMi ? 'OSRM Rota Alınıyor...' : 'Fetching OSRM...')
+                                      : (widget.turkceMi ? 'Canlı OpenStreetMap Verisi' : 'Live OpenStreetMap'),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -2672,63 +2696,72 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                       Positioned(
                         bottom: 12,
                         left: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: NavHtmlColors.primaryContainer.withValues(alpha: 0.95),
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: NavHtmlColors.primaryContainer.withValues(alpha: 0.5),
-                                blurRadius: 10,
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 24,
-                                height: 24,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: math.max(120.0, width - 155)),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: NavHtmlColors.primaryContainer.withValues(alpha: 0.95),
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: NavHtmlColors.primaryContainer.withValues(alpha: 0.5),
+                                  blurRadius: 10,
                                 ),
-                                child: Center(
-                                  child: Text(
-                                    '${widget.yaklasanRadar!.hizLimiti}',
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w900,
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${widget.yaklasanRadar!.hizLimiti}',
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    '${widget.yaklasanRadar!.ad} • ${widget.yaklasanRadarMesafeMetre.toInt()}m',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        '${widget.yaklasanRadar!.ad} • ${widget.yaklasanRadarMesafeMetre.toInt()}m',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                      Text(
+                                        'Hızınız: ${widget.canliSurusHizi} km/s',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    'Hızınız: ${widget.canliSurusHizi} km/s',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
