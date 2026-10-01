@@ -20,7 +20,7 @@
 
 ## 🌟 Öne Çıkan Özellikler
 
-- **🪪 Çoklu Kimlik ve Rol Doğrulama Portalı:** KKTC Vatandaşları, T.C. Vatandaşları (İkamet/Çalışma İzni & YKN), Üniversite Öğrencileri (ODTÜ KKK, DAÜ, YDÜ, UKÜ, LAÜ kampüs araç pulu ve YÖBİS entegrasyonu), KTBK / GKK Askeri Personeli (Barış Kuvvetleri ve garnizon araç protokolü) ve Uluslararası Misafirler için özelleştirilmiş giriş altyapısı.
+- **🪪 Çoklu Kimlik ve Rol Doğrulama Portalı:** KKTC Vatandaşları (KKTC Kimlik No), T.C. Vatandaşları (İkamet, Çalışma, Görevli & Askeri Personel T.C. Kimlik / YKN), Üniversite Öğrencileri (ODTÜ KKK, DAÜ, YDÜ, UKÜ, LAÜ, GÜ kampüs araç pulu ve YÖBİS entegrasyonu) ve Uluslararası Misafirler (Pasaport & İkametgah) için özelleştirilmiş giriş altyapısı.
 - **🚨 Ceza Sorgulama & Erken Ödeme İndirimi:** Plaka veya kimlik numarası ile anlık trafik cezası sorgulama, ceza puanı görüntüleme ve yasal süre içinde **%15 erken ödeme indirimi** hesaplama.
 - **🏛️ Seyrüsefer (Yol Vergisi) Takibi:** KKTC Maliye Bakanlığı ve Gelir ve Vergi Dairesi uyumlu seyrüsefer geçerlilik süresi, kalan gün sayacı, ceza risk durumu ve online harç yenileme.
 - **🛡️ Dijital Sigorta & Poliçe Portföyü:** Zorunlu Trafik Sigortası ve Kasko bitiş tarihleri, anlık poliçe geçerlilik kontrolü ve resmi dijital poliçe indirme.
