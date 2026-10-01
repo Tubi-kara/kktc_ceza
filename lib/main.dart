@@ -2020,7 +2020,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                       _navItem(
                         2,
                         Icons.receipt_long_rounded,
-                        widget.turkceMi ? 'Cezalar' : 'Fines',
+                        widget.turkceMi ? 'Cezalar & Sigorta' : 'Fines & Insurance',
                         rozet: odenmemisCezaSayisi,
                       ),
                       _navItem(
@@ -2078,16 +2078,22 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                 ],
               ),
               const SizedBox(height: 2),
-              Text(
-                etiket,
-                style: TextStyle(
-                  color: secili ? _HtmlColors.primaryContainer : _HtmlColors.secondary,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    etiket,
+                    style: TextStyle(
+                      color: secili ? _HtmlColors.primaryContainer : _HtmlColors.secondary,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
