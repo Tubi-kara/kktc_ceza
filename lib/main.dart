@@ -1755,77 +1755,90 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                  // KKTC e-Trafik brand logo & pulse
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: _HtmlColors.primaryContainer.withValues(alpha: 0.20),
-                          borderRadius: BorderRadius.circular(12),
+                  // KKTC e-Trafik brand logo & pulse (Responsive Expanded)
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: _HtmlColors.primaryContainer.withValues(alpha: 0.20),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.local_police_rounded,
+                            color: _HtmlColors.primaryContainer,
+                            size: 21,
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.local_police_rounded,
-                          color: _HtmlColors.primaryContainer,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Row(
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text(
-                                'KKTC',
-                                style: TextStyle(
-                                  color: _HtmlColors.primaryFixedDim,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 1.5,
-                                ),
+                              Row(
+                                children: [
+                                  const Text(
+                                    'KKTC',
+                                    style: TextStyle(
+                                      color: _HtmlColors.primaryFixedDim,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  FadeTransition(
+                                    opacity: _pingController,
+                                    child: Container(
+                                      width: 5,
+                                      height: 5,
+                                      decoration: const BoxDecoration(
+                                        color: _HtmlColors.tertiary,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 5),
-                              FadeTransition(
-                                opacity: _pingController,
-                                child: Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: const BoxDecoration(
-                                    color: _HtmlColors.tertiary,
-                                    shape: BoxShape.circle,
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  _seciliIndex == 0 ? 'e-Trafik' : _baslikDondur(_seciliIndex),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: _HtmlColors.onSurface,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -0.3,
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          Text(
-                            _seciliIndex == 0 ? 'e-Trafik' : _baslikDondur(_seciliIndex),
-                            style: const TextStyle(
-                              color: _HtmlColors.onSurface,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
 
-                  // Actions: Language + Notifications + Profile Avatar
+                  const SizedBox(width: 8),
+
+                  // Actions: Language + Notifications + Help + Profile Avatar
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       // Language button
                       PopupMenuButton<bool>(
                         tooltip: widget.turkceMi ? 'Dil Değiştir' : 'Change Language',
                         onSelected: (bool yeniTurkceMi) => widget.onDilDegistir(yeniTurkceMi),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         color: _HtmlColors.surfaceContainerHigh,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 6),
                           decoration: BoxDecoration(
                             color: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.8),
                             borderRadius: BorderRadius.circular(8),
@@ -1835,7 +1848,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                             style: const TextStyle(
                               fontFamily: 'monospace',
                               color: _HtmlColors.secondary,
-                              fontSize: 13,
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.5,
                             ),
@@ -1852,7 +1865,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                           ),
                         ],
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
 
                       // Notification bell with unread dot
                       GestureDetector(
@@ -1870,8 +1883,8 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                           );
                         },
                         child: Container(
-                          width: 40,
-                          height: 40,
+                          width: 34,
+                          height: 34,
                           decoration: BoxDecoration(
                             color: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.8),
                             borderRadius: BorderRadius.circular(8),
@@ -1879,17 +1892,17 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
-                              const Icon(Icons.notifications_none_rounded, color: _HtmlColors.onSurface, size: 22),
+                              const Icon(Icons.notifications_none_rounded, color: _HtmlColors.onSurface, size: 19),
                               Positioned(
-                                top: 8,
-                                right: 8,
+                                top: 6,
+                                right: 6,
                                 child: Container(
-                                  width: 8,
-                                  height: 8,
+                                  width: 7,
+                                  height: 7,
                                   decoration: BoxDecoration(
                                     color: _HtmlColors.primaryContainer,
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: _HtmlColors.background, width: 1.5),
+                                    border: Border.all(color: _HtmlColors.background, width: 1.2),
                                   ),
                                 ),
                               ),
@@ -1897,7 +1910,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
 
                       // Help & Smart Route Assistant
                       GestureDetector(
@@ -1916,24 +1929,24 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                           );
                         },
                         child: Container(
-                          width: 40,
-                          height: 40,
+                          width: 34,
+                          height: 34,
                           decoration: BoxDecoration(
                             color: _HtmlColors.tertiary.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: _HtmlColors.tertiary.withValues(alpha: 0.35)),
                           ),
-                          child: const Icon(Icons.help_outline_rounded, color: _HtmlColors.tertiary, size: 21),
+                          child: const Icon(Icons.help_outline_rounded, color: _HtmlColors.tertiary, size: 18),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
 
                       // Avatar circle
                       GestureDetector(
                         onTap: () => setState(() => _seciliIndex = 3),
                         child: Container(
-                          width: 34,
-                          height: 34,
+                          width: 32,
+                          height: 32,
                           decoration: const BoxDecoration(
                             color: _HtmlColors.primary,
                             shape: BoxShape.circle,
