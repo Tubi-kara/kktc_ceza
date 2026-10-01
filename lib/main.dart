@@ -4,6 +4,7 @@ import 'dart:math';
 import 'radar_haritasi.dart';
 import 'yol_tarifi_sayfasi.dart';
 import 'kktc_gov_sync_service.dart';
+import 'yardim_rehberi_sayfasi.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -1894,6 +1895,35 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Help & Smart Route Assistant
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => YardimRehberiSayfasi(
+                                turkceMi: widget.turkceMi,
+                                onRotayiAc: (baslangicId, varisId) {
+                                  Navigator.pop(context);
+                                  setState(() => _seciliIndex = 1);
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: _HtmlColors.tertiary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: _HtmlColors.tertiary.withValues(alpha: 0.35)),
+                          ),
+                          child: const Icon(Icons.help_outline_rounded, color: _HtmlColors.tertiary, size: 21),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -5817,6 +5847,22 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         const SizedBox(height: 14),
 
         // Büyük Hizmet Menü Kartları
+        _buyukMenuKarti(
+          ikon: Icons.help_center_rounded,
+          ikonRenk: const Color(0xFF38BDF8),
+          baslik: widget.turkceMi ? 'Yardım & Akıllı Rota Rehberi' : 'Help & Smart Route Guide',
+          aciklama: widget.turkceMi
+              ? 'Nasıl gidilir, KKTC sürüş kuralları, acil numaralar ve S.S.S.'
+              : 'How to navigate, TRNC driving rules, emergencies & FAQs',
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => YardimRehberiSayfasi(turkceMi: widget.turkceMi),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+
         _buyukMenuKarti(
           ikon: Icons.qr_code_2_rounded,
           ikonRenk: _HtmlColors.primary,

@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'radar_haritasi.dart';
 import 'kktc_gov_sync_service.dart';
+import 'yardim_rehberi_sayfasi.dart';
 
 // ==========================================
 // 🎨 NAVİGASYON VE HARİTA TASARIM TOKENLARI
@@ -1182,6 +1183,52 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
                 ],
               ),
             ),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => YardimRehberiSayfasi(
+                      turkceMi: widget.turkceMi,
+                      onRotayiAc: (bId, vId) => _hazirRotaSec(bId, vId),
+                    ),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.help_outline_rounded, color: Colors.white, size: 16),
+                    const SizedBox(width: 5),
+                    Text(
+                      widget.turkceMi ? 'Rehber' : 'Guide',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 10),
@@ -1191,6 +1238,23 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
+              _buildPresetChip(
+                etiket: widget.turkceMi ? "💡 Nasıl Giderim? (Rehber)" : "💡 How to Go? (Guide)",
+                seciliMi: false,
+                rozet: widget.turkceMi ? "Yardım" : "Help",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => YardimRehberiSayfasi(
+                        turkceMi: widget.turkceMi,
+                        onRotayiAc: (bId, vId) => _hazirRotaSec(bId, vId),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
               _buildPresetChip(
                 etiket: "📍 Kalkanlı ➔ Erülkü (Demirhan)",
                 seciliMi: _baslangicNoktasi.id == "kalkanli" && _varisNoktasi.id == "erulku",
