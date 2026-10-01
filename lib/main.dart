@@ -5219,54 +5219,65 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Başlık ve Durum Rozeti
+                    // Başlık ve Durum Rozeti (Responsive Expanded)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0EA5E9).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFF0EA5E9).withValues(alpha: 0.3)),
-                              ),
-                              child: const Icon(
-                                Icons.account_balance_rounded,
-                                color: Color(0xFF38BDF8),
-                                size: 22,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.turkceMi ? 'KKTC MALİYE BAKANLIĞI' : 'TRNC MINISTRY OF FINANCE',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w900,
-                                    color: Color(0xFFE0F2FE),
-                                    letterSpacing: 0.6,
-                                  ),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0EA5E9).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFF0EA5E9).withValues(alpha: 0.3)),
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  widget.turkceMi ? 'Gelir ve Vergi Dairesi • Araç Kayıt' : 'Revenue & Tax Dept. • Vehicle Reg.',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    color: _HtmlColors.secondary,
-                                  ),
+                                child: const Icon(
+                                  Icons.account_balance_rounded,
+                                  color: Color(0xFF38BDF8),
+                                  size: 20,
                                 ),
-                              ],
-                            ),
-                          ],
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        widget.turkceMi ? 'KKTC MALİYE BAKANLIĞI' : 'TRNC MINISTRY OF FINANCE',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w900,
+                                          color: Color(0xFFE0F2FE),
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      widget.turkceMi ? 'Gelir ve Vergi Dairesi • Araç Kayıt' : 'Revenue & Tax Dept. • Vehicle Reg.',
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: _HtmlColors.secondary,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: gecerli
                                 ? (acil
@@ -5289,9 +5300,9 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                                 : (widget.turkceMi ? 'SÜRESİ DOLMUŞ' : 'EXPIRED'),
                             style: TextStyle(
                               color: gecerli ? (acil ? Colors.amber : _HtmlColors.tertiaryFixed) : Colors.redAccent,
-                              fontSize: 10,
+                              fontSize: 9,
                               fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
+                              letterSpacing: 0.4,
                             ),
                           ),
                         ),
@@ -5410,41 +5421,50 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.hourglass_top_rounded,
-                                    size: 20,
-                                    color: acil ? Colors.amber : const Color(0xFF38BDF8),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        widget.turkceMi ? 'SEYRÜSEFER DURUMU' : 'ROAD TAX STATUS',
-                                        style: const TextStyle(
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w800,
-                                          color: _HtmlColors.secondary,
-                                          letterSpacing: 0.5,
-                                        ),
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.hourglass_top_rounded,
+                                      size: 18,
+                                      color: acil ? Colors.amber : const Color(0xFF38BDF8),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            widget.turkceMi ? 'SEYRÜSEFER DURUMU' : 'ROAD TAX STATUS',
+                                            style: const TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w800,
+                                              color: _HtmlColors.secondary,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                          FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              gecerli
+                                                  ? (widget.turkceMi ? '$kalanGun Gün Kaldı' : '$kalanGun Days Left')
+                                                  : (widget.turkceMi ? 'Süresi Doldu!' : 'Expired!'),
+                                              style: TextStyle(
+                                                fontFamily: 'monospace',
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w900,
+                                                color: gecerli ? (acil ? Colors.amber : Colors.white) : Colors.redAccent,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        gecerli
-                                            ? (widget.turkceMi ? '$kalanGun Gün Kaldı' : '$kalanGun Days Left')
-                                            : (widget.turkceMi ? 'Süresi Doldu!' : 'Expired!'),
-                                        style: TextStyle(
-                                          fontFamily: 'monospace',
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w900,
-                                          color: gecerli ? (acil ? Colors.amber : Colors.white) : Colors.redAccent,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                    ),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
@@ -5456,7 +5476,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                                   Text(
                                     bitisTarihi,
                                     style: const TextStyle(
-                                      fontSize: 13,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.bold,
                                       color: _HtmlColors.onSurface,
                                     ),
@@ -5689,33 +5709,42 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: _HtmlColors.surfaceContainerHigh,
-                      borderRadius: BorderRadius.circular(8),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: _HtmlColors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.receipt_rounded, size: 16, color: _HtmlColors.secondary),
                     ),
-                    child: const Icon(Icons.receipt_rounded, size: 16, color: _HtmlColors.secondary),
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.turkceMi ? 'Son Dönem Seyrüsefer Makbuzu' : 'Previous Period Receipt',
-                        style: const TextStyle(color: _HtmlColors.onSurface, fontSize: 12, fontWeight: FontWeight.bold),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.turkceMi ? 'Son Dönem Seyrüsefer Makbuzu' : 'Previous Period Receipt',
+                            style: const TextStyle(color: _HtmlColors.onSurface, fontSize: 12, fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            widget.turkceMi ? '2025/2. Yıllık Dönem • Makbuz: #SYR-89210' : '2025/2 Period • Receipt: #SYR-89210',
+                            style: const TextStyle(color: _HtmlColors.secondary, fontSize: 10),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      Text(
-                        widget.turkceMi ? '2025/2. Yıllık Dönem • Makbuz: #SYR-89210' : '2025/2 Period • Receipt: #SYR-89210',
-                        style: const TextStyle(color: _HtmlColors.secondary, fontSize: 10),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
@@ -5908,12 +5937,18 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(baslik, style: const TextStyle(color: _HtmlColors.secondary, fontSize: 11)),
-        Text(
-          deger,
-          style: TextStyle(
-            color: isAlert ? Colors.redAccent : _HtmlColors.onSurface,
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            deger,
+            style: TextStyle(
+              color: isAlert ? Colors.redAccent : _HtmlColors.onSurface,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
           ),
         ),
       ],
