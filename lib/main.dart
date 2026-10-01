@@ -1482,6 +1482,52 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
     _pingController.dispose();
     super.dispose();
   }
+
+  // Canlı Bildirimler Listesi
+  final List<Map<String, dynamic>> _bildirimler = [
+    {
+      "id": "b1",
+      "baslik": "Yeni Radar Cezası Tebliği",
+      "baslikEn": "New Speed Camera Ticket",
+      "detay": "Kalkanlı - Güzelyurt Anayolu 65 km/s kamerasında hız aşımı tespit edildi (₺2.850 - 5 Ceza Puanı).",
+      "detayEn": "Speed limit violation recorded on Kalkanli - Guzelyurt highway camera (₺2,850 - 5 Demerit Points).",
+      "zaman": "Bugün 13:42",
+      "zamanEn": "Today 13:42",
+      "okundu": false,
+      "hedef": "ceza",
+      "ikon": Icons.receipt_long_rounded,
+      "renk": const Color(0xFFD90429),
+    },
+    {
+      "id": "b2",
+      "baslik": "Seyrüsefer Yenileme Dönemi",
+      "baslikEn": "Road Tax Renewal Period",
+      "detay": "Aracınızın 2026/2. dönem seyrüsefer harcının son 60 günü kaldı. Online ödeme ile gecikme cezasından korunun.",
+      "detayEn": "60 days remaining for 2026/2 vehicle road tax period. Pay online to avoid late penalties.",
+      "zaman": "Dün 10:15",
+      "zamanEn": "Yesterday 10:15",
+      "okundu": false,
+      "hedef": "seyrusefer",
+      "ikon": Icons.directions_car_filled_rounded,
+      "renk": const Color(0xFF38BDF8),
+    },
+    {
+      "id": "b3",
+      "baslik": "Zorunlu Trafik Sigortası Aktif",
+      "baslikEn": "Traffic Insurance Active",
+      "detay": "Kıbrıs Sigorta Kooperatifi poliçeniz Apple Wallet kartınıza başarıyla senkronize edildi.",
+      "detayEn": "Your Cyprus Insurance Cooperative policy is synced with your Apple Wallet card.",
+      "zaman": "3 gün önce",
+      "zamanEn": "3 days ago",
+      "okundu": true,
+      "hedef": "sigorta_wallet",
+      "ikon": Icons.shield_outlined,
+      "renk": const Color(0xFF4EDEA3),
+    },
+  ];
+
+  int get _okunmamisBildirimSayisi => _bildirimler.where((b) => b['okundu'] == false).length;
+
   final Map<String, Map<String, dynamic>> _aracBilgileriVeritabani = {
     "RZ 123": {
       "markaModel": "BMW 3.20i (2022)",
@@ -1870,19 +1916,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
 
                       // Notification bell with unread dot
                       GestureDetector(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              backgroundColor: _HtmlColors.surfaceContainerHigh,
-                              content: Text(
-                                widget.turkceMi
-                                    ? 'Okunmamış 1 bildiriminiz bulunmaktadır.'
-                                    : 'You have 1 unread notification.',
-                                style: const TextStyle(color: _HtmlColors.onSurface),
-                              ),
-                            ),
-                          );
-                        },
+                        onTap: () => _bildirimlerModaliniAc(ehliyetPuani: ehliyetPuani),
                         child: Container(
                           width: 34,
                           height: 34,
@@ -1894,19 +1928,20 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                             alignment: Alignment.center,
                             children: [
                               const Icon(Icons.notifications_none_rounded, color: _HtmlColors.onSurface, size: 19),
-                              Positioned(
-                                top: 6,
-                                right: 6,
-                                child: Container(
-                                  width: 7,
-                                  height: 7,
-                                  decoration: BoxDecoration(
-                                    color: _HtmlColors.primaryContainer,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: _HtmlColors.background, width: 1.2),
+                              if (_okunmamisBildirimSayisi > 0)
+                                Positioned(
+                                  top: 6,
+                                  right: 6,
+                                  child: Container(
+                                    width: 7,
+                                    height: 7,
+                                    decoration: BoxDecoration(
+                                      color: _HtmlColors.primaryContainer,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: _HtmlColors.background, width: 1.2),
+                                    ),
                                   ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
@@ -2179,6 +2214,316 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         onHedefeGit: (hedefId) {
           Navigator.pop(context);
           _aramaHedefiniUygula(hedefId, ehliyetPuani);
+        },
+      ),
+    );
+  }
+
+  // --- BİLDİRİMLER VE TEBLİGATLAR MERKEZİ ---
+  void _bildirimlerModaliniAc({required int ehliyetPuani}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.78,
+            decoration: const BoxDecoration(
+              color: _HtmlColors.surfaceContainerLow,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                // Üst Çekme Çizgisi
+                const SizedBox(height: 10),
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Başlık Alanı
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: _HtmlColors.primaryContainer.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.notifications_active_rounded, color: _HtmlColors.primary, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.turkceMi ? 'Bildirimler & Tebligatlar' : 'Notifications & Notices',
+                              style: const TextStyle(
+                                color: _HtmlColors.onSurface,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            Text(
+                              widget.turkceMi
+                                  ? '$_okunmamisBildirimSayisi okunmamış bildiriminiz var'
+                                  : '$_okunmamisBildirimSayisi unread notifications',
+                              style: TextStyle(
+                                color: _HtmlColors.secondary.withValues(alpha: 0.8),
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (_okunmamisBildirimSayisi > 0)
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              for (var b in _bildirimler) {
+                                b['okundu'] = true;
+                              }
+                            });
+                            setModalState(() {});
+                          },
+                          child: Text(
+                            widget.turkceMi ? 'Tümünü Oku' : 'Mark All Read',
+                            style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close_rounded, color: _HtmlColors.secondary),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // Canlı Test & Simülasyon Butonu
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: InkWell(
+                    onTap: () {
+                      final yeniId = "b_${DateTime.now().millisecondsSinceEpoch}";
+                      final yeniBildirim = {
+                        "id": yeniId,
+                        "baslik": widget.turkceMi ? "⚡ Yeni Radar Cezası Bildirimi" : "⚡ New Radar Fine Alert",
+                        "baslikEn": "⚡ New Radar Fine Alert",
+                        "detay": widget.turkceMi
+                            ? "Yeni radar cezası sisteme yansıdı! 15 gün içinde ödeyerek %15 indirimden faydalanın."
+                            : "New speed ticket registered! Pay within 15 days to get 15% discount.",
+                        "detayEn": "New speed ticket registered! Pay within 15 days to get 15% discount.",
+                        "zaman": widget.turkceMi ? "Şimdi" : "Just now",
+                        "zamanEn": "Just now",
+                        "okundu": false,
+                        "hedef": "ceza",
+                        "ikon": Icons.receipt_long_rounded,
+                        "renk": const Color(0xFFD90429),
+                      };
+
+                      setState(() {
+                        _bildirimler.insert(0, yeniBildirim);
+                      });
+                      setModalState(() {});
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: const Color(0xFFD90429),
+                          content: Row(
+                            children: [
+                              const Icon(Icons.notifications_active_rounded, color: Colors.white, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  widget.turkceMi
+                                      ? "Mobil bildirim simüle edildi: Yeni ceza bildirimi eklendi!"
+                                      : "Mobile notification simulated: New fine alert added!",
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _HtmlColors.primaryContainer.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: _HtmlColors.primaryContainer.withValues(alpha: 0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.flash_on_rounded, color: _HtmlColors.primary, size: 16),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              widget.turkceMi
+                                  ? 'Test Et: Yeni Ceza Bildirimi Düşür (Simülasyon)'
+                                  : 'Test: Trigger New Fine Notification (Simulation)',
+                              style: const TextStyle(
+                                color: _HtmlColors.primary,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const Icon(Icons.arrow_forward_ios_rounded, color: _HtmlColors.primary, size: 11),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Bildirim Listesi
+                Expanded(
+                  child: _bildirimler.isEmpty
+                      ? Center(
+                          child: Text(
+                            widget.turkceMi ? 'Henüz bildiriminiz bulunmuyor.' : 'No notifications yet.',
+                            style: const TextStyle(color: _HtmlColors.secondary),
+                          ),
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: _bildirimler.length,
+                          separatorBuilder: (context, index) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final b = _bildirimler[index];
+                            final bool okundu = b['okundu'] == true;
+                            final Color renk = b['renk'] as Color;
+
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    b['okundu'] = true;
+                                  });
+                                  Navigator.pop(context);
+                                  _aramaHedefiniUygula(b['hedef'] as String, ehliyetPuani);
+                                },
+                                borderRadius: BorderRadius.circular(14),
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: okundu
+                                        ? _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.45)
+                                        : _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.85),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: okundu
+                                          ? Colors.white.withValues(alpha: 0.04)
+                                          : renk.withValues(alpha: 0.4),
+                                      width: okundu ? 1 : 1.3,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 38,
+                                        height: 38,
+                                        decoration: BoxDecoration(
+                                          color: renk.withValues(alpha: 0.15),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Icon(b['ikon'] as IconData, color: renk, size: 20),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    widget.turkceMi ? b['baslik'] : b['baslikEn'],
+                                                    style: TextStyle(
+                                                      color: _HtmlColors.onSurface,
+                                                      fontSize: 13,
+                                                      fontWeight: okundu ? FontWeight.w600 : FontWeight.w800,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Text(
+                                                  widget.turkceMi ? b['zaman'] : b['zamanEn'],
+                                                  style: TextStyle(
+                                                    color: _HtmlColors.secondary.withValues(alpha: 0.6),
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              widget.turkceMi ? b['detay'] : b['detayEn'],
+                                              style: TextStyle(
+                                                color: _HtmlColors.secondary.withValues(alpha: 0.85),
+                                                fontSize: 11,
+                                                height: 1.3,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  widget.turkceMi ? 'Görüntülemek için dokunun ➔' : 'Tap to view ➔',
+                                                  style: TextStyle(
+                                                    color: renk,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                                if (!okundu) ...[
+                                                  const Spacer(),
+                                                  Container(
+                                                    width: 7,
+                                                    height: 7,
+                                                    decoration: BoxDecoration(
+                                                      color: renk,
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          );
         },
       ),
     );
