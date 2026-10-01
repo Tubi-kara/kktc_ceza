@@ -5,6 +5,7 @@ import 'radar_haritasi.dart';
 import 'yol_tarifi_sayfasi.dart';
 import 'kktc_gov_sync_service.dart';
 import 'yardim_rehberi_sayfasi.dart';
+import 'hizli_arama_modali.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -1974,6 +1975,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
           child: Column(
             children: [
               KamuSunucuDurumSeridi(turkceMi: widget.turkceMi),
+              _hizliAramaCubugu(ehliyetPuani: ehliyetPuani),
               Expanded(
                 child: sayfalar[_seciliIndex],
               ),
@@ -2102,6 +2104,252 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
     );
   }
 
+  // --- HIZLI ARAMA ÇUBUĞU (SPOTLIGHT SEARCH) ---
+  Widget _hizliAramaCubugu({required int ehliyetPuani}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _hizliAramaPenceresiniAc(ehliyetPuani),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.search_rounded, color: Color(0xFF38BDF8), size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    widget.turkceMi
+                        ? 'Seyrüsefer, ceza, radar veya hizmet ara...'
+                        : 'Search road tax, fines, radar or services...',
+                    style: TextStyle(
+                      color: _HtmlColors.secondary.withValues(alpha: 0.75),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: _HtmlColors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.touch_app_rounded, color: _HtmlColors.tertiary, size: 12),
+                      const SizedBox(width: 3),
+                      Text(
+                        widget.turkceMi ? 'Hızlı Git' : 'Quick Go',
+                        style: const TextStyle(
+                          color: _HtmlColors.tertiary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _hizliAramaPenceresiniAc(int ehliyetPuani) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => HizliAramaModalSayfasi(
+        turkceMi: widget.turkceMi,
+        onHedefeGit: (hedefId) {
+          Navigator.pop(context);
+          _aramaHedefiniUygula(hedefId, ehliyetPuani);
+        },
+      ),
+    );
+  }
+
+  void _aramaHedefiniUygula(String hedefId, int ehliyetPuani) {
+    switch (hedefId) {
+      case 'seyrusefer':
+        setState(() {
+          _seciliIndex = 2;
+          _cezaSigortaAltSekme = 'sigorta';
+          _sigortaSekmesi = 'seyrusefer';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFF0284C7),
+            content: Row(
+              children: [
+                const Icon(Icons.directions_car_filled_rounded, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    widget.turkceMi
+                        ? 'Seyrüsefer & Araç Muayenesi sekmesine gidildi.'
+                        : 'Navigated to Road Tax & Vehicle Inspection.',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        break;
+
+      case 'ceza':
+        setState(() {
+          _seciliIndex = 2;
+          _cezaSigortaAltSekme = 'ceza';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: _HtmlColors.primaryContainer,
+            content: Row(
+              children: [
+                const Icon(Icons.receipt_long_rounded, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    widget.turkceMi
+                        ? 'Trafik Cezalarım sekmesine gidildi.'
+                        : 'Navigated to Traffic Fines.',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        break;
+
+      case 'sigorta_wallet':
+        setState(() {
+          _seciliIndex = 2;
+          _cezaSigortaAltSekme = 'sigorta';
+          _sigortaSekmesi = 'wallet';
+        });
+        break;
+
+      case 'police_qr':
+        setState(() {
+          _seciliIndex = 2;
+          _cezaSigortaAltSekme = 'sigorta';
+          _sigortaSekmesi = 'police';
+        });
+        break;
+
+      case 'radar':
+        setState(() => _seciliIndex = 0);
+        break;
+
+      case 'yol_tarifi':
+        setState(() => _seciliIndex = 1);
+        break;
+
+      case 'yardim':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => YardimRehberiSayfasi(
+              turkceMi: widget.turkceMi,
+              onRotayiAc: (bId, vId) {
+                Navigator.pop(context);
+                setState(() => _seciliIndex = 1);
+              },
+            ),
+          ),
+        );
+        break;
+
+      case 'itiraz':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ItirazSayfasi(turkceMi: widget.turkceMi),
+          ),
+        );
+        break;
+
+      case 'ehliyet':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BarkodluBelgeSayfasi(
+              kullanici: widget.kullaniciAdi,
+              puan: ehliyetPuani,
+              turkceMi: widget.turkceMi,
+            ),
+          ),
+        );
+        break;
+
+      case 'dekontlar':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DekontlarSayfasi(
+              dekontlar: _dekontlar,
+              turkceMi: widget.turkceMi,
+            ),
+          ),
+        );
+        break;
+
+      case 'bildirimler':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BildirimAyarlariSayfasi(turkceMi: widget.turkceMi),
+          ),
+        );
+        break;
+
+      case 'cekici':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFFF43F5E),
+            content: Row(
+              children: [
+                const Icon(Icons.car_repair_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    widget.turkceMi
+                        ? '7/24 KKTC Yol Yardım Hattı: 0392 228 88 88'
+                        : '24/7 TRNC Roadside Assistance: 0392 228 88 88',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+        break;
+    }
+  }
 
   void _aracDegistirSheet() {
     showModalBottomSheet(
