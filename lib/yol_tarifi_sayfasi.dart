@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'radar_haritasi.dart';
+import 'kktc_gov_sync_service.dart';
 
 // ==========================================
 // 🎨 NAVİGASYON VE HARİTA TASARIM TOKENLARI
@@ -828,6 +829,13 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
             const SizedBox(height: 14),
 
             // ==========================================
+            // 📢 KARAYOLLARI DAİRESİ RESMİ BİLDİRİMLERİ
+            // ==========================================
+            _buildKarayollariDairesiBildirimleri(),
+
+            const SizedBox(height: 14),
+
+            // ==========================================
             // 📷 GÜZERGAHTAKİ SABİT RADARLAR LİSTESİ
             // ==========================================
             _buildGuzergahRadarlari(rota),
@@ -1473,6 +1481,98 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
           ),
         ],
       ),
+    );
+  }
+
+  // --- 5.1 Karayolları Dairesi Canlı Yol Bildirimleri ---
+  Widget _buildKarayollariDairesiBildirimleri() {
+    final gov = KktcGovSyncService();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.campaign_rounded, color: NavHtmlColors.warning, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              widget.turkceMi ? 'Karayolları Dairesi Güncel Bildirimleri' : 'Highway Dept. Live Bulletins',
+              style: const TextStyle(
+                color: NavHtmlColors.onSurface,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ...gov.yolBildirimleri.map((bildirim) {
+          final isWarning = bildirim.seviye == 'dikkat';
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: NavHtmlColors.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isWarning
+                    ? NavHtmlColors.warning.withValues(alpha: 0.3)
+                    : NavHtmlColors.tertiary.withValues(alpha: 0.25),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  isWarning ? Icons.warning_amber_rounded : Icons.info_outline_rounded,
+                  size: 16,
+                  color: isWarning ? NavHtmlColors.warning : NavHtmlColors.tertiary,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              widget.turkceMi ? bildirim.baslik : bildirim.baslikEn,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            bildirim.tarih,
+                            style: TextStyle(
+                              color: NavHtmlColors.secondary.withValues(alpha: 0.7),
+                              fontSize: 9.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.turkceMi ? bildirim.detay : bildirim.detayEn,
+                        style: TextStyle(
+                          color: NavHtmlColors.secondary.withValues(alpha: 0.85),
+                          fontSize: 10.5,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
     );
   }
 

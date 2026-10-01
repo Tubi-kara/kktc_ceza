@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:math';
 import 'radar_haritasi.dart';
 import 'yol_tarifi_sayfasi.dart';
+import 'kktc_gov_sync_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -1927,7 +1928,14 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
   body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
-          child: sayfalar[_seciliIndex],
+          child: Column(
+            children: [
+              KamuSunucuDurumSeridi(turkceMi: widget.turkceMi),
+              Expanded(
+                child: sayfalar[_seciliIndex],
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Container(
