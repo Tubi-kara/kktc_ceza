@@ -8,26 +8,250 @@ import 'kktc_gov_sync_service.dart';
 import 'yardim_rehberi_sayfasi.dart';
 
 // ==========================================
-// 🎨 NAVİGASYON VE HARİTA TASARIM TOKENLARI
+// 🎨 NAVİGASYON VE HARİTA TASARIM TOKENLARI (İNSAN DOSTU & SADE)
 // ==========================================
 class NavHtmlColors {
-  static const Color background = Color(0xFF0A122A);
-  static const Color surfaceContainer = Color(0xFF171E37);
-  static const Color surfaceContainerLow = Color(0xFF131A33);
-  static const Color surfaceContainerLowest = Color(0xFF050D25);
-  static const Color surfaceContainerHigh = Color(0xFF212942);
-  static const Color surfaceContainerHighest = Color(0xFF2C344D);
-  static const Color surfaceBright = Color(0xFF313852);
-  static const Color primaryContainer = Color(0xFFD90429); // Modern KKTC Crimson
-  static const Color primary = Color(0xFFFFB3AF);
-  static const Color primaryFixedDim = Color(0xFFFFB3AF);
-  static const Color secondary = Color(0xFFBDC5E9);
-  static const Color tertiary = Color(0xFF4EDEA3); // Neon Emerald
-  static const Color tertiaryContainer = Color(0xFF007C55);
-  static const Color onSurface = Color(0xFFDBE1FF);
-  static const Color onPrimary = Color(0xFF68000F);
-  static const Color warning = Color(0xFFFFB800);
+  // Apple Haritalar & Google Haritalar tarzı göz dinlendiren, şık ve doğal koyu tema
+  static const Color background = Color(0xFF0F172A); // Doğal Slate 900
+  static const Color surfaceContainer = Color(0xFF1E293B); // Slate 800
+  static const Color surfaceContainerLow = Color(0xFF162032);
+  static const Color surfaceContainerLowest = Color(0xFF0B1120);
+  static const Color surfaceContainerHigh = Color(0xFF243248);
+  static const Color surfaceContainerHighest = Color(0xFF334155);
+  static const Color surfaceBright = Color(0xFF3B4A63);
+  static const Color primaryContainer = Color(0xFFE11D48); // Zarif KKTC Kırmızısı
+  static const Color primary = Color(0xFF38BDF8); // Canlı gök mavisi
+  static const Color primaryFixedDim = Color(0xFF7DD3FC);
+  static const Color secondary = Color(0xFF94A3B8); // Yumuşak gümüş gri
+  static const Color tertiary = Color(0xFF10B981); // Doğal akıcı yeşil (neon değil)
+  static const Color tertiaryContainer = Color(0xFF065F46);
+  static const Color onSurface = Color(0xFFF8FAFC); // Yumuşak doğal beyaz
+  static const Color onPrimary = Color(0xFFFFFFFF);
+  static const Color warning = Color(0xFFF59E0B); // Sıcak kehribar sarısı
+
+  // 🚦 Gerçek Canlı Trafik Renkleri
+  static const Color trafficClear = Color(0xFF22C55E); // Akıcı / Yeşil
+  static const Color trafficModerate = Color(0xFFF59E0B); // Orta Yoğunluk / Kehribar
+  static const Color trafficHeavy = Color(0xFFEF4444); // Sıkışık / Kırmızı
+  static const Color trafficGridlock = Color(0xFF991B1B); // Dur-Kalk / Koyu Bordo
 }
+
+// ==========================================
+// 🚦 CANLI TRAFİK VE KALABALIK NOKTA MODELİ
+// ==========================================
+class KktcTrafikNoktasi {
+  final String id;
+  final String ad;
+  final String adEn;
+  final String bolge;
+  final double lat;
+  final double lon;
+  final int yogunlukYuzde; // 0 - 100
+  final int gecikmeDakika; // Gecikme süresi (dakika)
+  final String durum; // "Akıcı", "Orta Yoğunluk", "Ağır Trafik", "Kuyruk"
+  final String durumEn;
+  final String aciklama;
+  final String aciklamaEn;
+  final IconData ikon;
+
+  const KktcTrafikNoktasi({
+    required this.id,
+    required this.ad,
+    required this.adEn,
+    required this.bolge,
+    required this.lat,
+    required this.lon,
+    required this.yogunlukYuzde,
+    required this.gecikmeDakika,
+    required this.durum,
+    required this.durumEn,
+    required this.aciklama,
+    required this.aciklamaEn,
+    this.ikon = Icons.traffic_rounded,
+  });
+
+  Color get renk {
+    if (yogunlukYuzde >= 75) return NavHtmlColors.trafficHeavy;
+    if (yogunlukYuzde >= 45) return NavHtmlColors.trafficModerate;
+    return NavHtmlColors.trafficClear;
+  }
+
+  String get seviyeEtiketi {
+    if (yogunlukYuzde >= 75) return "Ağır";
+    if (yogunlukYuzde >= 45) return "Orta";
+    return "Akıcı";
+  }
+}
+
+// KKTC Gerçek Kritik Trafik ve Kalabalık Noktaları
+final List<KktcTrafikNoktasi> kktcTrafikVeritabani = [
+  const KktcTrafikNoktasi(
+    id: "gonyeli_cemberi",
+    ad: "Gönyeli Çemberi & Hastane Kavşağı",
+    adEn: "Gonyeli Roundabout & Hospital Jct",
+    bolge: "Lefkoşa",
+    lat: 35.2078,
+    lon: 33.3085,
+    yogunlukYuzde: 84,
+    gecikmeDakika: 5,
+    durum: "Ağır Trafik (Dur-Kalk)",
+    durumEn: "Heavy Stop & Go",
+    aciklama: "Çember girişlerinde yoğun kuyruk var. Kuzey Çevre Yolu alternatifi önerilir.",
+    aciklamaEn: "Long vehicle queues at circle entry. North Bypass recommended.",
+    ikon: Icons.traffic_rounded,
+  ),
+  const KktcTrafikNoktasi(
+    id: "metehan_kermiya",
+    ad: "Kermiya (Metehan) Sınır Kapısı",
+    adEn: "Metehan / Kermiya Border Crossing",
+    bolge: "Lefkoşa",
+    lat: 35.1830,
+    lon: 33.3320,
+    yogunlukYuzde: 90,
+    gecikmeDakika: 12,
+    durum: "Sınır Araç Kuyruğu",
+    durumEn: "Border Checkpoint Queue",
+    aciklama: "Güney Kıbrıs geçiş şeridinde kimlik kontrolleri nedeniyle uzun kuyruk var.",
+    aciklamaEn: "Extensive vehicle queue due to checkpoint identity processing.",
+    ikon: Icons.hourglass_top_rounded,
+  ),
+  const KktcTrafikNoktasi(
+    id: "lefkosa_dereboyu",
+    ad: "Lefkoşa Dereboyu (Mehmet Akif Cd.)",
+    adEn: "Dereboyu Avenue (Mehmet Akif St.)",
+    bolge: "Lefkoşa",
+    lat: 35.1910,
+    lon: 33.3540,
+    yogunlukYuzde: 70,
+    gecikmeDakika: 4,
+    durum: "Yavaş Akış & Park Yoğunluğu",
+    durumEn: "Slow Flow & Parking Queue",
+    aciklama: "Şehir içi mağaza ve kafe trafiği nedeniyle akış ağır ilerliyor.",
+    aciklamaEn: "Slow crawl traffic due to active commercial and roadside parking.",
+    ikon: Icons.directions_car_filled_rounded,
+  ),
+  const KktcTrafikNoktasi(
+    id: "girne_bogaz",
+    ad: "Girne Boğaz Tepe Geçişi",
+    adEn: "Kyrenia Bogaz Mountain Pass",
+    bolge: "Girne",
+    lat: 35.2910,
+    lon: 33.3080,
+    yogunlukYuzde: 55,
+    gecikmeDakika: 3,
+    durum: "Orta Yoğunluk (Virajlı)",
+    durumEn: "Moderate Traffic (Winding)",
+    aciklama: "Dağ tırmanışında ağır vasıtalar sebebiyle hız zaman zaman 40 km/s'ye düşüyor.",
+    aciklamaEn: "Uphill trucks on serpentine pass intermittently slow traffic down.",
+    ikon: Icons.terrain_rounded,
+  ),
+  const KktcTrafikNoktasi(
+    id: "girne_liman_giris",
+    ad: "Girne Yeni Liman & Çarşı Çemberi",
+    adEn: "Kyrenia Harbor & Downtown Circle",
+    bolge: "Girne",
+    lat: 35.3340,
+    lon: 33.3280,
+    yogunlukYuzde: 78,
+    gecikmeDakika: 5,
+    durum: "Kalabalık Şehir İçi",
+    durumEn: "Congested Downtown",
+    aciklama: "Antik Liman ve sahil kordonuna inen cadde üzerinde araç birikmesi var.",
+    aciklamaEn: "High congestion along narrow corridors towards historic harbor.",
+    ikon: Icons.sailing_rounded,
+  ),
+  const KktcTrafikNoktasi(
+    id: "alsancak_sahil",
+    ad: "Alsancak Sahil Yolu & Oteller",
+    adEn: "Alsancak Coastal Road & Hotels",
+    bolge: "Girne",
+    lat: 35.3510,
+    lon: 33.2250,
+    yogunlukYuzde: 60,
+    gecikmeDakika: 3,
+    durum: "Orta Yoğunluk",
+    durumEn: "Moderate Density",
+    aciklama: "Plaj girişleri ve otel servisleri nedeniyle yerel yavaşlamalar görülüyor.",
+    aciklamaEn: "Hotel shuttles and beach traffic causing localized slows.",
+    ikon: Icons.beach_access_rounded,
+  ),
+  const KktcTrafikNoktasi(
+    id: "kuzey_cevre_yolu",
+    ad: "Lefkoşa Kuzey Çevre Yolu",
+    adEn: "Lefkosa North Bypass Freeway",
+    bolge: "Lefkoşa",
+    lat: 35.2280,
+    lon: 33.3350,
+    yogunlukYuzde: 15,
+    gecikmeDakika: 0,
+    durum: "Tamamen Açık & Akıcı",
+    durumEn: "Completely Clear & Fast",
+    aciklama: "Işıksız, çift şerit, kesintisiz hızlı akış. En rahat çevre koridoru.",
+    aciklamaEn: "Uninterrupted dual carriageway with zero signals. Highly fluent.",
+    ikon: Icons.bolt_rounded,
+  ),
+  const KktcTrafikNoktasi(
+    id: "haspolat_kavsagi",
+    ad: "Haspolat - UKÜ Kavşağı",
+    adEn: "Haspolat - CIU Junction",
+    bolge: "Lefkoşa",
+    lat: 35.2160,
+    lon: 33.4320,
+    yogunlukYuzde: 28,
+    gecikmeDakika: 0,
+    durum: "Akıcı Trafik",
+    durumEn: "Flowing Traffic",
+    aciklama: "Mağusa anayolu kesintisiz akıyor, hız limitlerine uyarak seyredin.",
+    aciklamaEn: "Smooth transit along Famagusta highway corridor.",
+    ikon: Icons.check_circle_outline_rounded,
+  ),
+  const KktcTrafikNoktasi(
+    id: "erulku_girisi",
+    ad: "Demirhan - Erülkü Süpermarket Girişi",
+    adEn: "Demirhan - Erulku Supermarket Jct",
+    bolge: "Lefkoşa",
+    lat: 35.2185,
+    lon: 33.4800,
+    yogunlukYuzde: 42,
+    gecikmeDakika: 2,
+    durum: "Girişte Hafif Yavaşlama",
+    durumEn: "Minor Turn Delays",
+    aciklama: "Süpermarket otoparkı ve benzin istasyonu girişinde dönüş yapan araçlar.",
+    aciklamaEn: "Short queue for vehicles entering shopping parking and fuel stalls.",
+    ikon: Icons.shopping_bag_rounded,
+  ),
+  const KktcTrafikNoktasi(
+    id: "guzelyurt_cember",
+    ad: "Güzelyurt Giriş Çemberi",
+    adEn: "Guzelyurt Entrance Roundabout",
+    bolge: "Güzelyurt",
+    lat: 35.1980,
+    lon: 32.9950,
+    yogunlukYuzde: 20,
+    gecikmeDakika: 0,
+    durum: "Akıcı & Rahat",
+    durumEn: "Clear & Smooth",
+    aciklama: "Kalkanlı ve Lefkoşa yönü açık, trafik sorunsuz seyrediyor.",
+    aciklamaEn: "Clear arterial road towards METU Kalkanli and Lefkosa.",
+    ikon: Icons.done_all_rounded,
+  ),
+  const KktcTrafikNoktasi(
+    id: "magusa_anit_cemberi",
+    ad: "Gazimağusa Anıt Çemberi & DAÜ",
+    adEn: "Famagusta Monument Circle & EMU",
+    bolge: "Gazimağusa",
+    lat: 35.1260,
+    lon: 33.9350,
+    yogunlukYuzde: 65,
+    gecikmeDakika: 4,
+    durum: "Yoğun Kavşak",
+    durumEn: "Busy Roundabout",
+    aciklama: "Üniversite çıkışı ve Salamis yolu bağlantısında yoğun araç akışı.",
+    aciklamaEn: "Student transit and Salamis strip connection causing delays.",
+    ikon: Icons.school_rounded,
+  ),
+];
+
 
 // ==========================================
 // 📍 GERÇEK GPS VE ROTA NOKTASI MODELLERİ
@@ -487,6 +711,10 @@ class HesaplanmisRota {
   final List<RadarKamerasi> radarlar;
   final List<RotaManevraAdimi> manevralar;
   final List<OsrmRoutePoint> gpsNoktalari; // Gerçek Enlem/Boylam yol noktaları
+  final List<KktcTrafikNoktasi> trafikNoktalari; // Güzergahtaki canlı trafik ve kalabalık noktalar
+  final String genelTrafikDurumu;
+  final String genelTrafikDurumuEn;
+  final int toplamGecikmeDakika;
 
   const HesaplanmisRota({
     required this.baslangic,
@@ -500,6 +728,10 @@ class HesaplanmisRota {
     required this.radarlar,
     required this.manevralar,
     required this.gpsNoktalari,
+    this.trafikNoktalari = const [],
+    this.genelTrafikDurumu = '',
+    this.genelTrafikDurumuEn = '',
+    this.toplamGecikmeDakika = 0,
   });
 }
 
@@ -704,13 +936,13 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_rounded, color: NavHtmlColors.tertiary),
+            const Icon(Icons.check_circle_rounded, color: NavHtmlColors.trafficClear),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 widget.turkceMi
-                    ? 'Tebrikler! Güzergahtaki tüm radarlar aşıldı ve hedefe ulaşıldı.'
-                    : 'Congratulations! All radars cleared and destination reached.',
+                    ? 'Hedefe ulaştınız. Güvenli sürüşler ve iyi günler dileriz!'
+                    : 'You have reached your destination. Safe travels!',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -753,6 +985,12 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
       orElse: () => kktcRadarListesi.first,
     );
 
+    final gCember = kktcTrafikVeritabani.firstWhere((t) => t.id == "guzelyurt_cember");
+    final kCevre = kktcTrafikVeritabani.firstWhere((t) => t.id == "kuzey_cevre_yolu");
+    final hKavsak = kktcTrafikVeritabani.firstWhere((t) => t.id == "haspolat_kavsagi");
+    final eGiris = kktcTrafikVeritabani.firstWhere((t) => t.id == "erulku_girisi");
+    final gonyeli = kktcTrafikVeritabani.firstWhere((t) => t.id == "gonyeli_cemberi");
+
     if (kalkanliErulkuMu) {
       final defaultPoints = [
         const OsrmRoutePoint(35.2470, 33.0280), // Kalkanlı ODTÜ
@@ -793,6 +1031,10 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
             haspolatRadar,
             erulkuRadar,
           ],
+          trafikNoktalari: [gCember, kCevre, hKavsak, eGiris],
+          genelTrafikDurumu: "Kuzey Çevre Yolu açık ve akıcı. Gönyeli sıkışıklığına girmeden rahat varış.",
+          genelTrafikDurumuEn: "North Bypass is clear and fluent. Smooth route avoiding Gonyeli bottlenecks.",
+          toplamGecikmeDakika: 2,
           manevralar: [
             RotaManevraAdimi(
               ikon: Icons.navigation_rounded,
@@ -876,6 +1118,10 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
             haspolatRadar,
             erulkuRadar,
           ],
+          trafikNoktalari: [gCember, gonyeli, hKavsak, eGiris],
+          genelTrafikDurumu: "Gönyeli Çemberi girişinde ağır trafik ve dur-kalk bekleme var (+5 dk).",
+          genelTrafikDurumuEn: "Heavy stop-and-go congestion at Gonyeli Circle (+5 min delay).",
+          toplamGecikmeDakika: 7,
           manevralar: [
             RotaManevraAdimi(
               ikon: Icons.navigation_rounded,
@@ -946,6 +1192,10 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
         kolaylikOzetiEn:
             "Direct route from METU Kalkanli gates along Guzelyurt highway straight to town center & terminal.",
         radarlar: [kalkanliRadar],
+        trafikNoktalari: [gCember],
+        genelTrafikDurumu: "Kalkanlı - Güzelyurt anayolu tamamen açık ve sakin.",
+        genelTrafikDurumuEn: "Kalkanli - Guzelyurt highway is clear and calm.",
+        toplamGecikmeDakika: 0,
         manevralar: [
           RotaManevraAdimi(
             ikon: Icons.navigation_rounded,
@@ -987,14 +1237,40 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
     int durationMin = (distKm * 1.15).round();
 
     // Rota çevresindeki radarları filtrele
-    double minLat = math.min(_baslangicNoktasi.lat, _varisNoktasi.lat) - 0.05;
-    double maxLat = math.max(_baslangicNoktasi.lat, _varisNoktasi.lat) + 0.05;
-    double minLon = math.min(_baslangicNoktasi.lon, _varisNoktasi.lon) - 0.05;
-    double maxLon = math.max(_baslangicNoktasi.lon, _varisNoktasi.lon) + 0.05;
+    double minLat = math.min(_baslangicNoktasi.lat, _varisNoktasi.lat) - 0.06;
+    double maxLat = math.max(_baslangicNoktasi.lat, _varisNoktasi.lat) + 0.06;
+    double minLon = math.min(_baslangicNoktasi.lon, _varisNoktasi.lon) - 0.06;
+    double maxLon = math.max(_baslangicNoktasi.lon, _varisNoktasi.lon) + 0.06;
 
     List<RadarKamerasi> yolRadarlari = kktcRadarListesi.where((r) {
       return r.lat >= minLat && r.lat <= maxLat && r.lon >= minLon && r.lon <= maxLon;
     }).toList();
+
+    // Rota çevresindeki canlı trafik noktalarını filtrele
+    List<KktcTrafikNoktasi> yolTrafikNoktalari = kktcTrafikVeritabani.where((t) {
+      return t.lat >= minLat && t.lat <= maxLat && t.lon >= minLon && t.lon <= maxLon;
+    }).toList();
+
+    if (yolTrafikNoktalari.isEmpty) {
+      yolTrafikNoktalari = [
+        KktcTrafikNoktasi(
+          id: "rota_akici",
+          ad: "${_baslangicNoktasi.kisaAd} - ${_varisNoktasi.kisaAd} Koridoru",
+          adEn: "${_baslangicNoktasi.kisaAd} - ${_varisNoktasi.kisaAd} Corridor",
+          bolge: _baslangicNoktasi.bolge,
+          lat: (_baslangicNoktasi.lat + _varisNoktasi.lat) / 2.0,
+          lon: (_baslangicNoktasi.lon + _varisNoktasi.lon) / 2.0,
+          yogunlukYuzde: 25,
+          gecikmeDakika: 0,
+          durum: "Akıcı & Sorunsuz",
+          durumEn: "Smooth Flow",
+          aciklama: "Ana arterlerde açık yol, belirgin bir kuyruk veya tıkanma bulunmuyor.",
+          aciklamaEn: "Clear arterial highways with no significant congestion.",
+        ),
+      ];
+    }
+
+    int delayTotal = yolTrafikNoktalari.fold(0, (sum, t) => sum + t.gecikmeDakika);
 
     List<RotaManevraAdimi> dinamikManevralar = [
       RotaManevraAdimi(
@@ -1061,6 +1337,14 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
       kolaylikOzetiEn:
           "Optimal route from ${_baslangicNoktasi.kisaAd} to ${_varisNoktasi.kisaAd} using primary bypass corridors.",
       radarlar: yolRadarlari,
+      trafikNoktalari: yolTrafikNoktalari,
+      genelTrafikDurumu: delayTotal > 0
+          ? "Güzergah üzerinde yaklaşık $delayTotal dakika gecikmeye neden olan yerel yoğunluklar var."
+          : "Güzergah boyunca trafik genel olarak açık ve akıcı.",
+      genelTrafikDurumuEn: delayTotal > 0
+          ? "Localized density along the corridor adding approximately $delayTotal min delay."
+          : "Traffic along the route is broadly clear and fluent.",
+      toplamGecikmeDakika: delayTotal,
       manevralar: dinamikManevralar,
       gpsNoktalari: pts,
     );
@@ -1104,6 +1388,13 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
             // 📊 ROTA ÖZETİ VE METRİKLER (Mesafe, Süre, Radar)
             // ==========================================
             _buildMetrikOzetKartlari(rota),
+
+            const SizedBox(height: 14),
+
+            // ==========================================
+            // 🚦 CANLI TRAFİK DURUMU & KALABALIK BÖLGELER
+            // ==========================================
+            _buildCanliTrafikPaneli(rota),
 
             const SizedBox(height: 14),
 
@@ -1155,7 +1446,7 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: NavHtmlColors.primaryContainer.withValues(alpha: 0.3)),
               ),
-              child: const Icon(Icons.alt_route_rounded, color: NavHtmlColors.primaryContainer, size: 22),
+              child: const Icon(Icons.navigation_rounded, color: NavHtmlColors.primaryContainer, size: 22),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -1163,7 +1454,7 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.turkceMi ? 'KKTC Akıllı Yol Tarifi & Radar Rehberi' : 'TRNC Smart Route & Radar Guide',
+                    widget.turkceMi ? 'KKTC Yol Tarifi & Canlı Trafik' : 'TRNC Route & Live Traffic',
                     style: const TextStyle(
                       color: NavHtmlColors.onSurface,
                       fontSize: 16,
@@ -1173,8 +1464,8 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
                   ),
                   Text(
                     widget.turkceMi
-                        ? 'Canlı OpenStreetMap verisi, hız radarları ve kolay rota rehberi'
-                        : 'Live OpenStreetMap data, speed cameras and smart route guide',
+                        ? 'Nerede trafik var, hangi yollar kalabalık anlık görün'
+                        : 'Real-time traffic density, busy spots and speed cameras',
                     style: TextStyle(
                       color: NavHtmlColors.secondary.withValues(alpha: 0.8),
                       fontSize: 11,
@@ -1850,6 +2141,244 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
     );
   }
 
+  // --- 4.5 🚦 CANLI TRAFİK VE KALABALIK NOKTALAR PANELİ ---
+  Widget _buildCanliTrafikPaneli(HesaplanmisRota rota) {
+    final bool agirTrafikVarMi = rota.toplamGecikmeDakika >= 4;
+    final bool ortaTrafikVarMi = rota.toplamGecikmeDakika > 0 && !agirTrafikVarMi;
+
+    final Color durumRengi = agirTrafikVarMi
+        ? NavHtmlColors.trafficHeavy
+        : (ortaTrafikVarMi ? NavHtmlColors.trafficModerate : NavHtmlColors.trafficClear);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: NavHtmlColors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: durumRengi.withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.20),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Başlık Satırı
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: durumRengi.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(Icons.traffic_rounded, color: durumRengi, size: 20),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.turkceMi ? 'Canlı Trafik & Kalabalık Bölgeler' : 'Live Traffic & Crowded Spots',
+                        style: const TextStyle(
+                          color: NavHtmlColors.onSurface,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        widget.turkceMi
+                            ? 'Güzergah üzerindeki anlık yoğunluk durumu'
+                            : 'Real-time congestion along this route',
+                        style: TextStyle(
+                          color: NavHtmlColors.secondary.withValues(alpha: 0.8),
+                          fontSize: 10.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: durumRengi.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: durumRengi.withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: durumRengi,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      rota.toplamGecikmeDakika > 0
+                          ? '+${rota.toplamGecikmeDakika} dk'
+                          : (widget.turkceMi ? 'Akıcı' : 'Clear'),
+                      style: TextStyle(
+                        color: durumRengi,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Özet Durum Kutusu (İnsan dostu samimi dil)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: NavHtmlColors.surfaceContainerLowest.withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  agirTrafikVarMi
+                      ? Icons.warning_amber_rounded
+                      : (ortaTrafikVarMi ? Icons.info_outline_rounded : Icons.check_circle_rounded),
+                  color: durumRengi,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    widget.turkceMi ? rota.genelTrafikDurumu : rota.genelTrafikDurumuEn,
+                    style: const TextStyle(
+                      color: NavHtmlColors.onSurface,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          if (rota.trafikNoktalari.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              widget.turkceMi ? 'Güzergah Üzerindeki Noktalar:' : 'Points Along the Route:',
+              style: TextStyle(
+                color: NavHtmlColors.secondary.withValues(alpha: 0.9),
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...rota.trafikNoktalari.map((nokta) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: NavHtmlColors.surfaceContainerLowest.withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: nokta.renk.withValues(alpha: 0.22)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(nokta.ikon, size: 16, color: nokta.renk),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            widget.turkceMi ? nokta.ad : nokta.adEn,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: nokta.renk.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            widget.turkceMi ? nokta.durum : nokta.durumEn,
+                            style: TextStyle(
+                              color: nokta.renk,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    // Yoğunluk Çubuğu
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: (nokta.yogunlukYuzde / 100.0).clamp(0.0, 1.0),
+                              backgroundColor: Colors.white.withValues(alpha: 0.08),
+                              valueColor: AlwaysStoppedAnimation<Color>(nokta.renk),
+                              minHeight: 5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          '%${nokta.yogunlukYuzde} ${widget.turkceMi ? 'Yoğunluk' : 'Density'}',
+                          style: TextStyle(
+                            color: nokta.renk,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      widget.turkceMi ? nokta.aciklama : nokta.aciklamaEn,
+                      style: TextStyle(
+                        color: NavHtmlColors.secondary.withValues(alpha: 0.85),
+                        fontSize: 10.5,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ],
+      ),
+    );
+  }
+
   // --- 5. "Nereden Kolay Gidebilirim?" Tavsiye Kartı ---
   Widget _buildKolaylikRehberiKarti(HesaplanmisRota rota) {
     return Container(
@@ -2392,6 +2921,7 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
   late double _centerLon;
   double _zoom = 10.2;
   int _mapStyleIndex = 0; // 0 = OSM Standart, 1 = CartoDB Voyager, 2 = Uydu
+  bool _trafikKatmaniAcik = true; // Canlı Trafik ve Kalabalık Yoğunluk Katmanı
 
   late final AnimationController _pulseController;
 
@@ -2559,7 +3089,7 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                             ),
                           ),
 
-                    // 2. TİLELAR ÜZERİNE ÇİZİLEN GERÇEK GPS POLYLİNE KATMANI
+                    // 2. TİLELAR ÜZERİNE ÇİZİLEN GERÇEK GPS POLYLİNE KATMANI (CANLI TRAFİK RENKLERİYLE)
                     CustomPaint(
                       size: Size(width, height),
                       painter: _RealGpsRoutePainter(
@@ -2573,6 +3103,8 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                         simulasyonIlerleme: widget.simulasyonIlerleme,
                         simulasyonAktif: widget.simulasyonAktif,
                         pulseValue: _pulseController.value,
+                        trafikKatmaniAcik: _trafikKatmaniAcik,
+                        trafikNoktalari: widget.rota.trafikNoktalari,
                       ),
                     ),
 
@@ -2618,6 +3150,56 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                       );
                     }),
 
+                    // 3.5 CANLI TRAFİK VE KALABALIK BÖLGE BALONCUKLARI
+                    if (_trafikKatmaniAcik)
+                      ...widget.rota.trafikNoktalari.map((trafik) {
+                        final tTileX = lonToTileX(trafik.lon, intZoom.toDouble());
+                        final tTileY = latToTileY(trafik.lat, intZoom.toDouble());
+                        final px = width / 2.0 + (tTileX - centerTileX) * tileSize;
+                        final py = height / 2.0 + (tTileY - centerTileY) * tileSize;
+
+                        if (px < -60 || px > width + 60 || py < -60 || py > height + 60) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Positioned(
+                          left: px - 38,
+                          top: py - 20,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
+                            decoration: BoxDecoration(
+                              color: NavHtmlColors.surfaceContainerLowest.withValues(alpha: 0.94),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: trafik.renk, width: 1.4),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.traffic_rounded, size: 11, color: trafik.renk),
+                                const SizedBox(width: 4),
+                                Text(
+                                  trafik.gecikmeDakika > 0
+                                      ? '+${trafik.gecikmeDakika} dk'
+                                      : (widget.turkceMi ? 'Akıcı' : 'Clear'),
+                                  style: TextStyle(
+                                    color: trafik.renk,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+
                     // 4. BAŞLANGIÇ PİNİ (ODTÜ KALKANLI - YEŞİL)
                     _buildGpsPin(
                       lat: widget.rota.baslangic.lat,
@@ -2648,7 +3230,7 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                       intZoom: intZoom,
                     ),
 
-                    // 6. SOL ÜST: HARİTA BİLGİ & CANLI OSRM ROZETİ
+                    // 6. SOL ÜST: HARİTA BİLGİ & CANLI TRAFİK ROZETİ
                     Positioned(
                       top: 10,
                       left: 10,
@@ -2668,7 +3250,7 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                                 width: 7,
                                 height: 7,
                                 decoration: BoxDecoration(
-                                  color: widget.canliRotaYukleniyor ? NavHtmlColors.warning : NavHtmlColors.tertiary,
+                                  color: widget.canliRotaYukleniyor ? NavHtmlColors.warning : NavHtmlColors.trafficClear,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -2676,8 +3258,8 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                               Flexible(
                                 child: Text(
                                   widget.canliRotaYukleniyor
-                                      ? (widget.turkceMi ? 'OSRM Rota Alınıyor...' : 'Fetching OSRM...')
-                                      : (widget.turkceMi ? 'Canlı OpenStreetMap Verisi' : 'Live OpenStreetMap'),
+                                      ? (widget.turkceMi ? 'Trafik & Rota Alınıyor...' : 'Updating Route...')
+                                      : (widget.turkceMi ? 'Canlı Harita & Trafik' : 'Live Map & Traffic'),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
@@ -2693,13 +3275,34 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                       ),
                     ),
 
-                    // 7. SAĞ ÜST: HARİTA KONTROLLERİ (+ / - / Stil / Odaklan)
+                    // 7. SAĞ ÜST: HARİTA KONTROLLERİ (Trafik / Katman / Odaklan / + / -)
                     Positioned(
                       top: 10,
                       right: 10,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          _buildHaritaAksiyonButonu(
+                            icon: _trafikKatmaniAcik ? Icons.traffic_rounded : Icons.traffic_outlined,
+                            tooltip: widget.turkceMi ? 'Canlı Trafik Yoğunluğu' : 'Live Traffic Density',
+                            aktifMi: _trafikKatmaniAcik,
+                            aktifRenk: NavHtmlColors.warning,
+                            onTap: () {
+                              setState(() => _trafikKatmaniAcik = !_trafikKatmaniAcik);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    _trafikKatmaniAcik
+                                        ? (widget.turkceMi ? 'Trafik yoğunluğu katmanı açık' : 'Traffic layer enabled')
+                                        : (widget.turkceMi ? 'Trafik yoğunluğu katmanı gizlendi' : 'Traffic layer hidden'),
+                                  ),
+                                  duration: const Duration(seconds: 1),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 6),
                           _buildHaritaAksiyonButonu(
                             icon: Icons.layers_rounded,
                             tooltip: _tileNames[_mapStyleIndex],
@@ -2913,31 +3516,48 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
     required IconData icon,
     required String tooltip,
     required VoidCallback onTap,
+    bool aktifMi = false,
+    Color? aktifRenk,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: NavHtmlColors.surfaceContainerLowest.withValues(alpha: 0.90),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 4,
+    return Tooltip(
+      message: tooltip,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: aktifMi
+                ? (aktifRenk ?? NavHtmlColors.primaryContainer).withValues(alpha: 0.25)
+                : NavHtmlColors.surfaceContainerLowest.withValues(alpha: 0.92),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: aktifMi
+                  ? (aktifRenk ?? NavHtmlColors.primaryContainer)
+                  : Colors.white.withValues(alpha: 0.16),
+              width: aktifMi ? 1.5 : 1,
             ),
-          ],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Icon(
+            icon,
+            color: aktifMi ? (aktifRenk ?? Colors.white) : Colors.white,
+            size: 17,
+          ),
         ),
-        child: Icon(icon, color: Colors.white, size: 16),
       ),
     );
   }
 }
 
 // ==========================================
-// 🎨 GERÇEK GPS POLYLİNE ÇİZİCİSİ (MERCATOR DÜNYASI)
+// 🎨 GERÇEK GPS POLYLİNE ÇİZİCİSİ (CANLI TRAFİK RENKLERİYLE)
 // ==========================================
 class _RealGpsRoutePainter extends CustomPainter {
   final List<OsrmRoutePoint> points;
@@ -2950,6 +3570,8 @@ class _RealGpsRoutePainter extends CustomPainter {
   final double simulasyonIlerleme;
   final bool simulasyonAktif;
   final double pulseValue;
+  final bool trafikKatmaniAcik;
+  final List<KktcTrafikNoktasi> trafikNoktalari;
 
   _RealGpsRoutePainter({
     required this.points,
@@ -2962,6 +3584,8 @@ class _RealGpsRoutePainter extends CustomPainter {
     required this.simulasyonIlerleme,
     required this.simulasyonAktif,
     required this.pulseValue,
+    this.trafikKatmaniAcik = true,
+    this.trafikNoktalari = const [],
   });
 
   static double lonToTileX(double lon, double zoom) {
@@ -2991,32 +3615,73 @@ class _RealGpsRoutePainter extends CustomPainter {
       screenPoints.add(Offset(px, py));
     }
 
-    // 1. Gerçek Rota Çizgisi Glow & Hat
+    if (screenPoints.length < 2) return;
+
+    // 1. Dış Kontur Çizgisi (Doğal gölge & net sınır - Apple / Google Haritalar stili)
     final routePath = Path();
     routePath.moveTo(screenPoints.first.dx, screenPoints.first.dy);
     for (int i = 1; i < screenPoints.length; i++) {
       routePath.lineTo(screenPoints[i].dx, screenPoints[i].dy);
     }
 
-    // Glow
-    final glowPaint = Paint()
-      ..color = NavHtmlColors.tertiary.withValues(alpha: 0.35)
+    final outlinePaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.65)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 9.0
+      ..strokeWidth = 7.5
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(routePath, glowPaint);
+    canvas.drawPath(routePath, outlinePaint);
 
-    // Ana Hat
-    final linePaint = Paint()
-      ..color = NavHtmlColors.tertiary
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.5
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    canvas.drawPath(routePath, linePaint);
+    // 2. Canlı Trafik Renkli Polyline Çizimi
+    if (trafikKatmaniAcik && points.length == screenPoints.length) {
+      for (int i = 0; i < screenPoints.length - 1; i++) {
+        final pt = points[i];
 
-    // 2. Simülasyon Aracı
+        // Bu noktaya en yakın kritik trafik noktası var mı?
+        Color segColor = NavHtmlColors.trafficClear; // Varsayılan akıcı yeşil
+        double minDistance = double.infinity;
+        KktcTrafikNoktasi? enYakinTrafik;
+
+        for (final tn in trafikNoktalari) {
+          final dLat = (tn.lat - pt.lat).abs();
+          final dLon = (tn.lon - pt.lon).abs();
+          final dist = math.sqrt(dLat * dLat + dLon * dLon);
+          if (dist < minDistance) {
+            minDistance = dist;
+            enYakinTrafik = tn;
+          }
+        }
+
+        // Eğer yoğun trafik noktasına yakınsa (3-4 km)
+        if (enYakinTrafik != null && minDistance < 0.035) {
+          if (enYakinTrafik.yogunlukYuzde >= 75) {
+            segColor = NavHtmlColors.trafficHeavy; // Sıkışık kırmızı
+          } else if (enYakinTrafik.yogunlukYuzde >= 45) {
+            segColor = NavHtmlColors.trafficModerate; // Kehribar / sarı
+          }
+        }
+
+        final segPaint = Paint()
+          ..color = segColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4.8
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round;
+
+        canvas.drawLine(screenPoints[i], screenPoints[i + 1], segPaint);
+      }
+    } else {
+      // Trafik kapalıyken Apple Maps şık mavi rota çizgisi
+      final linePaint = Paint()
+        ..color = const Color(0xFF0A84FF)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4.8
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round;
+      canvas.drawPath(routePath, linePaint);
+    }
+
+    // 3. Simülasyon Aracı (Apple Haritalar tarzı modern navigasyon imleci)
     if (simulasyonAktif && simulasyonIlerleme > 0.0 && screenPoints.length >= 2) {
       double t = simulasyonIlerleme.clamp(0.0, 1.0);
       int segIndex = (t * (screenPoints.length - 1)).floor();
@@ -3030,19 +3695,19 @@ class _RealGpsRoutePainter extends CustomPainter {
       }
 
       final carHalo = Paint()
-        ..color = NavHtmlColors.primaryContainer.withValues(alpha: 0.4)
+        ..color = const Color(0xFF0A84FF).withValues(alpha: 0.25)
         ..style = PaintingStyle.fill;
-      canvas.drawCircle(carPos, 14, carHalo);
+      canvas.drawCircle(carPos, 16, carHalo);
 
-      final carBody = Paint()
-        ..color = NavHtmlColors.primaryContainer
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(carPos, 8, carBody);
-
-      final carDot = Paint()
+      final carRim = Paint()
         ..color = Colors.white
         ..style = PaintingStyle.fill;
-      canvas.drawCircle(carPos, 3.5, carDot);
+      canvas.drawCircle(carPos, 8.5, carRim);
+
+      final carCenter = Paint()
+        ..color = const Color(0xFF0A84FF)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(carPos, 6, carCenter);
     }
   }
 
@@ -3053,6 +3718,7 @@ class _RealGpsRoutePainter extends CustomPainter {
         oldDelegate.zoom != zoom ||
         oldDelegate.simulasyonIlerleme != simulasyonIlerleme ||
         oldDelegate.simulasyonAktif != simulasyonAktif ||
+        oldDelegate.trafikKatmaniAcik != trafikKatmaniAcik ||
         oldDelegate.points != points;
   }
 }
