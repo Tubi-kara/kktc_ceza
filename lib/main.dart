@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 import 'radar_haritasi.dart';
+import 'yol_tarifi_sayfasi.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -1708,6 +1709,9 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         toplamBorc: toplamBorc,
         sigortaGun: sigortaGun,
       ),
+      YolTarifiSayfasi(
+        turkceMi: widget.turkceMi,
+      ),
       _cezaVeSigortaEkrani(
         markaModel: markaModel,
         cezalar: cezalar,
@@ -1895,7 +1899,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
 
                       // Avatar circle
                       GestureDetector(
-                        onTap: () => setState(() => _seciliIndex = 2),
+                        onTap: () => setState(() => _seciliIndex = 3),
                         child: Container(
                           width: 34,
                           height: 34,
@@ -1948,7 +1952,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 600),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -1959,14 +1963,19 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                       ),
                       _navItem(
                         1,
-                        Icons.receipt_long_rounded,
-                        widget.turkceMi ? 'Cezalar & Sigorta' : 'Fines & Insurance',
-                        rozet: odenmemisCezaSayisi,
+                        Icons.alt_route_rounded,
+                        widget.turkceMi ? 'Yol Tarifi' : 'Route & Radar',
                       ),
                       _navItem(
                         2,
+                        Icons.receipt_long_rounded,
+                        widget.turkceMi ? 'Cezalar' : 'Fines',
+                        rozet: odenmemisCezaSayisi,
+                      ),
+                      _navItem(
+                        3,
                         Icons.grid_view_rounded,
-                        widget.turkceMi ? 'Menü & İşlemler' : 'Menu & Services',
+                        widget.turkceMi ? 'Menü' : 'Menu',
                       ),
                     ],
                   ),
@@ -5435,7 +5444,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                     borderRadius: BorderRadius.circular(14),
                     onTap: () {
                       setState(() {
-                        _seciliIndex = 1;
+                        _seciliIndex = 2;
                         _cezaSigortaAltSekme = 'ceza';
                       });
                     },
@@ -5993,8 +6002,10 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         case 0:
           return 'Radar & Canlı Sürüş';
         case 1:
-          return _cezaSigortaAltSekme == 'ceza' ? 'Trafik Cezalarım' : 'Sigorta & Polis QR';
+          return 'Yol Tarifi & Akıllı Rota';
         case 2:
+          return _cezaSigortaAltSekme == 'ceza' ? 'Trafik Cezalarım' : 'Sigorta & Polis QR';
+        case 3:
           return 'Menü & Hizmetler';
         default:
           return 'e-Trafik';
@@ -6004,8 +6015,10 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         case 0:
           return 'Radar & Live Driving';
         case 1:
-          return _cezaSigortaAltSekme == 'ceza' ? 'My Traffic Fines' : 'Insurance & Police QR';
+          return 'Smart Route & Radars';
         case 2:
+          return _cezaSigortaAltSekme == 'ceza' ? 'My Traffic Fines' : 'Insurance & Police QR';
+        case 3:
           return 'Menu & Services';
         default:
           return 'e-Traffic';

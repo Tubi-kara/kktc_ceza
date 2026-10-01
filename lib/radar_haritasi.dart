@@ -368,6 +368,23 @@ final List<RadarKamerasi> kktcRadarListesi = [
     lon: 34.2250,
     mesafe: "88.0 km",
   ),
+  const RadarKamerasi(
+    id: "RAD-19",
+    ad: "Demirhan - Erülkü Süpermarket Önü",
+    adEn: "Demirhan - Erulku Supermarket Front",
+    sehir: "Lefkoşa",
+    hizLimiti: 65,
+    tur: "Sabit Hız Radarı",
+    turEn: "Fixed Speed Camera",
+    yon: "Lefkoşa - Gazimağusa Çift Yön",
+    yonEn: "Lefkosa - Famagusta Both Ways",
+    aciklama: "Erülkü Süpermarket ana giriş kavşağı, Mağusa anayolu.",
+    aciklamaEn: "Main entrance junction of Erulku Supermarket, Famagusta highway.",
+    aktif: true,
+    lat: 35.2185,
+    lon: 33.4820,
+    mesafe: "8.9 km",
+  ),
 ];
 
 // ==========================================
