@@ -54,6 +54,7 @@ class _KktcCezaAppState extends State<KktcCezaApp> {
   bool _turkceMi = true;
   bool _girisYapildiMi = false;
   String _kullaniciAdi = "";
+  String _kullaniciRolu = "";
   List<String> _araclar = [];
 
   void _dilDegistir(bool turkceMi) {
@@ -62,11 +63,12 @@ class _KktcCezaAppState extends State<KktcCezaApp> {
     });
   }
 
-  void _girisYapBasarili(String adSoyad, List<String> araclar) {
+  void _girisYapBasarili(String adSoyad, List<String> araclar, [String rol = ""]) {
     setState(() {
       _girisYapildiMi = true;
       _kullaniciAdi = adSoyad;
       _araclar = araclar;
+      _kullaniciRolu = rol;
     });
   }
 
@@ -74,6 +76,7 @@ class _KktcCezaAppState extends State<KktcCezaApp> {
     setState(() {
       _girisYapildiMi = false;
       _kullaniciAdi = "";
+      _kullaniciRolu = "";
       _araclar = [];
     });
   }
@@ -111,6 +114,7 @@ class _KktcCezaAppState extends State<KktcCezaApp> {
       home: _girisYapildiMi
           ? AnaSayfaTabs(
               kullaniciAdi: _kullaniciAdi,
+              kullaniciRolu: _kullaniciRolu,
               araclar: _araclar,
               turkceMi: _turkceMi,
               onDilDegistir: _dilDegistir,
@@ -155,10 +159,18 @@ class _HtmlColors {
   static const Color tertiaryFixedDim = Color(0xFF4EDEA3);
 }
 
+enum KullaniciTuru {
+  kktcVatandas,
+  tcVatandas,
+  ogrenci,
+  askeriPersonel,
+  uluslararasi,
+}
+
 class GirisSayfasi extends StatefulWidget {
   final bool turkceMi;
   final Function(bool) onDilDegistir;
-  final Function(String, List<String>) onGirisBasarili;
+  final Function(String, List<String>, String) onGirisBasarili;
 
   const GirisSayfasi({
     super.key,
@@ -175,14 +187,34 @@ class _GirisSayfasiState extends State<GirisSayfasi>
     with TickerProviderStateMixin {
   final TextEditingController _girisController = TextEditingController();
   final TextEditingController _sifreController = TextEditingController();
-  bool _kktcVatandasiMi = true;
+  KullaniciTuru _seciliRol = KullaniciTuru.kktcVatandas;
+  String _secilenUniversite = "ODTU";
+  String _secilenAskeriBirlik = "KTBK";
+
+  final List<Map<String, String>> _universiteler = [
+    {"kod": "ODTU", "ad": "ODTÜ Kuzey Kıbrıs Kampüsü", "kisa": "ODTÜ KKK"},
+    {"kod": "DAU", "ad": "Doğu Akdeniz Üniversitesi (DAÜ)", "kisa": "DAÜ / EMU"},
+    {"kod": "YDU", "ad": "Yakın Doğu Üniversitesi (YDÜ)", "kisa": "YDÜ / NEU"},
+    {"kod": "UKU", "ad": "Uluslararası Kıbrıs Üniversitesi", "kisa": "UKÜ / CIU"},
+    {"kod": "LAU", "ad": "Lefke Avrupa Üniversitesi", "kisa": "LAÜ / EUL"},
+    {"kod": "GU", "ad": "Girne Üniversitesi", "kisa": "GÜ / UoK"},
+    {"kod": "DIGER", "ad": "Diğer KKTC Yükseköğretim (YÖBİS)", "kisa": "Diğer / YÖBİS"},
+  ];
+
+  final List<Map<String, String>> _askeriBirlikler = [
+    {"kod": "KTBK", "ad": "Kıbrıs Türk Barış Kuvvetleri (KTBK Kolordu)", "kisa": "KTBK Kolordu"},
+    {"kod": "28TUM", "ad": "KTBK 28. Mekanize Piyade Tümeni (Paşaköy)", "kisa": "28. Tümen"},
+    {"kod": "39TUM", "ad": "KTBK 39. Mekanize Piyade Tümeni (Çamlıbel)", "kisa": "39. Tümen"},
+    {"kod": "GKK", "ad": "Güvenlik Kuvvetleri Komutanlığı (GKK Boğaz)", "kisa": "GKK Boğaz"},
+    {"kod": "SG", "ad": "KKTC Sahil Güvenlik Komutanlığı", "kisa": "Sahil Güvenlik"},
+  ];
+
   bool _sifreGizli = true;
   bool _biyometrikYukleniyor = false;
   bool _biyometrikBasarili = false;
   bool _girisYukleniyor = false;
   bool _girisBasariliAnimasyon = false;
-  // Auth method: 0 = Kimlik&Şifre, 1 = SMS
-  int _authMethod = 0;
+  int _authMethod = 0; // 0 = Kimlik&Şifre, 1 = SMS
 
   late final AnimationController _pingController;
 
@@ -210,8 +242,8 @@ class _GirisSayfasiState extends State<GirisSayfasi>
     if (numara.isEmpty || sifre.isEmpty) {
       _snack(
         widget.turkceMi
-            ? 'Lütfen kimlik no ve şifre girin.'
-            : 'Please enter credentials to proceed.',
+            ? 'Lütfen kimlik/öğrenci/sicil no ve şifrenizi girin.'
+            : 'Please enter your ID/credentials and password.',
         isError: true,
       );
       return;
@@ -219,31 +251,59 @@ class _GirisSayfasiState extends State<GirisSayfasi>
 
     setState(() => _girisYukleniyor = true);
 
-    Future.delayed(const Duration(milliseconds: 1200), () {
+    Future.delayed(const Duration(milliseconds: 950), () {
       if (!mounted) return;
 
       List<String> tanimliAraclar = [];
       String adSoyad = "";
+      String rolAciklama = "";
 
-      if (!_kktcVatandasiMi) {
-        if (numara.toLowerCase() == "tubi" && sifre == "tugkan3517") {
-          adSoyad = widget.turkceMi ? "Tubi (Öğrenci)" : "Tubi (Student)";
-          tanimliAraclar = ["ST 999", "GM 202"];
-        } else {
-          setState(() {
-            _girisYukleniyor = false;
-          });
-          _snack(
-            widget.turkceMi
-                ? 'Hatalı öğrenci adı veya şifre! (tubi / tugkan3517)'
-                : 'Invalid student username or password!',
-            isError: true,
+      switch (_seciliRol) {
+        case KullaniciTuru.kktcVatandas:
+          adSoyad = widget.turkceMi ? "Ahmet Demir" : "Ahmet Demir (Citizen)";
+          rolAciklama = widget.turkceMi ? "KKTC Vatandaşı (Merkezi Kayıt)" : "TRNC Citizen";
+          tanimliAraclar = ["RZ 123", "LZ 555"];
+          break;
+
+        case KullaniciTuru.tcVatandas:
+          adSoyad = widget.turkceMi ? "Mehmet Yılmaz" : "Mehmet Yilmaz";
+          rolAciklama = widget.turkceMi ? "T.C. Vatandaşı (KKTC İkamet İzni)" : "TR Citizen (TRNC Residence Permit)";
+          tanimliAraclar = ["KY 440", "RZ 123"];
+          break;
+
+        case KullaniciTuru.ogrenci:
+          final uni = _universiteler.firstWhere(
+            (u) => u["kod"] == _secilenUniversite,
+            orElse: () => _universiteler[0],
           );
-          return;
-        }
-      } else {
-        adSoyad = widget.turkceMi ? "Ahmet Demir" : "Ahmet Demir (Citizen)";
-        tanimliAraclar = ["RZ 123", "LZ 555"];
+          final uniKisa = uni["kisa"]!;
+          adSoyad = widget.turkceMi ? "Tubi ($uniKisa)" : "Tubi ($uniKisa Student)";
+          rolAciklama = widget.turkceMi ? "$uniKisa Öğrenci (YÖBİS Aktif)" : "$uniKisa Student (YOBIS Active)";
+          if (_secilenUniversite == "ODTU") {
+            tanimliAraclar = ["ODTU 107", "ST 999"];
+          } else if (_secilenUniversite == "DAU") {
+            tanimliAraclar = ["ST 999", "GM 202"];
+          } else {
+            tanimliAraclar = ["GM 202", "ST 999"];
+          }
+          break;
+
+        case KullaniciTuru.askeriPersonel:
+          final birlik = _askeriBirlikler.firstWhere(
+            (b) => b["kod"] == _secilenAskeriBirlik,
+            orElse: () => _askeriBirlikler[0],
+          );
+          final birlikKisa = birlik["kisa"]!;
+          adSoyad = widget.turkceMi ? "Yzb. Burak Kaya" : "Capt. Burak Kaya";
+          rolAciklama = widget.turkceMi ? "$birlikKisa (Askeri Görev & Şahsi İzin)" : "$birlikKisa (Military Duty & Permit)";
+          tanimliAraclar = ["KT 1974", "RZ 123"];
+          break;
+
+        case KullaniciTuru.uluslararasi:
+          adSoyad = "Alex Smith";
+          rolAciklama = widget.turkceMi ? "Uluslararası Misafir (İkamet İzni)" : "International Guest (Residence Permit)";
+          tanimliAraclar = ["GM 202", "ST 999"];
+          break;
       }
 
       setState(() {
@@ -251,21 +311,39 @@ class _GirisSayfasiState extends State<GirisSayfasi>
         _girisBasariliAnimasyon = true;
       });
 
-      Future.delayed(const Duration(milliseconds: 600), () {
-        widget.onGirisBasarili(adSoyad, tanimliAraclar);
+      Future.delayed(const Duration(milliseconds: 550), () {
+        widget.onGirisBasarili(adSoyad, tanimliAraclar, rolAciklama);
       });
     });
   }
 
-  void _hizliDemoGiris(bool ogrenci) {
+  void _hizliDemoGiris(KullaniciTuru rol, {String? uniKod, String? birlikKod}) {
     setState(() {
-      _kktcVatandasiMi = !ogrenci;
-      if (ogrenci) {
-        _girisController.text = "tubi";
-        _sifreController.text = "tugkan3517";
-      } else {
-        _girisController.text = "123456789";
-        _sifreController.text = "123456";
+      _seciliRol = rol;
+      if (uniKod != null) _secilenUniversite = uniKod;
+      if (birlikKod != null) _secilenAskeriBirlik = birlikKod;
+
+      switch (rol) {
+        case KullaniciTuru.kktcVatandas:
+          _girisController.text = "123456";
+          _sifreController.text = "123456";
+          break;
+        case KullaniciTuru.tcVatandas:
+          _girisController.text = "19283746501";
+          _sifreController.text = "tc1234";
+          break;
+        case KullaniciTuru.ogrenci:
+          _girisController.text = uniKod == "ODTU" ? "21703517" : "tubi";
+          _sifreController.text = "tugkan3517";
+          break;
+        case KullaniciTuru.askeriPersonel:
+          _girisController.text = "98765432101";
+          _sifreController.text = "asker1974";
+          break;
+        case KullaniciTuru.uluslararasi:
+          _girisController.text = "U8819201";
+          _sifreController.text = "alex123";
+          break;
       }
     });
     _girisYap();
@@ -276,7 +354,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
       _biyometrikYukleniyor = true;
       _biyometrikBasarili = false;
     });
-    await Future.delayed(const Duration(milliseconds: 1200));
+    await Future.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
     setState(() {
       _biyometrikYukleniyor = false;
@@ -284,9 +362,10 @@ class _GirisSayfasiState extends State<GirisSayfasi>
       _girisController.text = '21894019284';
       _sifreController.text = '••••••••••••';
     });
-    await Future.delayed(const Duration(milliseconds: 900));
+    await Future.delayed(const Duration(milliseconds: 600));
     if (!mounted) return;
     setState(() => _biyometrikBasarili = false);
+    _girisYap();
   }
 
   void _snack(String msg, {bool isError = false}) {
@@ -313,11 +392,62 @@ class _GirisSayfasiState extends State<GirisSayfasi>
 
   @override
   Widget build(BuildContext context) {
+    // Dynamic Labels & Hints based on selected user type
+    String idEtiketi = widget.turkceMi ? 'KKTC KİMLİK KARTI NO' : 'TRNC IDENTITY NO';
+    String idHint = widget.turkceMi ? 'Örn: 123456 (KKTC Kimlik No)' : 'E.g.: 123456';
+    IconData idIkon = Icons.badge_outlined;
+    String idAciklama = widget.turkceMi
+        ? 'KKTC Polis Genel Müdürlüğü Merkezi Kaydı'
+        : 'TRNC Police Headquarters Registry';
+
+    switch (_seciliRol) {
+      case KullaniciTuru.kktcVatandas:
+        idEtiketi = widget.turkceMi ? 'KKTC KİMLİK KARTI NO' : 'TRNC ID NUMBER';
+        idHint = widget.turkceMi ? 'Örn: 123456 (KKTC Kimlik No)' : 'E.g.: 123456';
+        idIkon = Icons.badge_outlined;
+        idAciklama = widget.turkceMi
+            ? 'KKTC Nüfus Kayıt Dairesi ve Polis Genel Müdürlüğü Entegre'
+            : 'TRNC Civil Registry & Police HQ Integrated';
+        break;
+      case KullaniciTuru.tcVatandas:
+        idEtiketi = widget.turkceMi ? 'T.C. KİMLİK NO (11 HANE) VEYA YKN (99...)' : 'TR ID NO (11-DIGIT) OR TRNC YKN';
+        idHint = widget.turkceMi ? 'Örn: 19283746501 (TCKN / Yabancı Kimlik No)' : 'E.g.: 19283746501';
+        idIkon = Icons.credit_card_rounded;
+        idAciklama = widget.turkceMi
+            ? 'İçişleri Bakanlığı Muhaceret Dairesi Çalışma & Oturma İzni Entegre'
+            : 'Ministry of Interior Immigration & Residence Permit Integrated';
+        break;
+      case KullaniciTuru.ogrenci:
+        idEtiketi = widget.turkceMi ? 'ÖĞRENCİ NO VEYA T.C. / PASAPORT NO' : 'STUDENT ID OR PASSPORT / TR ID';
+        idHint = widget.turkceMi ? 'Örn: 21703517 veya tubi' : 'E.g.: 21703517 or tubi';
+        idIkon = Icons.school_rounded;
+        idAciklama = widget.turkceMi
+            ? 'KKTC MEB & YÖBİS Öğrenci İkamet İzni ve Kampüs Araç Pulu Portalı'
+            : 'TRNC Ministry of Education & YOBIS Student Permit Portal';
+        break;
+      case KullaniciTuru.askeriPersonel:
+        idEtiketi = widget.turkceMi ? 'T.C. KİMLİK VEYA ASKERİ SİCİL NO' : 'TR ID OR MILITARY SERVICE NO';
+        idHint = widget.turkceMi ? 'Örn: 98765432101 veya AS-1974' : 'E.g.: 98765432101 or AS-1974';
+        idIkon = Icons.shield_rounded;
+        idAciklama = widget.turkceMi
+            ? 'KTBK & GKK Askeri Personel Şahsi / Garnizon Araç Özel Protokolü'
+            : 'KTBK & GKK Military Garrison and Personal Vehicle Protocol';
+        break;
+      case KullaniciTuru.uluslararasi:
+        idEtiketi = widget.turkceMi ? 'PASAPORT NUMARASI' : 'PASSPORT NUMBER';
+        idHint = widget.turkceMi ? 'Örn: U12345678 (Uluslararası Pasaport)' : 'E.g.: U12345678';
+        idIkon = Icons.public_rounded;
+        idAciklama = widget.turkceMi
+            ? 'Yabancı Uyruklular İkamet ve Geçici İthal / Z Plaka Kaydı'
+            : 'Foreign Residents Permit & Temporary Import / Z Plate Registry';
+        break;
+    }
+
     return Scaffold(
       backgroundColor: _HtmlColors.background,
       body: Stack(
         children: [
-          // ── Ambient glow orbs (HTML'e birebir) ──
+          // ── Ambient glow orbs ──
           Positioned(
             top: -96,
             left: -80,
@@ -378,7 +508,6 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Animated ping dot
                               AnimatedBuilder(
                                 animation: _pingController,
                                 builder: (ctx, child) {
@@ -400,7 +529,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                widget.turkceMi ? 'KKTC Kamu Ağı Aktif' : 'TRNC Network Active',
+                                widget.turkceMi ? 'KKTC Kamu & Trafik Ağı Aktif' : 'TRNC Traffic Network Active',
                                 style: const TextStyle(
                                   color: _HtmlColors.tertiary,
                                   fontSize: 10,
@@ -433,13 +562,12 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                   Center(
                     child: Column(
                       children: [
-                        // Shield avatar
                         Stack(
                           clipBehavior: Clip.none,
                           children: [
                             Container(
-                              width: 80,
-                              height: 80,
+                              width: 76,
+                              height: 76,
                               decoration: BoxDecoration(
                                 color: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.90),
                                 borderRadius: BorderRadius.circular(20),
@@ -453,7 +581,6 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                               ),
                               child: Stack(
                                 children: [
-                                  // Gradient overlay
                                   Container(
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(20),
@@ -471,14 +598,13 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                                   const Center(
                                     child: Icon(
                                       Icons.shield_outlined,
-                                      size: 40,
+                                      size: 38,
                                       color: _HtmlColors.primary,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            // Verified badge
                             Positioned(
                               right: -4,
                               bottom: -4,
@@ -499,8 +625,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        // Sub-label
+                        const SizedBox(height: 10),
                         Text(
                           widget.turkceMi ? 'KKTC RESMİ GEÇİT' : 'TRNC OFFICIAL PORTAL',
                           style: const TextStyle(
@@ -511,12 +636,12 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                             fontFamily: 'monospace',
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 3),
                         Text(
                           widget.turkceMi ? 'KKTC e-Trafik' : 'TRNC e-Traffic',
                           style: const TextStyle(
                             color: _HtmlColors.onSurface,
-                            fontSize: 28,
+                            fontSize: 26,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.5,
                           ),
@@ -524,53 +649,206 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                         const SizedBox(height: 4),
                         Text(
                           widget.turkceMi
-                              ? 'KKTC Polis Genel Müdürlüğü & Bayındırlık ve\nUlaştırma Bakanlığı Trafik Portalı'
-                              : 'TRNC Police HQ & Ministry of Public Works\nand Transportation Traffic Portal',
+                              ? 'Polis Genel Müdürlüğü • Maliye Bakanlığı • MEB\nTrafik, Ceza, Seyrüsefer & Ruhsat Portalı'
+                              : 'Police HQ • Ministry of Finance • MEB\nTraffic, Fines, Road Tax & License Portal',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: _HtmlColors.secondary,
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w400,
-                            height: 1.5,
+                            height: 1.4,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
 
-                  // ── Role Selector Tabs ──
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: _HtmlColors.surfaceContainerLow.withValues(alpha: 0.80),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      children: [
-                        _roleTab(
-                          icon: Icons.badge,
-                          label: widget.turkceMi ? 'KKTC Vatandaşı' : 'TRNC Citizen',
-                          selected: _kktcVatandasiMi,
-                          onTap: () => setState(() => _kktcVatandasiMi = true),
-                        ),
-                        _roleTab(
-                          icon: Icons.school,
-                          label: widget.turkceMi ? 'Öğrenci / Misafir' : 'Student / Guest',
-                          selected: !_kktcVatandasiMi,
-                          onTap: () => setState(() => _kktcVatandasiMi = false),
-                        ),
-                      ],
+                  // ── Segmented Role Selector ──
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: _HtmlColors.surfaceContainerLow.withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          _roleChip(
+                            icon: Icons.badge_outlined,
+                            label: widget.turkceMi ? 'KKTC Vatandaşı' : 'TRNC Citizen',
+                            selected: _seciliRol == KullaniciTuru.kktcVatandas,
+                            onTap: () => setState(() => _seciliRol = KullaniciTuru.kktcVatandas),
+                          ),
+                          _roleChip(
+                            icon: Icons.credit_card_rounded,
+                            label: widget.turkceMi ? 'T.C. İkamet' : 'TR Resident',
+                            selected: _seciliRol == KullaniciTuru.tcVatandas,
+                            onTap: () => setState(() => _seciliRol = KullaniciTuru.tcVatandas),
+                          ),
+                          _roleChip(
+                            icon: Icons.school_rounded,
+                            label: widget.turkceMi ? 'Üniversite (Öğrenci)' : 'University (Student)',
+                            selected: _seciliRol == KullaniciTuru.ogrenci,
+                            onTap: () => setState(() => _seciliRol = KullaniciTuru.ogrenci),
+                          ),
+                          _roleChip(
+                            icon: Icons.shield_rounded,
+                            label: widget.turkceMi ? 'Askeri Personel (KTBK)' : 'Military (KTBK)',
+                            selected: _seciliRol == KullaniciTuru.askeriPersonel,
+                            onTap: () => setState(() => _seciliRol = KullaniciTuru.askeriPersonel),
+                          ),
+                          _roleChip(
+                            icon: Icons.public_rounded,
+                            label: widget.turkceMi ? 'Uluslararası / Pasaport' : 'International / Passport',
+                            selected: _seciliRol == KullaniciTuru.uluslararasi,
+                            onTap: () => setState(() => _seciliRol = KullaniciTuru.uluslararasi),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
+
+                  // ── Extra Contextual Selector: Üniversite Seçimi ──
+                  if (_seciliRol == KullaniciTuru.ogrenci)
+                    Container(
+                      margin: const EdgeInsets.only(top: 10),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: _HtmlColors.tertiary.withValues(alpha: 0.35)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.school, size: 16, color: _HtmlColors.tertiary),
+                              const SizedBox(width: 6),
+                              Text(
+                                widget.turkceMi ? 'ÜNİVERSİTE SEÇİMİ (KKTC YÖBİS ENTEGRASYONU)' : 'SELECT UNIVERSITY (TRNC YOBIS)',
+                                style: const TextStyle(
+                                  color: _HtmlColors.tertiaryFixed,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            child: Row(
+                              children: _universiteler.map((uni) {
+                                final secili = _secilenUniversite == uni["kod"];
+                                return GestureDetector(
+                                  onTap: () => setState(() => _secilenUniversite = uni["kod"]!),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    margin: const EdgeInsets.only(right: 6),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: secili ? _HtmlColors.tertiaryContainer : _HtmlColors.surfaceContainerLow,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: secili ? _HtmlColors.tertiaryFixed : Colors.white10,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      uni["kisa"]!,
+                                      style: TextStyle(
+                                        color: secili ? Colors.white : _HtmlColors.secondary,
+                                        fontSize: 11,
+                                        fontWeight: secili ? FontWeight.w800 : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // ── Extra Contextual Selector: Askeri Birlik Seçimi ──
+                  if (_seciliRol == KullaniciTuru.askeriPersonel)
+                    Container(
+                      margin: const EdgeInsets.only(top: 10),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFEAB308).withValues(alpha: 0.35)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.shield_rounded, size: 16, color: Color(0xFFEAB308)),
+                              const SizedBox(width: 6),
+                              Text(
+                                widget.turkceMi ? 'BAĞLI BULUNULAN ASKERİ BİRLİK / KOMUTANLIK' : 'MILITARY COMMAND / UNIT',
+                                style: const TextStyle(
+                                  color: Color(0xFFFDE047),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            child: Row(
+                              children: _askeriBirlikler.map((birlik) {
+                                final secili = _secilenAskeriBirlik == birlik["kod"];
+                                return GestureDetector(
+                                  onTap: () => setState(() => _secilenAskeriBirlik = birlik["kod"]!),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    margin: const EdgeInsets.only(right: 6),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: secili ? const Color(0xFF854D0E) : _HtmlColors.surfaceContainerLow,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: secili ? const Color(0xFFFDE047) : Colors.white10,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      birlik["kisa"]!,
+                                      style: TextStyle(
+                                        color: secili ? Colors.white : _HtmlColors.secondary,
+                                        fontSize: 11,
+                                        fontWeight: secili ? FontWeight.w800 : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   const SizedBox(height: 12),
 
-                  // ── Authentication Form Card (glassmorphism) ──
+                  // ── Authentication Form Card ──
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: _HtmlColors.surfaceContainer.withValues(alpha: 0.70),
+                      color: _HtmlColors.surfaceContainer.withValues(alpha: 0.75),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: _HtmlColors.outlineVariant.withValues(alpha: 0.5),
@@ -604,23 +882,45 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                               ),
                               _authMethodTab(
                                 icon: Icons.sms,
-                                label: widget.turkceMi ? 'SMS / Mobil İmza' : 'SMS / Mobile Sign',
+                                label: widget.turkceMi ? 'SMS / Mobil Onay' : 'SMS / Mobile Code',
                                 selected: _authMethod == 1,
                                 onTap: () => setState(() => _authMethod = 1),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
+
+                        // System Info Pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _HtmlColors.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline, size: 14, color: _HtmlColors.secondary),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  idAciklama,
+                                  style: const TextStyle(color: _HtmlColors.secondary, fontSize: 10),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
 
                         // ID Field Label
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              widget.turkceMi
-                                  ? (_kktcVatandasiMi ? 'KKTC KİMLİK NO' : 'PASAPORT / ÖĞRENCİ NO')
-                                  : (_kktcVatandasiMi ? 'TRNC IDENTITY NO' : 'PASSPORT / STUDENT NO'),
+                              idEtiketi,
                               style: const TextStyle(
                                 color: _HtmlColors.secondary,
                                 fontSize: 10,
@@ -643,10 +943,8 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                         // ID Input
                         _darkInputField(
                           controller: _girisController,
-                          hint: _kktcVatandasiMi
-                              ? (widget.turkceMi ? 'Örn: 123456 (KKTC Kimlik No)' : 'E.g.: 123456')
-                              : (widget.turkceMi ? 'U12345678 (Pasaport / Öğrenci No)' : 'U12345678'),
-                          prefixIcon: Icons.person,
+                          hint: idHint,
+                          prefixIcon: idIkon,
                           obscure: false,
                         ),
                         const SizedBox(height: 14),
@@ -693,7 +991,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                         ),
                         const SizedBox(height: 16),
 
-                        // ── Primary Login Button (Gradient Red) ──
+                        // ── Primary Login Button ──
                         SizedBox(
                           width: double.infinity,
                           height: 52,
@@ -816,15 +1114,15 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
 
-                  // ── Demo Preset Cards ──
+                  // ── Demo Presets Section Header ──
                   Row(
                     children: [
                       const Icon(Icons.touch_app, color: _HtmlColors.tertiary, size: 14),
                       const SizedBox(width: 6),
                       Text(
-                        widget.turkceMi ? 'HIZLI TEST & DEMO SİMÜLATÖRÜ' : 'QUICK DEMO SIMULATOR',
+                        widget.turkceMi ? 'HIZLI TEST & DEMO PROFİLLERİ' : 'QUICK DEMO SIMULATOR',
                         style: const TextStyle(
                           color: _HtmlColors.secondary,
                           fontSize: 9,
@@ -836,31 +1134,73 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                   ),
                   const SizedBox(height: 8),
 
-                  // Demo Card — Ahmet Demir
+                  // Demo 1: KKTC Vatandaşı
                   _demoCard(
                     icon: Icons.directions_car,
                     name: 'Ahmet Demir',
-                    badge: widget.turkceMi ? 'Vatandaş' : 'Citizen',
+                    badge: widget.turkceMi ? 'KKTC Vatandaşı' : 'TRNC Citizen',
                     subtitle: 'BMW 3.20i & Mercedes E220d (Aktif Koçan)',
                     iconBg: _HtmlColors.primaryContainer.withValues(alpha: 0.20),
                     iconColor: _HtmlColors.primary,
                     badgeBg: _HtmlColors.surfaceBright,
                     badgeColor: _HtmlColors.secondary,
-                    onTap: () => _hizliDemoGiris(false),
+                    onTap: () => _hizliDemoGiris(KullaniciTuru.kktcVatandas),
                   ),
                   const SizedBox(height: 8),
 
-                  // Demo Card — Tubi
+                  // Demo 2: T.C. Vatandaşı / KKTC İkamet
                   _demoCard(
-                    icon: Icons.school,
-                    name: widget.turkceMi ? 'Tubi Öğrenci Profili' : 'Tubi Student Profile',
-                    badge: widget.turkceMi ? 'Misafir İzin' : 'Guest Access',
-                    subtitle: 'VW Polo & Toyota Corolla (Geçici Kayıt)',
+                    icon: Icons.credit_card_rounded,
+                    name: widget.turkceMi ? 'Mehmet Yılmaz' : 'Mehmet Yilmaz',
+                    badge: widget.turkceMi ? 'T.C. İkamet / Çalışma' : 'TR Resident',
+                    subtitle: 'Renault Megane Sedan (T.C. İkamet / YKN)',
+                    iconBg: const Color(0xFF0284C7).withValues(alpha: 0.20),
+                    iconColor: const Color(0xFF38BDF8),
+                    badgeBg: const Color(0xFF0284C7).withValues(alpha: 0.30),
+                    badgeColor: const Color(0xFF7DD3FC),
+                    onTap: () => _hizliDemoGiris(KullaniciTuru.tcVatandas),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Demo 3: Öğrenci (ODTÜ / DAÜ / YDÜ)
+                  _demoCard(
+                    icon: Icons.school_rounded,
+                    name: widget.turkceMi ? 'Tubi (ODTÜ / DAÜ Öğrencisi)' : 'Tubi (Student Profile)',
+                    badge: widget.turkceMi ? 'Kampüs Araç Pulu' : 'Campus Permit',
+                    subtitle: 'Honda Civic & VW Polo (ODTÜ / DAÜ Pulu)',
                     iconBg: const Color(0xFF007C55).withValues(alpha: 0.20),
                     iconColor: _HtmlColors.tertiary,
                     badgeBg: const Color(0xFF007C55).withValues(alpha: 0.30),
                     badgeColor: _HtmlColors.tertiary,
-                    onTap: () => _hizliDemoGiris(true),
+                    onTap: () => _hizliDemoGiris(KullaniciTuru.ogrenci, uniKod: "ODTU"),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Demo 4: Askeri Personel (KTBK Barış Kuvvetleri)
+                  _demoCard(
+                    icon: Icons.shield_rounded,
+                    name: widget.turkceMi ? 'Yzb. Burak Kaya' : 'Capt. Burak Kaya',
+                    badge: widget.turkceMi ? 'KTBK Barış Kuvvetleri' : 'KTBK Peace Forces',
+                    subtitle: 'Ford Ranger 4x4 (Askeri Garnizon & Şahsi Araç)',
+                    iconBg: const Color(0xFF854D0E).withValues(alpha: 0.25),
+                    iconColor: const Color(0xFFFDE047),
+                    badgeBg: const Color(0xFF854D0E).withValues(alpha: 0.35),
+                    badgeColor: const Color(0xFFFEF08A),
+                    onTap: () => _hizliDemoGiris(KullaniciTuru.askeriPersonel, birlikKod: "KTBK"),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Demo 5: Uluslararası / Pasaport
+                  _demoCard(
+                    icon: Icons.public_rounded,
+                    name: 'Alex Smith',
+                    badge: widget.turkceMi ? 'Uluslararası / UK' : 'International / UK',
+                    subtitle: 'Toyota Corolla (Geçici İkamet İzni / Pasaport)',
+                    iconBg: const Color(0xFF6D28D9).withValues(alpha: 0.20),
+                    iconColor: const Color(0xFFA78BFA),
+                    badgeBg: const Color(0xFF6D28D9).withValues(alpha: 0.30),
+                    badgeColor: const Color(0xFFDDD6FE),
+                    onTap: () => _hizliDemoGiris(KullaniciTuru.uluslararasi),
                   ),
                   const SizedBox(height: 24),
 
@@ -871,9 +1211,9 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.lock_outline, color: _HtmlColors.tertiary, size: 14),
-                            SizedBox(width: 6),
-                            Text(
+                            const Icon(Icons.lock_outline, color: _HtmlColors.tertiary, size: 14),
+                            const SizedBox(width: 6),
+                            const Text(
                               '256-Bit SSL Uçtan Uca Şifreleme',
                               style: TextStyle(
                                 color: _HtmlColors.secondary,
@@ -959,53 +1299,53 @@ class _GirisSayfasiState extends State<GirisSayfasi>
     );
   }
 
-  Widget _roleTab({
+  Widget _roleChip({
     required IconData icon,
     required String label,
     required bool selected,
     required VoidCallback onTap,
   }) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-          decoration: BoxDecoration(
-            color: selected ? _HtmlColors.surfaceContainerHigh : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.20),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    )
-                  ]
-                : null,
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.symmetric(horizontal: 3),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        decoration: BoxDecoration(
+          color: selected ? _HtmlColors.surfaceContainerHigh : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: selected ? _HtmlColors.primaryContainer.withValues(alpha: 0.6) : Colors.transparent,
+            width: 1,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 16,
-                color: selected ? _HtmlColors.primary : _HtmlColors.secondary,
+          boxShadow: selected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  )
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 15,
+              color: selected ? _HtmlColors.primary : _HtmlColors.secondary,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: selected ? _HtmlColors.onSurface : _HtmlColors.secondary,
+                fontSize: 12,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
               ),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  label,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: selected ? _HtmlColors.onSurface : _HtmlColors.secondary,
-                    fontSize: 12,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -1136,7 +1476,6 @@ class _GirisSayfasiState extends State<GirisSayfasi>
         ),
         child: Row(
           children: [
-            // Icon
             Container(
               width: 40,
               height: 40,
@@ -1147,19 +1486,21 @@ class _GirisSayfasiState extends State<GirisSayfasi>
               child: Icon(icon, color: iconColor, size: 20),
             ),
             const SizedBox(width: 12),
-            // Text
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          color: _HtmlColors.onSurface,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                      Flexible(
+                        child: Text(
+                          name,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: _HtmlColors.onSurface,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -1206,6 +1547,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
 // ==========================================
 class AnaSayfaTabs extends StatefulWidget {
   final String kullaniciAdi;
+  final String kullaniciRolu;
   final List<String> araclar;
   final bool turkceMi;
   final Function(bool) onDilDegistir;
@@ -1214,6 +1556,7 @@ class AnaSayfaTabs extends StatefulWidget {
   const AnaSayfaTabs({
     super.key,
     required this.kullaniciAdi,
+    this.kullaniciRolu = "",
     required this.araclar,
     required this.turkceMi,
     required this.onDilDegistir,
@@ -1341,6 +1684,51 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
       "seyruseferDonem": "2026/2. Dönem",
       "sasiNo": "TRNC-TY-2020-5620",
       "motorHacmi": "1598 cc / Benzin",
+      "cezalar": []
+    },
+    "KT 1974": {
+      "markaModel": "Ford Ranger 4x4 (KTBK Garnizon/Şahsi)",
+      "sigortaKalanGun": 285,
+      "muayeneKalanGun": 320,
+      "ehliyetPuani": 100,
+      "sigortaAktif": true,
+      "seyruseferKalanGun": 298,
+      "seyruseferBitisTarihi": "26 Temmuz 2027",
+      "seyruseferHarc": "₺0,00 (Askeri Protokol)",
+      "seyruseferHarcMiktar": 0,
+      "seyruseferDonem": "2026/KTBK-GKK Özel",
+      "sasiNo": "KTBK-FR-2023-7712",
+      "motorHacmi": "1996 cc / Dizel",
+      "cezalar": []
+    },
+    "ODTU 107": {
+      "markaModel": "Honda Civic VTEC (ODTÜ Kampüs Pulu)",
+      "sigortaKalanGun": 60,
+      "muayeneKalanGun": 140,
+      "ehliyetPuani": 90,
+      "sigortaAktif": true,
+      "seyruseferKalanGun": 45,
+      "seyruseferBitisTarihi": "15 Kasım 2026",
+      "seyruseferHarc": "₺2.450,00",
+      "seyruseferHarcMiktar": 2450,
+      "seyruseferDonem": "2026/2. Dönem",
+      "sasiNo": "TRNC-HC-2022-3310",
+      "motorHacmi": "1498 cc / Benzin",
+      "cezalar": []
+    },
+    "KY 440": {
+      "markaModel": "Renault Megane Sedan (T.C. İkamet/YKN)",
+      "sigortaKalanGun": 110,
+      "muayeneKalanGun": 95,
+      "ehliyetPuani": 95,
+      "sigortaAktif": true,
+      "seyruseferKalanGun": 120,
+      "seyruseferBitisTarihi": "29 Ocak 2027",
+      "seyruseferHarc": "₺3.200,00",
+      "seyruseferHarcMiktar": 3200,
+      "seyruseferDonem": "2026/2. Dönem",
+      "sasiNo": "TRNC-RN-2021-9921",
+      "motorHacmi": "1332 cc / Benzin",
       "cezalar": []
     },
   };
@@ -5447,7 +5835,9 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      widget.turkceMi ? 'KKTC Kayıtlı Sürücü Belgesi' : 'TRNC Registered Driver License',
+                      widget.kullaniciRolu.isNotEmpty
+                          ? widget.kullaniciRolu
+                          : (widget.turkceMi ? 'KKTC Kayıtlı Sürücü Belgesi' : 'TRNC Registered Driver License'),
                       style: const TextStyle(fontSize: 12, color: _HtmlColors.secondary),
                     ),
                     const SizedBox(height: 6),
