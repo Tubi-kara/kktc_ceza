@@ -82,14 +82,34 @@ final List<RotaNoktasi> kktcNoktalari = [
     ikon: Icons.shopping_cart_rounded,
   ),
   const RotaNoktasi(
-    id: "guzelyurt_merkez",
-    ad: "Güzelyurt Terminal & Merkez",
-    adEn: "Guzelyurt Terminal & Center",
-    kisaAd: "Güzelyurt Merkez",
-    bolge: "Güzelyurt",
-    lat: 35.1980,
-    lon: 32.9930,
-    ikon: Icons.directions_bus_rounded,
+    id: "lapta",
+    ad: "Lapta Sahil & Oteller Bölgesi",
+    adEn: "Lapta Coastal & Hotels Strip",
+    kisaAd: "Lapta Sahili",
+    bolge: "Girne",
+    lat: 35.3450,
+    lon: 33.1680,
+    ikon: Icons.beach_access_rounded,
+  ),
+  const RotaNoktasi(
+    id: "alsancak",
+    ad: "Alsancak & Karaoğlanoğlu",
+    adEn: "Alsancak & Karaoglanoglu",
+    kisaAd: "Alsancak",
+    bolge: "Girne",
+    lat: 35.3490,
+    lon: 33.2320,
+    ikon: Icons.wb_sunny_rounded,
+  ),
+  const RotaNoktasi(
+    id: "girne_liman",
+    ad: "Girne Tarihi Liman & Merkez",
+    adEn: "Kyrenia Harbor & Center",
+    kisaAd: "Girne Limanı",
+    bolge: "Girne",
+    lat: 35.3420,
+    lon: 33.3210,
+    ikon: Icons.sailing_rounded,
   ),
   const RotaNoktasi(
     id: "lefkosa_dereboyu",
@@ -122,16 +142,6 @@ final List<RotaNoktasi> kktcNoktalari = [
     ikon: Icons.flight_takeoff_rounded,
   ),
   const RotaNoktasi(
-    id: "girne_liman",
-    ad: "Girne Tarihi Liman & Merkez",
-    adEn: "Kyrenia Harbor & Center",
-    kisaAd: "Girne Limanı",
-    bolge: "Girne",
-    lat: 35.3420,
-    lon: 33.3210,
-    ikon: Icons.sailing_rounded,
-  ),
-  const RotaNoktasi(
     id: "magusa_dau",
     ad: "Gazimağusa (Doğu Akdeniz Üni - DAÜ)",
     adEn: "Famagusta (EMU Campus)",
@@ -140,6 +150,26 @@ final List<RotaNoktasi> kktcNoktalari = [
     lat: 35.1450,
     lon: 33.9140,
     ikon: Icons.account_balance_rounded,
+  ),
+  const RotaNoktasi(
+    id: "guzelyurt_merkez",
+    ad: "Güzelyurt Terminal & Merkez",
+    adEn: "Guzelyurt Terminal & Center",
+    kisaAd: "Güzelyurt Merkez",
+    bolge: "Güzelyurt",
+    lat: 35.1980,
+    lon: 32.9930,
+    ikon: Icons.directions_bus_rounded,
+  ),
+  const RotaNoktasi(
+    id: "iskele_longbeach",
+    ad: "İskele & Long Beach Sahili",
+    adEn: "Iskele & Long Beach Strip",
+    kisaAd: "İskele Long Beach",
+    bolge: "İskele",
+    lat: 35.2890,
+    lon: 33.8950,
+    ikon: Icons.pool_rounded,
   ),
   const RotaNoktasi(
     id: "haspolat_uku",
@@ -162,26 +192,6 @@ final List<RotaNoktasi> kktcNoktalari = [
     ikon: Icons.school_rounded,
   ),
   const RotaNoktasi(
-    id: "lapta",
-    ad: "Lapta Sahil & Oteller Bölgesi",
-    adEn: "Lapta Coastal & Hotels Strip",
-    kisaAd: "Lapta Sahili",
-    bolge: "Girne",
-    lat: 35.3450,
-    lon: 33.1680,
-    ikon: Icons.beach_access_rounded,
-  ),
-  const RotaNoktasi(
-    id: "alsancak",
-    ad: "Alsancak & Karaoğlanoğlu",
-    adEn: "Alsancak & Karaoglanoglu",
-    kisaAd: "Alsancak",
-    bolge: "Girne",
-    lat: 35.3490,
-    lon: 33.2320,
-    ikon: Icons.wb_sunny_rounded,
-  ),
-  const RotaNoktasi(
     id: "catalkoy_esentepe",
     ad: "Çatalköy & Esentepe Sahil Yolu",
     adEn: "Catalkoy & Esentepe Coastal Road",
@@ -190,16 +200,6 @@ final List<RotaNoktasi> kktcNoktalari = [
     lat: 35.3360,
     lon: 33.4150,
     ikon: Icons.landscape_rounded,
-  ),
-  const RotaNoktasi(
-    id: "iskele_longbeach",
-    ad: "İskele & Long Beach Sahili",
-    adEn: "Iskele & Long Beach Strip",
-    kisaAd: "İskele Long Beach",
-    bolge: "İskele",
-    lat: 35.2890,
-    lon: 33.8950,
-    ikon: Icons.pool_rounded,
   ),
   const RotaNoktasi(
     id: "bogaz_iskele",
@@ -1359,69 +1359,121 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
     required RotaNoktasi secilenNokta,
     required ValueChanged<RotaNoktasi?> onChanged,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          etiket.toUpperCase(),
-          style: const TextStyle(
-            color: NavHtmlColors.primaryFixedDim,
-            fontSize: 9,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.8,
-          ),
-        ),
-        DropdownButtonHideUnderline(
-          child: DropdownButton<RotaNoktasi>(
-            value: secilenNokta,
-            isDense: true,
-            isExpanded: true,
-            dropdownColor: NavHtmlColors.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(14),
-            icon: const Icon(Icons.arrow_drop_down_rounded, color: NavHtmlColors.secondary),
-            items: kktcNoktalari.map((nokta) {
-              return DropdownMenuItem<RotaNoktasi>(
-                value: nokta,
-                child: Row(
-                  children: [
-                    Icon(nokta.ikon, size: 15, color: NavHtmlColors.secondary),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                      decoration: BoxDecoration(
-                        color: NavHtmlColors.surfaceContainerLowest,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: Colors.white12),
-                      ),
-                      child: Text(
-                        nokta.bolge,
+    return InkWell(
+      onTap: () => _noktaSecimSheetGoster(
+        etiket: etiket,
+        secilen: secilenNokta,
+        onSecildi: onChanged,
+      ),
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  etiket.toUpperCase(),
+                  style: const TextStyle(
+                    color: NavHtmlColors.primaryFixedDim,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  decoration: BoxDecoration(
+                    color: NavHtmlColors.primaryContainer.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.touch_app_rounded, size: 10, color: NavHtmlColors.secondary),
+                      const SizedBox(width: 2),
+                      Text(
+                        widget.turkceMi ? 'Listeyi Aç' : 'Browse',
                         style: const TextStyle(
-                          color: NavHtmlColors.tertiary,
-                          fontSize: 9,
+                          color: NavHtmlColors.secondary,
+                          fontSize: 8.5,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        widget.turkceMi ? nokta.ad : nokta.adEn,
-                        style: const TextStyle(
-                          color: NavHtmlColors.onSurface,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              );
-            }).toList(),
-            onChanged: onChanged,
-          ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Icon(secilenNokta.ikon, size: 16, color: NavHtmlColors.secondary),
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  decoration: BoxDecoration(
+                    color: NavHtmlColors.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Text(
+                    secilenNokta.bolge,
+                    style: const TextStyle(
+                      color: NavHtmlColors.tertiary,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    widget.turkceMi ? secilenNokta.ad : secilenNokta.adEn,
+                    style: const TextStyle(
+                      color: NavHtmlColors.onSurface,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: NavHtmlColors.secondary,
+                  size: 20,
+                ),
+              ],
+            ),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+
+  void _noktaSecimSheetGoster({
+    required String etiket,
+    required RotaNoktasi secilen,
+    required ValueChanged<RotaNoktasi?> onSecildi,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return _NoktaSeciciBottomSheet(
+          turkceMi: widget.turkceMi,
+          baslik: etiket,
+          secilenNokta: secilen,
+          noktalar: kktcNoktalari,
+          onSecildi: (nokta) {
+            Navigator.of(ctx).pop();
+            onSecildi(nokta);
+          },
+        );
+      },
     );
   }
 
@@ -2719,3 +2771,345 @@ class _RealGpsRoutePainter extends CustomPainter {
         oldDelegate.points != points;
   }
 }
+
+// ==========================================
+// 📍 GELİŞMİŞ NOKTA SEÇİM BOTTOM SHEETİ
+// ==========================================
+class _NoktaSeciciBottomSheet extends StatefulWidget {
+  final bool turkceMi;
+  final String baslik;
+  final RotaNoktasi secilenNokta;
+  final List<RotaNoktasi> noktalar;
+  final ValueChanged<RotaNoktasi> onSecildi;
+
+  const _NoktaSeciciBottomSheet({
+    required this.turkceMi,
+    required this.baslik,
+    required this.secilenNokta,
+    required this.noktalar,
+    required this.onSecildi,
+  });
+
+  @override
+  State<_NoktaSeciciBottomSheet> createState() => _NoktaSeciciBottomSheetState();
+}
+
+class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  String _seciliBolge = 'Tümü';
+  String _aramaMetni = '';
+
+  final List<String> _bolgeler = [
+    'Tümü',
+    'Girne',
+    'Lefkoşa',
+    'Güzelyurt',
+    'Gazimağusa',
+    'İskele',
+    'Lefke',
+  ];
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<RotaNoktasi> get _filtrelenmisNoktalar {
+    return widget.noktalar.where((n) {
+      // Bölge Filtresi
+      if (_seciliBolge != 'Tümü' && !n.bolge.toLowerCase().contains(_seciliBolge.toLowerCase())) {
+        return false;
+      }
+      // Metin Arama
+      if (_aramaMetni.trim().isNotEmpty) {
+        final query = _aramaMetni.trim().toLowerCase();
+        final matchAd = n.ad.toLowerCase().contains(query);
+        final matchEn = n.adEn.toLowerCase().contains(query);
+        final matchKisa = n.kisaAd.toLowerCase().contains(query);
+        final matchBolge = n.bolge.toLowerCase().contains(query);
+        return matchAd || matchEn || matchKisa || matchBolge;
+      }
+      return true;
+    }).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sonuclar = _filtrelenmisNoktalar;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.82,
+      decoration: BoxDecoration(
+        color: NavHtmlColors.surfaceContainerHigh,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border.all(color: Colors.white12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.6),
+            blurRadius: 24,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Tutma çubuğu
+          Center(
+            child: Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              width: 44,
+              height: 4.5,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          ),
+
+          // Başlık ve Kapat Butonu
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 6, 12, 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.baslik,
+                        style: const TextStyle(
+                          color: NavHtmlColors.onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.turkceMi
+                            ? "Lapta, Alsancak, Girne ve tüm KKTC noktaları (${widget.noktalar.length} nokta)"
+                            : "All TRNC locations (${widget.noktalar.length} destinations)",
+                        style: const TextStyle(
+                          color: NavHtmlColors.secondary,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, color: NavHtmlColors.secondary),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          ),
+
+          // Arama Girişi
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Container(
+              decoration: BoxDecoration(
+                color: NavHtmlColors.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                onChanged: (val) {
+                  setState(() {
+                    _aramaMetni = val;
+                  });
+                },
+                decoration: InputDecoration(
+                  hintText: widget.turkceMi
+                      ? 'Nokta veya ilçe ara (örn: Lapta, Alsancak, Girne...)'
+                      : 'Search location (e.g. Lapta, Alsancak...)',
+                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 12.5),
+                  prefixIcon: const Icon(Icons.search_rounded, color: NavHtmlColors.tertiary, size: 20),
+                  suffixIcon: _aramaMetni.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, color: Colors.white54, size: 18),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              _aramaMetni = '';
+                            });
+                          },
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+              ),
+            ),
+          ),
+
+          // Bölge Filtre Butonları (Horizontal Chips)
+          SizedBox(
+            height: 44,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              scrollDirection: Axis.horizontal,
+              itemCount: _bolgeler.length,
+              separatorBuilder: (_, index) => const SizedBox(width: 8),
+              itemBuilder: (context, i) {
+                final b = _bolgeler[i];
+                final secili = _seciliBolge == b;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _seciliBolge = b;
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: secili
+                          ? NavHtmlColors.primaryContainer.withValues(alpha: 0.3)
+                          : NavHtmlColors.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: secili ? NavHtmlColors.primaryContainer : Colors.white12,
+                        width: secili ? 1.4 : 1.0,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        b,
+                        style: TextStyle(
+                          color: secili ? Colors.white : NavHtmlColors.secondary,
+                          fontSize: 11.5,
+                          fontWeight: secili ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const Divider(color: Colors.white10, height: 16),
+
+          // Liste Görünümü
+          Expanded(
+            child: sonuclar.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.location_off_rounded, size: 36, color: Colors.white30),
+                        const SizedBox(height: 8),
+                        Text(
+                          widget.turkceMi ? 'Sonuç bulunamadı' : 'No locations found',
+                          style: const TextStyle(color: NavHtmlColors.secondary, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    itemCount: sonuclar.length,
+                    itemBuilder: (context, idx) {
+                      final nokta = sonuclar[idx];
+                      final isSelected = nokta.id == widget.secilenNokta.id;
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 6),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? NavHtmlColors.primaryContainer.withValues(alpha: 0.15)
+                              : NavHtmlColors.surfaceContainerLowest.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isSelected
+                                ? NavHtmlColors.primaryContainer.withValues(alpha: 0.8)
+                                : Colors.white.withValues(alpha: 0.05),
+                            width: isSelected ? 1.5 : 1,
+                          ),
+                        ),
+                        child: ListTile(
+                          onTap: () => widget.onSecildi(nokta),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          leading: Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? NavHtmlColors.primaryContainer.withValues(alpha: 0.3)
+                                  : NavHtmlColors.surfaceContainerHigh,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              nokta.ikon,
+                              color: isSelected ? NavHtmlColors.primaryContainer : NavHtmlColors.secondary,
+                              size: 19,
+                            ),
+                          ),
+                          title: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: NavHtmlColors.surfaceContainerHigh,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: Colors.white10),
+                                ),
+                                child: Text(
+                                  nokta.bolge,
+                                  style: const TextStyle(
+                                    color: NavHtmlColors.tertiary,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  widget.turkceMi ? nokta.ad : nokta.adEn,
+                                  style: TextStyle(
+                                    color: isSelected ? Colors.white : NavHtmlColors.onSurface,
+                                    fontSize: 13,
+                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 3),
+                            child: Text(
+                              nokta.kisaAd,
+                              style: const TextStyle(
+                                color: NavHtmlColors.secondary,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                          trailing: isSelected
+                              ? const CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: NavHtmlColors.primaryContainer,
+                                  child: Icon(Icons.check_rounded, color: Colors.white, size: 16),
+                                )
+                              : const Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: Colors.white24,
+                                  size: 18,
+                                ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
