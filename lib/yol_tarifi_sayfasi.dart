@@ -549,11 +549,66 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
       }
     }
 
+    // 🟢 KALKANLI <-> GÜZELYURT MERKEZ ÖZEL ROTASI
+    bool kalkanliGuzelyurtMu = (_baslangicNoktasi.id == "kalkanli" && _varisNoktasi.id == "guzelyurt_merkez") ||
+        (_baslangicNoktasi.id == "guzelyurt_merkez" && _varisNoktasi.id == "kalkanli");
+
+    if (kalkanliGuzelyurtMu) {
+      return HesaplanmisRota(
+        baslangic: _baslangicNoktasi,
+        varis: _varisNoktasi,
+        secenekAdi: "Kalkanlı - Güzelyurt Anayolu",
+        secenekAdiEn: "Kalkanli - Guzelyurt Highway",
+        mesafeKm: 6.2,
+        tahminiDakika: 8,
+        kolaylikOzeti:
+            "ODTÜ Kalkanlı nizamiyesinden Güzelyurt anayolunu takip ederek doğrudan şehir merkezine ve terminale varış. Hızlı ve rahattır.",
+        kolaylikOzetiEn:
+            "Direct route from METU Kalkanli gates along Guzelyurt highway straight to town center & terminal.",
+        radarlar: [kalkanliRadar],
+        manevralar: [
+          RotaManevraAdimi(
+            ikon: Icons.navigation_rounded,
+            baslik: "Kalkanlı ODTÜ Kampüs Çıkışı",
+            baslikEn: "Exit METU Kalkanli Campus",
+            aciklama: "Nizamiyeden ayrılarak Güzelyurt istikametine katılın.",
+            aciklamaEn: "Depart security gates and join Guzelyurt highway.",
+            mesafe: "1.2 km",
+          ),
+          RotaManevraAdimi(
+            ikon: Icons.speed_rounded,
+            baslik: "Kalkanlı Yolu Radar Denetimi",
+            baslikEn: "Kalkanli Road Speed Camera",
+            aciklama: "⚠️ Hız limiti: 65 km/s. ODTÜ güzergahındaki sabit hız radarına dikkat edin.",
+            aciklamaEn: "⚠️ Speed limit: 65 km/h. Watch fixed speed camera on METU route.",
+            mesafe: "3.2 km",
+            bagliRadar: kalkanliRadar,
+            onemliMi: true,
+          ),
+          RotaManevraAdimi(
+            ikon: Icons.place_rounded,
+            baslik: "Güzelyurt Terminal & Merkez Varış",
+            baslikEn: "Guzelyurt Center & Terminal Arrival",
+            aciklama: "Hedefinize ulaştınız. Çarşı ve terminal otoparkına yanaşın.",
+            aciklamaEn: "Destination reached. Proceed to center/terminal parking.",
+            mesafe: "1.8 km",
+            onemliMi: true,
+          ),
+        ],
+        haritaYolNoktalari: const [
+          Offset(0.18, 0.46), // Kalkanlı
+          Offset(0.20, 0.48),
+          Offset(0.22, 0.50),
+          Offset(0.24, 0.52), // Güzelyurt
+        ],
+      );
+    }
+
     // DİĞER ROTALAR İÇİN GENEL HESAPLAMA (Örn: Girne -> Lefkoşa, Gazimağusa -> Erülkü vb.)
     double dx = (_varisNoktasi.lon - _baslangicNoktasi.lon).abs();
     double dy = (_varisNoktasi.lat - _baslangicNoktasi.lat).abs();
-    double distKm = math.sqrt(dx * dx + dy * dy) * 111.0;
-    if (distKm < 5.0) distKm = 8.5;
+    double rawDist = math.sqrt(dx * dx + dy * dy) * 111.0;
+    double distKm = (rawDist * 1.25).clamp(4.0, 110.0);
     int durationMin = (distKm * 1.15).round();
 
     // Rota çevresindeki radarları filtrele
@@ -566,9 +621,44 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
       return r.lat >= minLat && r.lat <= maxLat && r.lon >= minLon && r.lon <= maxLon;
     }).toList();
 
-    if (yolRadarlari.isEmpty && kktcRadarListesi.isNotEmpty) {
-      yolRadarlari = [kktcRadarListesi.first, kktcRadarListesi[1]];
+    List<RotaManevraAdimi> dinamikManevralar = [
+      RotaManevraAdimi(
+        ikon: Icons.trip_origin_rounded,
+        baslik: "${_baslangicNoktasi.kisaAd}'dan Çıkış Yapın",
+        baslikEn: "Depart from ${_baslangicNoktasi.kisaAd}",
+        aciklama: "Ana caddeye katılarak navigasyon güzergahını takip edin.",
+        aciklamaEn: "Join main thoroughfare and follow route.",
+        mesafe: "${(distKm * 0.2).clamp(1.0, 4.0).toStringAsFixed(1)} km",
+      ),
+    ];
+
+    if (yolRadarlari.isNotEmpty) {
+      dinamikManevralar.add(
+        RotaManevraAdimi(
+          ikon: Icons.speed_rounded,
+          baslik: "${yolRadarlari.first.ad} (Hız Kontrolü)",
+          baslikEn: "${yolRadarlari.first.adEn} (Speed Check)",
+          aciklama:
+              "⚠️ Hız limiti: ${yolRadarlari.first.hizLimiti} km/s. Güzergahtaki sabit denetim noktası.",
+          aciklamaEn: "⚠️ Speed limit: ${yolRadarlari.first.hizLimiti} km/h. Fixed speed point.",
+          mesafe: "${(distKm * 0.5).clamp(1.5, 35.0).toStringAsFixed(1)} km",
+          bagliRadar: yolRadarlari.first,
+          onemliMi: true,
+        ),
+      );
     }
+
+    dinamikManevralar.add(
+      RotaManevraAdimi(
+        ikon: Icons.place_rounded,
+        baslik: "${_varisNoktasi.kisaAd} Varış",
+        baslikEn: "Arrive at ${_varisNoktasi.kisaAd}",
+        aciklama: "Hedefinize ulaştınız. Güvenli park alanına yanaşın.",
+        aciklamaEn: "Destination reached. Proceed to designated parking.",
+        mesafe: "${(distKm * 0.3).clamp(1.0, 8.0).toStringAsFixed(1)} km",
+        onemliMi: true,
+      ),
+    );
 
     return HesaplanmisRota(
       baslangic: _baslangicNoktasi,
@@ -582,45 +672,7 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
       kolaylikOzetiEn:
           "Optimal route from ${_baslangicNoktasi.kisaAd} to ${_varisNoktasi.kisaAd} using primary bypass corridors.",
       radarlar: yolRadarlari,
-      manevralar: [
-        RotaManevraAdimi(
-          ikon: Icons.trip_origin_rounded,
-          baslik: "${_baslangicNoktasi.kisaAd}'dan Çıkış Yapın",
-          baslikEn: "Depart from ${_baslangicNoktasi.kisaAd}",
-          aciklama: "Ana caddeye katılarak navigasyon güzergahını takip edin.",
-          aciklamaEn: "Join main thoroughfare and follow route.",
-          mesafe: "1.2 km",
-        ),
-        if (yolRadarlari.isNotEmpty)
-          RotaManevraAdimi(
-            ikon: Icons.speed_rounded,
-            baslik: "${yolRadarlari.first.ad} (Hız Kontrolü)",
-            baslikEn: "${yolRadarlari.first.adEn} (Speed Check)",
-            aciklama:
-                "⚠️ Hız limiti: ${yolRadarlari.first.hizLimiti} km/s. Güzergahtaki sabit denetim noktası.",
-            aciklamaEn: "⚠️ Speed limit: ${yolRadarlari.first.hizLimiti} km/h. Fixed speed point.",
-            mesafe: "8.5 km",
-            bagliRadar: yolRadarlari.first,
-            onemliMi: true,
-          ),
-        RotaManevraAdimi(
-          ikon: Icons.alt_route_rounded,
-          baslik: "Çevre Yolu ve Anayol Bağlantısı",
-          baslikEn: "Bypass & Highway Junction",
-          aciklama: "Trafikten kaçınmak için anayol şeridinde kalın.",
-          aciklamaEn: "Stay on highway lane to bypass town traffic.",
-          mesafe: "${(distKm * 0.5).toStringAsFixed(1)} km",
-        ),
-        RotaManevraAdimi(
-          ikon: Icons.place_rounded,
-          baslik: "${_varisNoktasi.kisaAd} Varış",
-          baslikEn: "Arrive at ${_varisNoktasi.kisaAd}",
-          aciklama: "Hedefinize ulaştınız. Güvenli park alanına yanaşın.",
-          aciklamaEn: "Destination reached. Proceed to designated parking.",
-          mesafe: "${(distKm * 0.2).toStringAsFixed(1)} km",
-          onemliMi: true,
-        ),
-      ],
+      manevralar: dinamikManevralar,
       haritaYolNoktalari: const [
         Offset(0.20, 0.40),
         Offset(0.35, 0.48),
@@ -1472,8 +1524,8 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
                 Expanded(
                   child: Text(
                     widget.turkceMi
-                        ? 'Tavsiye Edilen Güzergah: Güzelyurt Anayolu ➔ Lefkoşa Kuzey Çevre Yolu ➔ Demirhan'
-                        : 'Recommended: Guzelyurt Highway ➔ Lefkosa North Bypass ➔ Demirhan',
+                        ? 'Tavsiye Edilen Güzergah: ${rota.baslangic.kisaAd} ➔ ${rota.secenekAdi} ➔ ${rota.varis.kisaAd}'
+                        : 'Recommended: ${rota.baslangic.kisaAd} ➔ ${rota.secenekAdiEn} ➔ ${rota.varis.kisaAd}',
                     style: const TextStyle(
                       color: NavHtmlColors.secondary,
                       fontSize: 11,
@@ -1761,22 +1813,26 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
                         if (adim.bagliRadar != null) ...[
                           const SizedBox(height: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: NavHtmlColors.primaryContainer.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: NavHtmlColors.primaryContainer.withValues(alpha: 0.25)),
                             ),
                             child: Row(
-                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Icon(Icons.camera_alt_rounded, size: 12, color: NavHtmlColors.primaryContainer),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${widget.turkceMi ? 'Radar Uyarısı' : 'Camera'}: ${adim.bagliRadar!.hizLimiti} km/s Limit (${adim.bagliRadar!.ad})',
-                                  style: const TextStyle(
-                                    color: NavHtmlColors.primary,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    '${widget.turkceMi ? 'Radar Uyarısı' : 'Camera'}: ${adim.bagliRadar!.hizLimiti} km/s Limit (${adim.bagliRadar!.ad})',
+                                    style: const TextStyle(
+                                      color: NavHtmlColors.primary,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
