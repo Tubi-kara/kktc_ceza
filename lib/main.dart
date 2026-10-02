@@ -7,6 +7,7 @@ import 'kktc_gov_sync_service.dart';
 import 'yardim_rehberi_sayfasi.dart';
 import 'hizli_arama_modali.dart';
 import 'guncelleme_servisi.dart';
+import 'guvenlik_duvari.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -2004,6 +2005,22 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                             border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35)),
                           ),
                           child: const Icon(Icons.cloud_sync_rounded, color: Color(0xFF38BDF8), size: 18),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+
+                      // 🛡️ Siber Güvenlik Duvarı (WAF) Durum Paneli
+                      GestureDetector(
+                        onTap: () => GuvenlikDuvari.guvenlikPaneliGoster(context, widget.turkceMi),
+                        child: Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+                          ),
+                          child: const Icon(Icons.security_rounded, color: Color(0xFF10B981), size: 18),
                         ),
                       ),
                       const SizedBox(width: 6),

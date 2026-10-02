@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'guvenlik_duvari.dart';
 
 // ==========================================
 // 🎨 HIZLI ARAMA TASARIM TOKENLARI
@@ -549,7 +550,38 @@ class _HizliAramaModalSayfasiState extends State<HizliAramaModalSayfasi> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
                 onChanged: (val) {
-                  setState(() => _aramaMetni = val);
+                  final denetim = GuvenlikDuvari.instance.girdiDenetle(val, alanAdi: 'Hızlı Arama');
+                  if (!denetim.guvenliMi) {
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            const Icon(Icons.security_rounded, color: Color(0xFFEF4444)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                widget.turkceMi
+                                    ? '🛡️ Siber Güvenlik Duvarı: ${denetim.aciklama}'
+                                    : '🛡️ Cyber Firewall: ${denetim.aciklama}',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                        backgroundColor: const Color(0xFF0F172A),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                    _controller.text = denetim.temizlenmisGirdi;
+                    _controller.selection = TextSelection.fromPosition(
+                      TextPosition(offset: denetim.temizlenmisGirdi.length),
+                    );
+                    setState(() => _aramaMetni = denetim.temizlenmisGirdi);
+                  } else {
+                    setState(() => _aramaMetni = val);
+                  }
                 },
               ),
             ),
