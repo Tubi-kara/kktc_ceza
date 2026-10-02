@@ -6,6 +6,7 @@ import 'yol_tarifi_sayfasi.dart';
 import 'kktc_gov_sync_service.dart';
 import 'yardim_rehberi_sayfasi.dart';
 import 'hizli_arama_modali.dart';
+import 'guncelleme_servisi.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -1481,6 +1482,14 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
     if (widget.araclar.isNotEmpty) {
       _secilenPlaka = widget.araclar.first;
     }
+    // 🚀 Uygulama Açılışında Sessizce Güncelleme Kontrolü
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          GuncellemeServisi.otomatikKontrolEt(context, widget.turkceMi);
+        }
+      });
+    });
   }
 
   @override
@@ -1979,6 +1988,22 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                             border: Border.all(color: _HtmlColors.tertiary.withValues(alpha: 0.35)),
                           ),
                           child: const Icon(Icons.help_outline_rounded, color: _HtmlColors.tertiary, size: 18),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+
+                      // OTA Güncelleme Kontrolü (Kablosuz Sürüm Denetleme)
+                      GestureDetector(
+                        onTap: () => GuncellemeServisi.manuelKontrolEt(context, widget.turkceMi),
+                        child: Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35)),
+                          ),
+                          child: const Icon(Icons.cloud_sync_rounded, color: Color(0xFF38BDF8), size: 18),
                         ),
                       ),
                       const SizedBox(width: 6),
