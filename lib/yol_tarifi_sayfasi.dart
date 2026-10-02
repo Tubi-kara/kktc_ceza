@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
 import 'radar_haritasi.dart';
 import 'kktc_gov_sync_service.dart';
 import 'yardim_rehberi_sayfasi.dart';
@@ -682,6 +684,9 @@ class RotaManevraAdimi {
   final String aciklama;
   final String aciklamaEn;
   final String mesafe;
+  final double? lat;
+  final double? lon;
+  final double? mesafeMetre;
   final RadarKamerasi? bagliRadar;
   final bool onemliMi;
 
@@ -692,6 +697,9 @@ class RotaManevraAdimi {
     required this.aciklama,
     required this.aciklamaEn,
     required this.mesafe,
+    this.lat,
+    this.lon,
+    this.mesafeMetre,
     this.bagliRadar,
     this.onemliMi = false,
   });
@@ -739,10 +747,24 @@ class HesaplanmisRota {
 // ==========================================
 // 🌐 CANLI OSRM & OPENSTREETMAP ROTA SERVİSİ
 // ==========================================
-class CanliOsrmServisi {
-  static final Map<String, List<OsrmRoutePoint>> _onbellek = {};
+class OsrmRotaSonucu {
+  final List<OsrmRoutePoint> points;
+  final List<RotaManevraAdimi> manevralar;
+  final double? mesafeKm;
+  final int? sureDakika;
 
-  static Future<List<OsrmRoutePoint>?> rotaCek({
+  const OsrmRotaSonucu({
+    required this.points,
+    required this.manevralar,
+    this.mesafeKm,
+    this.sureDakika,
+  });
+}
+
+class CanliOsrmServisi {
+  static final Map<String, OsrmRotaSonucu> _onbellek = {};
+
+  static Future<OsrmRotaSonucu?> rotaCek({
     required double startLat,
     required double startLon,
     required double endLat,
@@ -755,33 +777,124 @@ class CanliOsrmServisi {
 
     HttpClient? client;
     try {
-      client = HttpClient()..connectionTimeout = const Duration(seconds: 4);
+      client = HttpClient()..connectionTimeout = const Duration(seconds: 5);
       client.userAgent = 'KktcCezaApp/1.0';
       final uri = Uri.parse(
-        'https://router.project-osrm.org/route/v1/driving/$startLon,$startLat;$endLon,$endLat?overview=full&geometries=geojson',
+        'https://router.project-osrm.org/route/v1/driving/$startLon,$startLat;$endLon,$endLat?overview=full&geometries=geojson&steps=true',
       );
       final req = await client.getUrl(uri);
-      final resp = await req.close().timeout(const Duration(seconds: 4));
+      final resp = await req.close().timeout(const Duration(seconds: 5));
       if (resp.statusCode == 200) {
         final body = await resp.transform(utf8.decoder).join();
         final json = jsonDecode(body) as Map<String, dynamic>;
         final routes = json['routes'] as List<dynamic>?;
         if (routes != null && routes.isNotEmpty) {
-          final geom = routes[0]['geometry'] as Map<String, dynamic>?;
+          final firstRoute = routes[0] as Map<String, dynamic>;
+          final double rawDist = (firstRoute['distance'] as num?)?.toDouble() ?? 0.0;
+          final double rawDur = (firstRoute['duration'] as num?)?.toDouble() ?? 0.0;
+          final double km = (rawDist / 1000.0);
+          final int dk = (rawDur / 60.0).round();
+
+          final geom = firstRoute['geometry'] as Map<String, dynamic>?;
           final coords = geom?['coordinates'] as List<dynamic>?;
+          List<OsrmRoutePoint> points = [];
           if (coords != null && coords.isNotEmpty) {
-            final points = coords.map((c) {
+            points = coords.map((c) {
               final lon = (c[0] as num).toDouble();
               final lat = (c[1] as num).toDouble();
               return OsrmRoutePoint(lat, lon);
             }).toList();
-            _onbellek[cacheKey] = points;
-            return points;
+          }
+
+          // Adım Adım Manevraları Parse Et
+          List<RotaManevraAdimi> manevralar = [];
+          final legs = firstRoute['legs'] as List<dynamic>?;
+          if (legs != null && legs.isNotEmpty) {
+            final steps = legs[0]['steps'] as List<dynamic>?;
+            if (steps != null && steps.isNotEmpty) {
+              for (var s in steps) {
+                final maneuver = s['maneuver'] as Map<String, dynamic>?;
+                final String type = maneuver?['type']?.toString().toLowerCase() ?? '';
+                final String modifier = maneuver?['modifier']?.toString().toLowerCase() ?? '';
+                final loc = maneuver?['location'] as List<dynamic>?;
+                final double? stepLon = loc != null && loc.isNotEmpty ? (loc[0] as num).toDouble() : null;
+                final double? stepLat = loc != null && loc.length > 1 ? (loc[1] as num).toDouble() : null;
+                final double dist = (s['distance'] as num?)?.toDouble() ?? 0.0;
+                final String name = s['name']?.toString() ?? '';
+
+                IconData ikon = Icons.straight_rounded;
+                String baslik = 'Düz Devam Edin';
+                String baslikEn = 'Continue Straight';
+
+                if (type == 'depart') {
+                  ikon = Icons.navigation_rounded;
+                  baslik = 'Yola Çıkın';
+                  baslikEn = 'Head Out';
+                } else if (type == 'arrive') {
+                  ikon = Icons.place_rounded;
+                  baslik = 'Hedefe Ulaştınız';
+                  baslikEn = 'Arrive at Destination';
+                } else if (type.contains('roundabout') || type.contains('rotary')) {
+                  ikon = Icons.roundabout_right_rounded;
+                  baslik = 'Döner Kavşaktan Çıkın';
+                  baslikEn = 'Take Roundabout Exit';
+                } else if (modifier.contains('slight left')) {
+                  ikon = Icons.turn_slight_left_rounded;
+                  baslik = 'Hafif Sola Dönün';
+                  baslikEn = 'Slight Left';
+                } else if (modifier.contains('slight right')) {
+                  ikon = Icons.turn_slight_right_rounded;
+                  baslik = 'Hafif Sağa Dönün';
+                  baslikEn = 'Slight Right';
+                } else if (modifier.contains('left')) {
+                  ikon = Icons.turn_left_rounded;
+                  baslik = 'Sola Dönün';
+                  baslikEn = 'Turn Left';
+                } else if (modifier.contains('right')) {
+                  ikon = Icons.turn_right_rounded;
+                  baslik = 'Sağa Dönün';
+                  baslikEn = 'Turn Right';
+                } else if (modifier.contains('uturn')) {
+                  ikon = Icons.u_turn_left_rounded;
+                  baslik = 'U Dönüşü Yapın';
+                  baslikEn = 'Make U-Turn';
+                }
+
+                String mesafeMetin = dist < 1000 ? '${dist.round()} m' : '${(dist / 1000).toStringAsFixed(1)} km';
+                String aciklama = name.isNotEmpty ? '$name yoluna katılın' : 'Güzergahı takip edin';
+                String aciklamaEn = name.isNotEmpty ? 'Follow $name' : 'Continue along the route';
+
+                manevralar.add(
+                  RotaManevraAdimi(
+                    ikon: ikon,
+                    baslik: baslik,
+                    baslikEn: baslikEn,
+                    aciklama: aciklama,
+                    aciklamaEn: aciklamaEn,
+                    mesafe: mesafeMetin,
+                    lat: stepLat,
+                    lon: stepLon,
+                    mesafeMetre: dist,
+                  ),
+                );
+              }
+            }
+          }
+
+          if (points.isNotEmpty) {
+            final sonuc = OsrmRotaSonucu(
+              points: points,
+              manevralar: manevralar,
+              mesafeKm: km,
+              sureDakika: dk,
+            );
+            _onbellek[cacheKey] = sonuc;
+            return sonuc;
           }
         }
       }
     } catch (_) {
-      // Çevrimdışı veya gecikme durumunda yüksek çözünürlüklü yedek koordinatlar kullanılır
+      // Çevrimdışı durumunda yedek koordinatlar ve yerleşik manevralar kullanılır
     } finally {
       client?.close();
     }
@@ -807,16 +920,22 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
   late RotaNoktasi _varisNoktasi;
   int _secilenRotaModu = 0; // 0 = En Kolay & Hızlı (Çevre Yolu), 1 = Şehir İçi Alternatif
 
-  // Canlı Simülasyon Durumları
+  // Gerçek Google Maps Tarzı Adım Adım Navigasyon Durumları
+  bool _navigasyonAktif = false;
+  int _aktifManevraIndeksi = 0;
+  double _mevcutManevrayaKalanMetre = 250.0;
+  int _canliSurusHizi = 0;
+
+  // Canlı Simülasyon Durumları (İsteğe bağlı test amaçlı)
   bool _simulasyonAktif = false;
   double _simulasyonIlerleme = 0.0;
   Timer? _simulasyonTimer;
-  int _canliSurusHizi = 64;
   RadarKamerasi? _yaklasanRadar;
   double _yaklasanRadarMesafeMetre = 0.0;
 
   late final AnimationController _pulseController;
   List<OsrmRoutePoint>? _canliGpsRotasi;
+  OsrmRotaSonucu? _canliOsrmSonucu;
   bool _canliRotaYukleniyor = false;
 
   @override
@@ -837,19 +956,61 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
       orElse: () => kktcNoktalari[1],
     );
 
+    // Canlı GPS servisi dinleyicisi ekle
+    CanliGpsServisi().addListener(_onGpsNavigasyonGuncelle);
+
     _canliRotayiTetikle();
   }
 
   @override
   void dispose() {
+    CanliGpsServisi().removeListener(_onGpsNavigasyonGuncelle);
     _simulasyonTimer?.cancel();
     _pulseController.dispose();
     super.dispose();
   }
 
+  void _onGpsNavigasyonGuncelle() {
+    if (!mounted) return;
+    if (_navigasyonAktif) {
+      final pos = CanliGpsServisi().sonKonum;
+      final rota = _rotaHesapla();
+      final manevralar = (_canliOsrmSonucu?.manevralar.isNotEmpty ?? false)
+          ? _canliOsrmSonucu!.manevralar
+          : rota.manevralar;
+
+      if (pos != null && _aktifManevraIndeksi < manevralar.length) {
+        final hedefManevra = manevralar[_aktifManevraIndeksi];
+        if (hedefManevra.lat != null && hedefManevra.lon != null) {
+          final mesafe = Geolocator.distanceBetween(
+            pos.latitude,
+            pos.longitude,
+            hedefManevra.lat!,
+            hedefManevra.lon!,
+          );
+          setState(() {
+            _mevcutManevrayaKalanMetre = mesafe;
+            _canliSurusHizi = CanliGpsServisi().gercekHizKmh.round();
+          });
+
+          // Manevra noktasına 45m kala otomatik olarak sonraki adıma geç
+          if (mesafe <= 45) {
+            HapticFeedback.heavyImpact();
+            SystemSound.play(SystemSoundType.alert);
+            _sonrakiManevra();
+          }
+        } else {
+          setState(() {
+            _canliSurusHizi = CanliGpsServisi().gercekHizKmh.round();
+          });
+        }
+      }
+    }
+  }
+
   void _canliRotayiTetikle() async {
     setState(() => _canliRotaYukleniyor = true);
-    final pts = await CanliOsrmServisi.rotaCek(
+    final res = await CanliOsrmServisi.rotaCek(
       startLat: _baslangicNoktasi.lat,
       startLon: _baslangicNoktasi.lon,
       endLat: _varisNoktasi.lat,
@@ -857,8 +1018,10 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
     );
     if (mounted) {
       setState(() {
-        _canliGpsRotasi = pts;
+        _canliOsrmSonucu = res;
+        _canliGpsRotasi = res?.points;
         _canliRotaYukleniyor = false;
+        _aktifManevraIndeksi = 0;
       });
     }
   }
@@ -868,6 +1031,7 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
       final gecici = _baslangicNoktasi;
       _baslangicNoktasi = _varisNoktasi;
       _varisNoktasi = gecici;
+      _durdurNavigasyon();
       _durdurSimulasyon();
     });
     _canliRotayiTetikle();
@@ -884,9 +1048,120 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
         orElse: () => kktcNoktalari[1],
       );
       _secilenRotaModu = 0;
+      _durdurNavigasyon();
       _durdurSimulasyon();
     });
     _canliRotayiTetikle();
+  }
+
+  // 🧭 GERÇEK GOOGLE MAPS TARZI NAVİGASYON BAŞLATMA
+  void _baslatNavigasyon() {
+    CanliGpsServisi().servisiBaslat();
+    final rota = _rotaHesapla();
+    final manevralar = (_canliOsrmSonucu?.manevralar.isNotEmpty ?? false)
+        ? _canliOsrmSonucu!.manevralar
+        : rota.manevralar;
+
+    double baslangicMesafe = 250.0;
+    if (manevralar.isNotEmpty) {
+      final ilk = manevralar.first;
+      if (ilk.mesafeMetre != null && ilk.mesafeMetre! > 0) {
+        baslangicMesafe = ilk.mesafeMetre!;
+      }
+      final pos = CanliGpsServisi().sonKonum;
+      if (pos != null && ilk.lat != null && ilk.lon != null) {
+        baslangicMesafe = Geolocator.distanceBetween(
+          pos.latitude,
+          pos.longitude,
+          ilk.lat!,
+          ilk.lon!,
+        );
+      }
+    }
+
+    setState(() {
+      _navigasyonAktif = true;
+      _simulasyonAktif = false;
+      _aktifManevraIndeksi = 0;
+      _mevcutManevrayaKalanMetre = baslangicMesafe;
+      _canliSurusHizi = CanliGpsServisi().gercekHizKmh.round();
+    });
+
+    HapticFeedback.mediumImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.navigation_rounded, color: Color(0xFF10B981)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                widget.turkceMi
+                    ? 'Canlı Google Maps Navigasyonu Başlatıldı! İyi yolculuklar.'
+                    : 'Live Navigation Started! Have a safe trip.',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: NavHtmlColors.surfaceContainerHighest,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _durdurNavigasyon() {
+    setState(() {
+      _navigasyonAktif = false;
+      _aktifManevraIndeksi = 0;
+    });
+    HapticFeedback.lightImpact();
+  }
+
+  void _sonrakiManevra() {
+    final rota = _rotaHesapla();
+    final manevralar = (_canliOsrmSonucu?.manevralar.isNotEmpty ?? false)
+        ? _canliOsrmSonucu!.manevralar
+        : rota.manevralar;
+
+    if (_aktifManevraIndeksi < manevralar.length - 1) {
+      setState(() {
+        _aktifManevraIndeksi++;
+        final yeni = manevralar[_aktifManevraIndeksi];
+        final pos = CanliGpsServisi().sonKonum;
+        if (pos != null && yeni.lat != null && yeni.lon != null) {
+          _mevcutManevrayaKalanMetre = Geolocator.distanceBetween(
+            pos.latitude,
+            pos.longitude,
+            yeni.lat!,
+            yeni.lon!,
+          );
+        } else {
+          _mevcutManevrayaKalanMetre = yeni.mesafeMetre ?? 250.0;
+        }
+      });
+      HapticFeedback.selectionClick();
+    } else {
+      _durdurNavigasyon();
+      _gosterHedefeUlasildi();
+    }
+  }
+
+  void _oncekiManevra() {
+    if (_aktifManevraIndeksi > 0) {
+      final rota = _rotaHesapla();
+      final manevralar = (_canliOsrmSonucu?.manevralar.isNotEmpty ?? false)
+          ? _canliOsrmSonucu!.manevralar
+          : rota.manevralar;
+
+      setState(() {
+        _aktifManevraIndeksi--;
+        final yeni = manevralar[_aktifManevraIndeksi];
+        _mevcutManevrayaKalanMetre = yeni.mesafeMetre ?? 250.0;
+      });
+      HapticFeedback.selectionClick();
+    }
   }
 
   void _baslatSimulasyon() {
@@ -1036,66 +1311,86 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
           genelTrafikDurumu: "Kuzey Çevre Yolu açık ve akıcı. Gönyeli sıkışıklığına girmeden rahat varış.",
           genelTrafikDurumuEn: "North Bypass is clear and fluent. Smooth route avoiding Gonyeli bottlenecks.",
           toplamGecikmeDakika: 2,
-          manevralar: [
-            RotaManevraAdimi(
-              ikon: Icons.navigation_rounded,
-              baslik: "Kalkanlı ODTÜ Nizamiyesi'nden Çıkış",
-              baslikEn: "Exit METU Kalkanli Campus Gates",
-              aciklama: "Kampüs ana güvenlik kapısından çıkıp Güzelyurt anayoluna bağlanın.",
-              aciklamaEn: "Leave main security gates and join Guzelyurt highway.",
-              mesafe: "3.2 km",
-              bagliRadar: kalkanliRadar,
-              onemliMi: true,
-            ),
-            RotaManevraAdimi(
-              ikon: Icons.roundabout_right_rounded,
-              baslik: "Güzelyurt Çemberi - Lefkoşa Anayolu",
-              baslikEn: "Guzelyurt Roundabout - Lefkosa Highway",
-              aciklama: "Çemberin 2. çıkışından çift şerit bölünmüş Lefkoşa anayoluna katılın.",
-              aciklamaEn: "Take 2nd exit into dual-lane divided Lefkosa highway.",
-              mesafe: "14.5 km",
-            ),
-            RotaManevraAdimi(
-              ikon: Icons.speed_rounded,
-              baslik: "Yılmazköy Düzlüğü Hız Kontrolü",
-              baslikEn: "Yilmazkoy Straight Speed Control",
-              aciklama: "Uzun düzlükte 75 km/s sabit radar aktiftir. Hız sabitleyiciyi 75 km/s'e kurun.",
-              aciklamaEn: "75 km/h speed camera active on the long straight. Keep under limit.",
-              mesafe: "9.8 km",
-              bagliRadar: yilmazkoyRadar,
-              onemliMi: true,
-            ),
-            RotaManevraAdimi(
-              ikon: Icons.alt_route_rounded,
-              baslik: "Kuzey Çevre Yolu Sapağı (En Kolay Yol Tavsiyesi)",
-              baslikEn: "North Bypass Exit (Easiest Route Advice)",
-              aciklama: "Gönyeli çemberine girmeden sağ sapaktan yeni Lefkoşa Kuzey Çevre Yolu'na girin.",
-              aciklamaEn: "Veer right before Gonyeli roundabout onto the new Lefkosa North Bypass.",
-              mesafe: "11.4 km",
-              bagliRadar: hamitkoyRadar,
-              onemliMi: true,
-            ),
-            RotaManevraAdimi(
-              ikon: Icons.merge_type_rounded,
-              baslik: "Haspolat - UKÜ Bağlantısı",
-              baslikEn: "Haspolat - CIU Highway Connection",
-              aciklama: "Çevre yolundan Gazimağusa anayoluna sorunsuz bağlanın. UKÜ alt geçit radarını geçin.",
-              aciklamaEn: "Merge seamlessly onto Famagusta highway past CIU underpass radar.",
-              mesafe: "5.5 km",
-              bagliRadar: haspolatRadar,
-              onemliMi: true,
-            ),
-            RotaManevraAdimi(
-              ikon: Icons.storefront_rounded,
-              baslik: "Demirhan - Erülkü Süpermarket Varış",
-              baslikEn: "Demirhan - Erulku Supermarket Arrival",
-              aciklama: "Sağ tarafta Erülkü Süpermarket ana otopark girişine yanaşın. Radara dikkat edin!",
-              aciklamaEn: "Pull into Erulku Supermarket parking lot on right. Watch 65 km/h camera!",
-              mesafe: "3.8 km",
-              bagliRadar: erulkuRadar,
-              onemliMi: true,
-            ),
-          ],
+          manevralar: (_canliOsrmSonucu?.manevralar.isNotEmpty ?? false)
+              ? _canliOsrmSonucu!.manevralar
+              : [
+                  RotaManevraAdimi(
+                    ikon: Icons.navigation_rounded,
+                    baslik: "Kalkanlı ODTÜ Nizamiyesi'nden Çıkış",
+                    baslikEn: "Exit METU Kalkanli Campus Gates",
+                    aciklama: "Kampüs ana güvenlik kapısından çıkıp Güzelyurt anayoluna bağlanın.",
+                    aciklamaEn: "Leave main security gates and join Guzelyurt highway.",
+                    mesafe: "3.2 km",
+                    lat: 35.2470,
+                    lon: 33.0280,
+                    mesafeMetre: 3200,
+                    bagliRadar: kalkanliRadar,
+                    onemliMi: true,
+                  ),
+                  RotaManevraAdimi(
+                    ikon: Icons.roundabout_right_rounded,
+                    baslik: "Güzelyurt Çemberi - Lefkoşa Anayolu",
+                    baslikEn: "Guzelyurt Roundabout - Lefkosa Highway",
+                    aciklama: "Çemberin 2. çıkışından çift şerit bölünmüş Lefkoşa anayoluna katılın.",
+                    aciklamaEn: "Take 2nd exit into dual-lane divided Lefkosa highway.",
+                    mesafe: "14.5 km",
+                    lat: 35.2040,
+                    lon: 33.0110,
+                    mesafeMetre: 14500,
+                  ),
+                  RotaManevraAdimi(
+                    ikon: Icons.speed_rounded,
+                    baslik: "Yılmazköy Düzlüğü Hız Kontrolü",
+                    baslikEn: "Yilmazkoy Straight Speed Control",
+                    aciklama: "Uzun düzlükte 75 km/s sabit radar aktiftir. Hız sabitleyiciyi 75 km/s'e kurun.",
+                    aciklamaEn: "75 km/h speed camera active on the long straight. Keep under limit.",
+                    mesafe: "9.8 km",
+                    lat: 35.2065,
+                    lon: 33.1580,
+                    mesafeMetre: 9800,
+                    bagliRadar: yilmazkoyRadar,
+                    onemliMi: true,
+                  ),
+                  RotaManevraAdimi(
+                    ikon: Icons.alt_route_rounded,
+                    baslik: "Kuzey Çevre Yolu Sapağı (En Kolay Yol Tavsiyesi)",
+                    baslikEn: "North Bypass Exit (Easiest Route Advice)",
+                    aciklama: "Gönyeli çemberine girmeden sağ sapaktan yeni Lefkoşa Kuzey Çevre Yolu'na girin.",
+                    aciklamaEn: "Veer right before Gonyeli roundabout onto the new Lefkosa North Bypass.",
+                    mesafe: "11.4 km",
+                    lat: 35.2150,
+                    lon: 33.2850,
+                    mesafeMetre: 11400,
+                    bagliRadar: hamitkoyRadar,
+                    onemliMi: true,
+                  ),
+                  RotaManevraAdimi(
+                    ikon: Icons.merge_type_rounded,
+                    baslik: "Haspolat - UKÜ Bağlantısı",
+                    baslikEn: "Haspolat - CIU Highway Connection",
+                    aciklama: "Çevre yolundan Gazimağusa anayoluna sorunsuz bağlanın. UKÜ alt geçit radarını geçin.",
+                    aciklamaEn: "Merge seamlessly onto Famagusta highway past CIU underpass radar.",
+                    mesafe: "5.5 km",
+                    lat: 35.2168,
+                    lon: 33.4350,
+                    mesafeMetre: 5500,
+                    bagliRadar: haspolatRadar,
+                    onemliMi: true,
+                  ),
+                  RotaManevraAdimi(
+                    ikon: Icons.storefront_rounded,
+                    baslik: "Demirhan - Erülkü Süpermarket Varış",
+                    baslikEn: "Demirhan - Erulku Supermarket Arrival",
+                    aciklama: "Sağ tarafta Erülkü Süpermarket ana otopark girişine yanaşın. Radara dikkat edin!",
+                    aciklamaEn: "Pull into Erulku Supermarket parking lot on right. Watch 65 km/h camera!",
+                    mesafe: "3.8 km",
+                    lat: 35.2185,
+                    lon: 33.4820,
+                    mesafeMetre: 3800,
+                    bagliRadar: erulkuRadar,
+                    onemliMi: true,
+                  ),
+                ],
           gpsNoktalari: pts,
         );
       } else {
@@ -2035,6 +2330,10 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
 
   // --- 3. Gerçek OpenStreetMap Harita Görünümü ---
   Widget _buildGercekHaritaGorunumu(HesaplanmisRota rota) {
+    final manevralar = (_canliOsrmSonucu?.manevralar.isNotEmpty ?? false)
+        ? _canliOsrmSonucu!.manevralar
+        : rota.manevralar;
+
     return KktcRealRouteMapView(
       rota: rota,
       turkceMi: widget.turkceMi,
@@ -2045,6 +2344,14 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
       yaklasanRadar: _yaklasanRadar,
       yaklasanRadarMesafeMetre: _yaklasanRadarMesafeMetre,
       onToggleSimulasyon: _simulasyonAktif ? _durdurSimulasyon : _baslatSimulasyon,
+      navigasyonAktif: _navigasyonAktif,
+      aktifManevraIndeksi: _aktifManevraIndeksi,
+      mevcutManevrayaKalanMetre: _mevcutManevrayaKalanMetre,
+      onBaslatNavigasyon: _baslatNavigasyon,
+      onDurdurNavigasyon: _durdurNavigasyon,
+      onSonrakiManevra: _sonrakiManevra,
+      onOncekiManevra: _oncekiManevra,
+      aktifManevralar: manevralar,
     );
   }
 
@@ -2175,41 +2482,52 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(7),
-                    decoration: BoxDecoration(
-                      color: durumRengi.withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(10),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: durumRengi.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(Icons.traffic_rounded, color: durumRengi, size: 20),
                     ),
-                    child: Icon(Icons.traffic_rounded, color: durumRengi, size: 20),
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.turkceMi ? 'Canlı Trafik & Kalabalık Bölgeler' : 'Live Traffic & Crowded Spots',
-                        style: const TextStyle(
-                          color: NavHtmlColors.onSurface,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                        ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              widget.turkceMi ? 'Canlı Trafik & Kalabalık Bölgeler' : 'Live Traffic & Crowded Spots',
+                              style: const TextStyle(
+                                color: NavHtmlColors.onSurface,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            widget.turkceMi
+                                ? 'Güzergah üzerindeki anlık yoğunluk durumu'
+                                : 'Real-time congestion along this route',
+                            style: TextStyle(
+                              color: NavHtmlColors.secondary.withValues(alpha: 0.8),
+                              fontSize: 10.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
-                      Text(
-                        widget.turkceMi
-                            ? 'Güzergah üzerindeki anlık yoğunluk durumu'
-                            : 'Real-time congestion along this route',
-                        style: TextStyle(
-                          color: NavHtmlColors.secondary.withValues(alpha: 0.8),
-                          fontSize: 10.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
@@ -2898,6 +3216,15 @@ class KktcRealRouteMapView extends StatefulWidget {
   final RadarKamerasi? yaklasanRadar;
   final double yaklasanRadarMesafeMetre;
   final VoidCallback onToggleSimulasyon;
+  // Gerçek Google Maps Navigasyon Parametreleri
+  final bool navigasyonAktif;
+  final int aktifManevraIndeksi;
+  final double mevcutManevrayaKalanMetre;
+  final VoidCallback onBaslatNavigasyon;
+  final VoidCallback onDurdurNavigasyon;
+  final VoidCallback onSonrakiManevra;
+  final VoidCallback onOncekiManevra;
+  final List<RotaManevraAdimi> aktifManevralar;
 
   const KktcRealRouteMapView({
     super.key,
@@ -2910,6 +3237,14 @@ class KktcRealRouteMapView extends StatefulWidget {
     required this.yaklasanRadar,
     required this.yaklasanRadarMesafeMetre,
     required this.onToggleSimulasyon,
+    required this.navigasyonAktif,
+    required this.aktifManevraIndeksi,
+    required this.mevcutManevrayaKalanMetre,
+    required this.onBaslatNavigasyon,
+    required this.onDurdurNavigasyon,
+    required this.onSonrakiManevra,
+    required this.onOncekiManevra,
+    required this.aktifManevralar,
   });
 
   @override
@@ -2955,6 +3290,44 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
     if (oldWidget.rota.baslangic.id != widget.rota.baslangic.id ||
         oldWidget.rota.varis.id != widget.rota.varis.id) {
       _rotayaOdaklanHesapla();
+    } else if (widget.navigasyonAktif && !oldWidget.navigasyonAktif) {
+      _navigasyonaOdaklan();
+    } else if (widget.navigasyonAktif &&
+        oldWidget.aktifManevraIndeksi != widget.aktifManevraIndeksi) {
+      _aktifManevrayaOdaklan();
+    }
+  }
+
+  void _navigasyonaOdaklan() {
+    final pos = CanliGpsServisi().sonKonum;
+    if (pos != null) {
+      setState(() {
+        _centerLat = pos.latitude;
+        _centerLon = pos.longitude;
+        _zoom = 13.8;
+      });
+    } else if (widget.aktifManevralar.isNotEmpty) {
+      final m = widget.aktifManevralar.first;
+      if (m.lat != null && m.lon != null) {
+        setState(() {
+          _centerLat = m.lat!;
+          _centerLon = m.lon!;
+          _zoom = 13.5;
+        });
+      }
+    }
+  }
+
+  void _aktifManevrayaOdaklan() {
+    if (widget.aktifManevraIndeksi < widget.aktifManevralar.length) {
+      final m = widget.aktifManevralar[widget.aktifManevraIndeksi];
+      if (m.lat != null && m.lon != null) {
+        setState(() {
+          _centerLat = m.lat!;
+          _centerLon = m.lon!;
+          _zoom = 13.5;
+        });
+      }
     }
   }
 
@@ -3249,54 +3622,57 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                         intZoom: intZoom,
                       ),
 
-                    // 6. SOL ÜST: HARİTA BİLGİ & CANLI TRAFİK ROZETİ
-                    Positioned(
-                      top: 10,
-                      left: 10,
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: math.max(100.0, width - 80)),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: NavHtmlColors.surfaceContainerLowest.withValues(alpha: 0.90),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.white12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 7,
-                                height: 7,
-                                decoration: BoxDecoration(
-                                  color: widget.canliRotaYukleniyor ? NavHtmlColors.warning : NavHtmlColors.trafficClear,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  widget.canliRotaYukleniyor
-                                      ? (widget.turkceMi ? 'Trafik & Rota Alınıyor...' : 'Updating Route...')
-                                      : (widget.turkceMi ? 'Canlı Harita & Trafik' : 'Live Map & Traffic'),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
+                    // 6. ÜST NAVİGASYON BAŞLIĞI: GOOGLE MAPS DÖNÜŞ PANELİ VEYA HARİTA BİLGİ ROZETİ
+                    if (widget.navigasyonAktif)
+                      _buildGoogleMapsTurnBanner(width)
+                    else
+                      Positioned(
+                        top: 10,
+                        left: 10,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: math.max(100.0, width - 80)),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: NavHtmlColors.surfaceContainerLowest.withValues(alpha: 0.90),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.white12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 7,
+                                  height: 7,
+                                  decoration: BoxDecoration(
+                                    color: widget.canliRotaYukleniyor ? NavHtmlColors.warning : NavHtmlColors.trafficClear,
+                                    shape: BoxShape.circle,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    widget.canliRotaYukleniyor
+                                        ? (widget.turkceMi ? 'Trafik & Rota Alınıyor...' : 'Updating Route...')
+                                        : (widget.turkceMi ? 'Canlı Harita & Trafik' : 'Live Map & Traffic'),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
 
                     // 7. SAĞ ÜST: HARİTA KONTROLLERİ (Trafik / Katman / Odaklan / + / -)
                     Positioned(
-                      top: 10,
+                      top: widget.navigasyonAktif ? 100 : 10,
                       right: 10,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -3345,7 +3721,7 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                                 setState(() {
                                   _centerLat = pos.latitude;
                                   _centerLon = pos.longitude;
-                                  _zoom = 12.5;
+                                  _zoom = 13.5;
                                 });
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -3390,36 +3766,55 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                       ),
                     ),
 
-                    // 8. SAĞ ALT: CANLI SÜRÜŞ SİMÜLASYON BUTONU
-                    Positioned(
-                      bottom: 12,
-                      right: 12,
-                      child: ElevatedButton.icon(
-                        onPressed: widget.onToggleSimulasyon,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: widget.simulasyonAktif
-                              ? NavHtmlColors.surfaceContainerHigh
-                              : NavHtmlColors.primaryContainer,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 6,
-                        ),
-                        icon: Icon(
-                          widget.simulasyonAktif ? Icons.stop_rounded : Icons.play_arrow_rounded,
-                          size: 18,
-                        ),
-                        label: Text(
-                          widget.simulasyonAktif
-                              ? (widget.turkceMi ? 'Durdur' : 'Stop')
-                              : (widget.turkceMi ? 'Canlı Sürüşü Başlat' : 'Simulate Drive'),
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                    // 8. ALT PANEL: NAVİGASYON AKTİF İSE GOOGLE MAPS ALT BARI, DEĞİLSE "YOLA ÇIK" VE SİMÜLASYON BUTONU
+                    if (widget.navigasyonAktif)
+                      _buildNavigasyonAktifAltBar(width)
+                    else
+                      Positioned(
+                        bottom: 12,
+                        right: 12,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // 🧭 Google Maps Tarzı Gerçek Navigasyon Başlat
+                            ElevatedButton.icon(
+                              onPressed: widget.onBaslatNavigasyon,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF10B981),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
+                                elevation: 6,
+                                shadowColor: const Color(0xFF10B981).withValues(alpha: 0.5),
+                              ),
+                              icon: const Icon(Icons.navigation_rounded, size: 18),
+                              label: Text(
+                                widget.turkceMi ? '🧭 Yola Çık (Navigasyon)' : '🧭 Start Navigation',
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // Hızlı Simülasyon Butonu
+                            IconButton.filledTonal(
+                              onPressed: widget.onToggleSimulasyon,
+                              icon: Icon(
+                                widget.simulasyonAktif ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                                size: 18,
+                              ),
+                              tooltip: widget.turkceMi ? 'Simülasyon' : 'Simulate',
+                              style: IconButton.styleFrom(
+                                backgroundColor: widget.simulasyonAktif
+                                    ? const Color(0xFFDC2626)
+                                    : NavHtmlColors.surfaceContainerHigh,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
 
-                    // 9. SOL ALT: YAKLAŞAN RADAR BİLGİ HUD ŞERİDİ
-                    if (widget.simulasyonAktif && widget.yaklasanRadar != null)
+                    // 9. SOL ALT: YAKLAŞAN RADAR BİLGİ HUD ŞERİDİ (Simülasyon Aktifken)
+                    if (widget.simulasyonAktif && widget.yaklasanRadar != null && !widget.navigasyonAktif)
                       Positioned(
                         bottom: 12,
                         left: 12,
@@ -3497,6 +3892,335 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
               );
             },
           ),
+        ),
+      ),
+    );
+  }
+
+  // 🧭 GOOGLE MAPS YEŞİL DÖNÜŞ MANEVRA BANNER'I (ÜST HUD)
+  Widget _buildGoogleMapsTurnBanner(double width) {
+    if (widget.aktifManevralar.isEmpty) return const SizedBox.shrink();
+    final manevra = widget.aktifManevralar[
+        widget.aktifManevraIndeksi.clamp(0, widget.aktifManevralar.length - 1)];
+
+    final String mesafeStr = widget.mevcutManevrayaKalanMetre <= 40
+        ? (widget.turkceMi ? 'ŞİMDİ DÖNÜN' : 'TURN NOW')
+        : (widget.mevcutManevrayaKalanMetre < 1000
+            ? '${widget.mevcutManevrayaKalanMetre.round()} m'
+            : '${(widget.mevcutManevrayaKalanMetre / 1000).toStringAsFixed(1)} km');
+
+    final int hizLimiti = manevra.bagliRadar?.hizLimiti ??
+        (widget.rota.radarlar.isNotEmpty ? widget.rota.radarlar.first.hizLimiti : 75);
+
+    return Positioned(
+      top: 10,
+      left: 10,
+      right: 10,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF064E3B), Color(0xFF022C22)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.7), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.45),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+            BoxShadow(
+              color: const Color(0xFF10B981).withValues(alpha: 0.25),
+              blurRadius: 10,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Manevra İkon Rozeti
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: Center(
+                child: Icon(
+                  manevra.ikon,
+                  color: Colors.white,
+                  size: 26,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Manevra Metinleri & Mesafe
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        mesafeStr,
+                        style: TextStyle(
+                          color: widget.mevcutManevrayaKalanMetre <= 40
+                              ? const Color(0xFF6EE7B7)
+                              : Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (manevra.bagliRadar != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDC2626),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.speed_rounded, size: 10, color: Colors.white),
+                              const SizedBox(width: 3),
+                              Text(
+                                '${manevra.bagliRadar!.hizLimiti} km/s',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.turkceMi ? manevra.baslik : manevra.baslikEn,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    widget.turkceMi ? manevra.aciklama : manevra.aciklamaEn,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Hız Limiti & Canlı Hız
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Hız Limiti Yuvarlağı
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFDC2626), width: 2.8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$hizLimiti',
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Uydu Hızı
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: Text(
+                    '${widget.canliSurusHizi} km/s',
+                    style: const TextStyle(
+                      color: Color(0xFF38BDF8),
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 🗺️ GOOGLE MAPS ALT BARI (ETA, KALAN SÜRE, ADIM BUTONLARI VE DURDUR)
+  Widget _buildNavigasyonAktifAltBar(double width) {
+    final int kalanDk = widget.rota.tahminiDakika;
+    final now = DateTime.now();
+    final varisZamani = now.add(Duration(minutes: kalanDk));
+    final saatStr = '${varisZamani.hour.toString().padLeft(2, '0')}:${varisZamani.minute.toString().padLeft(2, '0')}';
+
+    final int toplamAdim = widget.aktifManevralar.length;
+    final int suankiAdim = widget.aktifManevraIndeksi + 1;
+
+    return Positioned(
+      bottom: 10,
+      left: 10,
+      right: 10,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: NavHtmlColors.surfaceContainerLowest.withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.4),
+              blurRadius: 14,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Tahmini Varış ve Kalan Süre
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        saatStr,
+                        style: const TextStyle(
+                          color: Color(0xFF10B981),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        widget.turkceMi ? 'Varış' : 'Arrival',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '$kalanDk dk • ${widget.rota.mesafeKm} km',
+                    style: TextStyle(
+                      color: NavHtmlColors.secondary.withValues(alpha: 0.9),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Adım Atlama / Test Kontrolleri (Masaüstü/Evde Önizleme Kolaylığı)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              decoration: BoxDecoration(
+                color: NavHtmlColors.surfaceContainerHigh.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  InkWell(
+                    onTap: widget.aktifManevraIndeksi > 0 ? widget.onOncekiManevra : null,
+                    borderRadius: BorderRadius.circular(6),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.chevron_left_rounded,
+                        size: 20,
+                        color: widget.aktifManevraIndeksi > 0 ? Colors.white : Colors.white24,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(
+                      '$suankiAdim/$toplamAdim',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: widget.onSonrakiManevra,
+                    borderRadius: BorderRadius.circular(6),
+                    child: const Padding(
+                      padding: EdgeInsets.all(4),
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        size: 20,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // Durdur / Çık Butonu
+            ElevatedButton.icon(
+              onPressed: widget.onDurdurNavigasyon,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFDC2626),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(11)),
+                elevation: 4,
+              ),
+              icon: const Icon(Icons.close_rounded, size: 15),
+              label: Text(
+                widget.turkceMi ? 'Durdur' : 'Stop',
+                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
         ),
       ),
     );
