@@ -10,7 +10,6 @@ import 'hizli_arama_modali.dart';
 import 'guncelleme_servisi.dart';
 import 'guvenlik_duvari.dart';
 import 'kktc_e_trafik_dashboard_sayfasi.dart';
-import 'kktc_e_trafik_giris_sayfasi.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,33 +60,14 @@ class KktcCezaApp extends StatefulWidget {
 
 class _KktcCezaAppState extends State<KktcCezaApp> {
   bool _splashGosteriliyor = true; // Sinematik açılış animasyonu devrede
-  bool _turkceMi = true;
-  bool _girisYapildiMi = false; // Giriş yapıldıktan sonra Dashboard'a geçer
-  String _kullaniciAdi = "Ahmet Demir";
-  String _kullaniciRolu = "Sürücü";
-  List<String> _araclar = ["RZ 123", "LZ 555"];
-
-  void _dilDegistir(bool turkceMi) {
-    setState(() {
-      _turkceMi = turkceMi;
-    });
-  }
-
-  void _girisYapBasarili(String adSoyad, List<String> araclar, [String rol = ""]) {
-    setState(() {
-      _girisYapildiMi = true;
-      _kullaniciAdi = adSoyad;
-      _araclar = araclar;
-      _kullaniciRolu = rol;
-    });
-  }
+  final bool _turkceMi = true;
+  bool _girisYapildiMi = false; // Doğrudan misafir modunda başlar
+  String _kullaniciAdi = "Misafir Kullanıcı";
 
   void _cikisYap() {
     setState(() {
       _girisYapildiMi = false;
-      _kullaniciAdi = "";
-      _kullaniciRolu = "";
-      _araclar = [];
+      _kullaniciAdi = "Misafir Kullanıcı";
     });
   }
 
@@ -116,17 +96,12 @@ class _KktcCezaAppState extends State<KktcCezaApp> {
                   setState(() => _splashGosteriliyor = false);
                 },
               )
-            : (_girisYapildiMi
-                ? KktcETrafikDashboardSayfasi(
-                    key: const ValueKey('kktc_modern_dashboard'),
-                    onCikisYap: _cikisYap,
-                  )
-                : KktcETrafikGirisSayfasi(
-                    key: const ValueKey('kktc_modern_giris'),
-                    onLoginSuccess: () {
-                      _girisYapBasarili("Ahmet Demir", ["RZ 123", "LZ 555"]);
-                    },
-                  )),
+            : KktcETrafikDashboardSayfasi(
+                key: const ValueKey('kktc_modern_dashboard'),
+                onCikisYap: _cikisYap,
+                initialGirisYapildiMi: _girisYapildiMi,
+                initialKullaniciAdi: _kullaniciAdi,
+              ),
       ),
     );
   }

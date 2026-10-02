@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'kktc_e_trafik_giris_sayfasi.dart';
 import 'kktc_e_trafik_radar_kokpit_sayfasi.dart';
 import 'kktc_e_trafik_menu_sayfasi.dart';
 import 'kktc_gov_sync_service.dart';
@@ -20,6 +21,9 @@ class KktcETrafikDashboardSayfasi extends StatefulWidget {
   final VoidCallback? onOpenQrDocument;
   final VoidCallback? onOpenProfile;
   final VoidCallback? onCikisYap;
+  final bool initialGirisYapildiMi;
+  final String? initialKullaniciAdi;
+  final VoidCallback? onGirisYapIstegi;
 
   const KktcETrafikDashboardSayfasi({
     super.key,
@@ -28,6 +32,9 @@ class KktcETrafikDashboardSayfasi extends StatefulWidget {
     this.onOpenQrDocument,
     this.onOpenProfile,
     this.onCikisYap,
+    this.initialGirisYapildiMi = false,
+    this.initialKullaniciAdi,
+    this.onGirisYapIstegi,
   });
 
   @override
@@ -47,6 +54,55 @@ class _KktcETrafikDashboardSayfasiState
   static const Color cLime = Color(0xFFD1C929);
   static const Color cLimeDark = Color(0xFF948D08);
   static const Color cEmerald = Color(0xFF10B981);
+
+  // Kullanıcı Giriş Durumu
+  bool _girisYapildiMi = false;
+  String _kullaniciAdi = 'Ahmet Demir';
+
+  void _girisEkraniniAc({VoidCallback? onSuccess}) {
+    HapticFeedback.mediumImpact();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (ctx) => KktcETrafikGirisSayfasi(
+          onLoginSuccess: () {
+            setState(() {
+              _girisYapildiMi = true;
+              _kullaniciAdi = 'Ahmet Demir';
+            });
+            if (Navigator.canPop(ctx)) {
+              Navigator.pop(ctx);
+            }
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Giriş başarılı! Hoş geldiniz.'),
+                backgroundColor: Color(0xFF10B981),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            if (onSuccess != null) {
+              onSuccess();
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  bool _girisKontrolEt({required String islemAdi, VoidCallback? onGirisSonrasi}) {
+    if (_girisYapildiMi) return true;
+
+    HapticFeedback.selectionClick();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$islemAdi için lütfen giriş yapın.'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    _girisEkraniniAc(onSuccess: onGirisSonrasi);
+    return false;
+  }
 
   // Seçili Tab İndeksi: 0: Panel, 1: Radarlar, 2: E-Denetim, 3: Cezalar & Sigorta, 4: Menü
   int _selectedTabIndex = 0;
@@ -118,6 +174,10 @@ class _KktcETrafikDashboardSayfasiState
   @override
   void initState() {
     super.initState();
+    _girisYapildiMi = widget.initialGirisYapildiMi;
+    if (widget.initialKullaniciAdi != null && widget.initialKullaniciAdi!.isNotEmpty) {
+      _kullaniciAdi = widget.initialKullaniciAdi!;
+    }
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
@@ -2767,6 +2827,113 @@ class _KktcETrafikDashboardSayfasiState
   // CEZALAR & SİGORTA TABI (TAM İNTERAKTİF, DETAYLI VE ÖDEME DESTEKLİ)
   // ===========================================================================
   Widget _buildCezalarVeSigortaTab() {
+    if (!_girisYapildiMi) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: cSoft),
+            boxShadow: [
+              BoxShadow(
+                color: cNavy.withOpacity(0.06),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: cNavy.withOpacity(0.06),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.lock_rounded,
+                  size: 32,
+                  color: cNavy,
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                'Giriş Yapılması Gerekiyor',
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w900,
+                  color: cNavy,
+                  letterSpacing: -0.3,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Kişisel radar cezalarınızı, seyrüsefer harçlarınızı, fenni muayene ve araç sigorta dökümlerinizi görüntülemek için KKTC Kimlik veya Ehliyet numaranız ile giriş yapmalısınız.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: cSlate,
+                  height: 1.45,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    _girisEkraniniAc(
+                      onSuccess: () {
+                        setState(() {
+                          _selectedTabIndex = 3;
+                        });
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.login_rounded, size: 18, color: cLime),
+                  label: const Text(
+                    'Kimlik / Ehliyet ile Giriş Yap',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cNavy,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () {
+                  setState(() => _selectedTabIndex = 0);
+                },
+                child: const Text(
+                  'Ana Panele Geri Dön',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: cSlate,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -4885,10 +5052,14 @@ class _KktcETrafikDashboardSayfasiState
                 leading: const Icon(Icons.logout_rounded, color: Color(0xFFD90429)),
                 title: const Text('Güvenli Çıkış Yap', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5, color: Color(0xFFD90429))),
                 onTap: () {
+                  setState(() {
+                    _girisYapildiMi = false;
+                    _kullaniciAdi = 'Misafir Kullanıcı';
+                  });
                   if (widget.onCikisYap != null) {
                     widget.onCikisYap!();
                   } else {
-                    _showInfoDialog(title: 'Çıkış Yapıldı', message: 'Güvenli oturumunuz sonlandırıldı.');
+                    _showInfoDialog(title: 'Çıkış Yapıldı', message: 'Güvenli oturumunuz sonlandırıldı, misafir modundasınız.');
                   }
                 },
               ),
@@ -4896,6 +5067,48 @@ class _KktcETrafikDashboardSayfasiState
           ),
         ),
       ],
+    );
+  }
+
+  void _showLogoutConfirmDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Çıkış Yapılsın mı?', style: TextStyle(fontWeight: FontWeight.w800, color: cNavy)),
+        content: const Text('Oturumunuz kapatılacak ve misafir moduna geçilecektir.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('İptal', style: TextStyle(color: cSlate)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _girisYapildiMi = false;
+                _kullaniciAdi = 'Misafir Kullanıcı';
+              });
+              if (widget.onCikisYap != null) {
+                widget.onCikisYap!();
+              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Oturum kapatıldı, misafir modundasınız.'),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Çıkış Yap'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -4941,16 +5154,26 @@ class _KktcETrafikDashboardSayfasiState
                             ),
                           ],
                         ),
-                        child: const Center(
-                          child: Text(
-                            'AD',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 16,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
+                        child: Center(
+                          child: _girisYapildiMi
+                              ? Text(
+                                  _kullaniciAdi.isNotEmpty
+                                      ? (_kullaniciAdi.length >= 2
+                                          ? _kullaniciAdi.substring(0, 2).toUpperCase()
+                                          : _kullaniciAdi.toUpperCase())
+                                      : 'AD',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                    letterSpacing: 0.5,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.person_outline_rounded,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -4960,9 +5183,9 @@ class _KktcETrafikDashboardSayfasiState
                         children: [
                           Row(
                             children: [
-                              const Text(
-                                'KKTC e-TRAFİK',
-                                style: TextStyle(
+                              Text(
+                                _girisYapildiMi ? 'KKTC e-TRAFİK' : 'KKTC e-TRAFİK • MİSAFİR',
+                                style: const TextStyle(
                                   fontSize: 11.5,
                                   color: cNavy,
                                   fontWeight: FontWeight.w800,
@@ -4972,17 +5195,17 @@ class _KktcETrafikDashboardSayfasiState
                               Container(
                                 width: 6,
                                 height: 6,
-                                decoration: const BoxDecoration(
-                                  color: cEmerald,
+                                decoration: BoxDecoration(
+                                  color: _girisYapildiMi ? cEmerald : cLimeDark,
                                   shape: BoxShape.circle,
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 2),
-                          const Text(
-                            'Merhaba, Ahmet',
-                            style: TextStyle(
+                          Text(
+                            _girisYapildiMi ? 'Merhaba, $_kullaniciAdi' : 'Hoş Geldiniz',
+                            style: const TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
                               color: cNavy,
@@ -4994,29 +5217,79 @@ class _KktcETrafikDashboardSayfasiState
                     ],
                   ),
 
-                  // Sağ: 7/24 Yol Yardımı ve Bildirim İkonları
-                  Row(
-                    children: [
-                      _buildHeaderIconButton(
-                        icon: Icons.car_repair_rounded,
+                  // Sağ: Giriş Yap Butonu (Giriş Yapılmadıysa) VEYA Oturum / Bildirim İkonları
+                  if (!_girisYapildiMi)
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
                         onTap: () {
-                          _showYolYardimBottomSheet();
+                          HapticFeedback.lightImpact();
+                          _girisEkraniniAc();
                         },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: cNavy,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: cNavy.withOpacity(0.22),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.login_rounded, size: 16, color: cLime),
+                              SizedBox(width: 6),
+                              Text(
+                                'Giriş Yap',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 8),
-                      _buildHeaderIconButton(
-                        icon: Icons.notifications_rounded,
-                        showDot: true,
-                        onTap: () {
-                          _showInfoDialog(
-                            title: 'Bildirimler',
-                            message:
-                              '1 adet yeni radar ihlal bildiriminiz bulunmaktadır.',
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                    )
+                  else
+                    Row(
+                      children: [
+                        _buildHeaderIconButton(
+                          icon: Icons.car_repair_rounded,
+                          onTap: () {
+                            _showYolYardimBottomSheet();
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        _buildHeaderIconButton(
+                          icon: Icons.notifications_rounded,
+                          showDot: !_cezaOdendi,
+                          onTap: () {
+                            _showInfoDialog(
+                              title: 'Bildirimler',
+                              message: _cezaOdendi
+                                  ? 'Okunmamış yeni bildiriminiz bulunmuyor.'
+                                  : '1 adet yeni radar ihlal bildiriminiz bulunmaktadır.',
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        _buildHeaderIconButton(
+                          icon: Icons.logout_rounded,
+                          onTap: () {
+                            _showLogoutConfirmDialog();
+                          },
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -5083,141 +5356,187 @@ class _KktcETrafikDashboardSayfasiState
   // 2. EHLİYET & SAĞLIK SKORU ÖZET KARTI
   // ===========================================================================
   Widget _buildDriverScoreCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cCard,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          _girisKontrolEt(
+            islemAdi: 'Ehliyet sağlık puanı ve sürücü ceza dökümünü görüntülemek',
+            onGirisSonrasi: () {
+              _showInfoDialog(
+                title: 'Ehliyet Sağlık Durumu',
+                message: 'Puanınız: 85/100. Son 12 ayda 1 adet hız ihlalinden 15 ceza puanınız bulunmaktadır.',
+              );
+            },
+          );
+        },
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: cSoft.withOpacity(0.85)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: cCard,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: cSoft.withOpacity(0.85)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Sol Açıklama
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: cBg,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: cEmerald,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      const Text(
-                        'EHLİYET SAĞLIK PUANI',
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w700,
-                          color: cSlate,
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Güvenli Sürücü Seviyesi',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: cNavy,
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Sol Açıklama
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    RichText(
-                      text: const TextSpan(
-                        style: TextStyle(fontSize: 11.5, color: cSlate),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: cBg,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          TextSpan(text: 'Toplam Ceza: '),
-                          TextSpan(
-                            text: '15 Puan',
-                            style: TextStyle(
-                              color: cNavy,
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: _girisYapildiMi ? cEmerald : cLimeDark,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _girisYapildiMi ? 'EHLİYET SAĞLIK PUANI' : 'EHLİYET SAĞLIK PUANI (KİLİTLİ)',
+                            style: const TextStyle(
+                              fontSize: 10.5,
                               fontWeight: FontWeight.w700,
+                              color: cSlate,
+                              letterSpacing: 0.4,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 6),
-                      child: Text('•', style: TextStyle(color: cSlate, fontSize: 11)),
+                    const SizedBox(height: 6),
+                    Text(
+                      _girisYapildiMi ? 'Güvenli Sürücü Seviyesi' : 'Puanınızı Görmek İçin Giriş Yapın',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: cNavy,
+                        letterSpacing: -0.2,
+                      ),
                     ),
-                    const Text(
-                      'Sınıf: A2, B, D',
-                      style: TextStyle(fontSize: 11.5, color: cSlate),
+                    const SizedBox(height: 4),
+                    if (_girisYapildiMi)
+                      Row(
+                        children: [
+                          RichText(
+                            text: const TextSpan(
+                              style: TextStyle(fontSize: 11.5, color: cSlate),
+                              children: [
+                                TextSpan(text: 'Toplam Ceza: '),
+                                TextSpan(
+                                  text: '15 Puan',
+                                  style: TextStyle(
+                                    color: cNavy,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 6),
+                            child: Text('•', style: TextStyle(color: cSlate, fontSize: 11)),
+                          ),
+                          const Text(
+                            'Sınıf: A2, B, D',
+                            style: TextStyle(fontSize: 11.5, color: cSlate),
+                          ),
+                        ],
+                      )
+                    else
+                      const Row(
+                        children: [
+                          Icon(Icons.lock_outline_rounded, size: 13, color: cSlate),
+                          SizedBox(width: 4),
+                          Text(
+                            'Ceza ve ehliyet sınıfı dökümü için tıklayın',
+                            style: TextStyle(fontSize: 11.5, color: cSlate, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+
+              // Sağ Skor Rozeti
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: cNavy,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: cNavy.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
-              ],
-            ),
+                child: _girisYapildiMi
+                    ? const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '85',
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 21,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              height: 1.0,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            '/ 100',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: cSoft,
+                            ),
+                          ),
+                        ],
+                      )
+                    : const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.lock_rounded, color: cLime, size: 22),
+                          SizedBox(height: 2),
+                          Text(
+                            'GİRİŞ',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ],
           ),
-
-          // Sağ Skor Rozeti
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: cNavy,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: cNavy.withOpacity(0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '85',
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 21,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    height: 1.0,
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  '/ 100',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: cSoft,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -5233,7 +5552,9 @@ class _KktcETrafikDashboardSayfasiState
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'KAYITLI ARAÇLARIM (${_vehicles.length})',
+              _girisYapildiMi
+                  ? 'KAYITLI ARAÇLARIM (${_vehicles.length})'
+                  : 'KAYITLI ARAÇLARIM (GİRİŞ GEREKLİ)',
               style: const TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w800,
@@ -5243,9 +5564,14 @@ class _KktcETrafikDashboardSayfasiState
             ),
             GestureDetector(
               onTap: () {
-                _showInfoDialog(
-                  title: 'Araç Yönetimi',
-                  message: 'Kayıtlı araçlarınızın muayene, sigorta ve seyrüsefer bilgilerini buradan yönetebilirsiniz.',
+                _girisKontrolEt(
+                  islemAdi: 'Araç yönetim paneline erişmek',
+                  onGirisSonrasi: () {
+                    _showInfoDialog(
+                      title: 'Araç Yönetimi',
+                      message: 'Kayıtlı araçlarınızın muayene, sigorta ve seyrüsefer bilgilerini buradan yönetebilirsiniz.',
+                    );
+                  },
                 );
               },
               child: const Text(
@@ -5304,21 +5630,26 @@ class _KktcETrafikDashboardSayfasiState
       child: InkWell(
         onTap: () {
           HapticFeedback.selectionClick();
-          setState(() => _selectedVehicleIndex = index);
+          _girisKontrolEt(
+            islemAdi: 'Araç bilgilerini ve seyrüsefer durumunu görüntülemek',
+            onGirisSonrasi: () {
+              setState(() => _selectedVehicleIndex = index);
+            },
+          );
         },
         borderRadius: BorderRadius.circular(18),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? cNavy : cCard,
+            color: isSelected && _girisYapildiMi ? cNavy : cCard,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: isSelected ? Colors.transparent : cSoft,
+              color: isSelected && _girisYapildiMi ? Colors.transparent : cSoft,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isSelected ? 0.12 : 0.02),
+                color: Colors.black.withOpacity(isSelected && _girisYapildiMi ? 0.12 : 0.02),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -5330,13 +5661,13 @@ class _KktcETrafikDashboardSayfasiState
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.white.withOpacity(0.12) : cBg,
+                  color: isSelected && _girisYapildiMi ? Colors.white.withOpacity(0.12) : cBg,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.directions_car_rounded,
                   size: 19,
-                  color: isSelected ? Colors.white : cSlate,
+                  color: isSelected && _girisYapildiMi ? Colors.white : cSlate,
                 ),
               ),
               const SizedBox(width: 10),
@@ -5347,16 +5678,16 @@ class _KktcETrafikDashboardSayfasiState
                   Row(
                     children: [
                       Text(
-                        plate,
+                        _girisYapildiMi ? plate : '*** ***',
                         style: TextStyle(
                           fontFamily: 'monospace',
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
-                          color: isSelected ? Colors.white : cNavy,
+                          color: isSelected && _girisYapildiMi ? Colors.white : cNavy,
                           letterSpacing: 0.5,
                         ),
                       ),
-                      if (isSelected) ...[
+                      if (isSelected && _girisYapildiMi) ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -5379,10 +5710,10 @@ class _KktcETrafikDashboardSayfasiState
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    model,
+                    _girisYapildiMi ? model : 'Giriş Yapın',
                     style: TextStyle(
                       fontSize: 11,
-                      color: isSelected ? Colors.white.withOpacity(0.8) : cSlate,
+                      color: isSelected && _girisYapildiMi ? Colors.white.withOpacity(0.8) : cSlate,
                     ),
                   ),
                 ],
@@ -5399,9 +5730,14 @@ class _KktcETrafikDashboardSayfasiState
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          _showInfoDialog(
-            title: 'Yeni Araç Ekle',
-            message: 'Plaka ve Koçan seri numaranızı girerek sisteme yeni araç kaydedebilirsiniz.',
+          _girisKontrolEt(
+            islemAdi: 'Yeni araç kaydetmek',
+            onGirisSonrasi: () {
+              _showInfoDialog(
+                title: 'Yeni Araç Ekle',
+                message: 'Plaka ve Koçan seri numaranızı girerek sisteme yeni araç kaydedebilirsiniz.',
+              );
+            },
           );
         },
         borderRadius: BorderRadius.circular(18),
@@ -5465,30 +5801,37 @@ class _KktcETrafikDashboardSayfasiState
               badgeWidget: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: cLime,
+                  color: _girisYapildiMi ? cLime : cSoft,
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: const Text(
-                  '1 ÖDENMEMİŞ',
+                child: Text(
+                  _girisYapildiMi
+                      ? (_cezaOdendi ? 'TEMİZ' : '1 ÖDENMEMİŞ')
+                      : 'GİRİŞ GEREKLİ',
                   style: TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w900,
-                    color: cNavy,
+                    color: _girisYapildiMi ? cNavy : cSlate,
                     letterSpacing: 0.2,
                   ),
                 ),
               ),
               title: 'Cezalarım',
-              bottomLabel: 'Toplam Borç',
-              bottomValue: _cezaOdendi ? '₺0' : '₺1.850',
+              bottomLabel: _girisYapildiMi ? 'Toplam Borç' : 'Ceza Durumu',
+              bottomValue: _girisYapildiMi ? (_cezaOdendi ? '₺0' : '₺1.850') : 'Giriş Yap',
               onTap: () {
-                setState(() {
-                  _selectedTabIndex = 3;
-                  _cezaSigortaSubTab = 0;
-                });
-                if (widget.onOpenFines != null) {
-                  widget.onOpenFines!();
-                }
+                _girisKontrolEt(
+                  islemAdi: 'Trafik cezalarınızı görüntülemek ve ödemek',
+                  onGirisSonrasi: () {
+                    setState(() {
+                      _selectedTabIndex = 3;
+                      _cezaSigortaSubTab = 0;
+                    });
+                    if (widget.onOpenFines != null) {
+                      widget.onOpenFines!();
+                    }
+                  },
+                );
               },
             ),
 
@@ -5498,25 +5841,38 @@ class _KktcETrafikDashboardSayfasiState
               badgeWidget: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: _seyruseferYenilendi ? const Color(0xFFECFDF5) : cSoft,
+                  color: _girisYapildiMi
+                      ? (_seyruseferYenilendi ? const Color(0xFFECFDF5) : cSoft)
+                      : cSoft,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  _seyruseferYenilendi ? 'Güncel' : '86 Gün Kaldı',
+                  _girisYapildiMi
+                      ? (_seyruseferYenilendi ? 'Güncel' : '86 Gün Kaldı')
+                      : 'GİRİŞ GEREKLİ',
                   style: TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w700,
-                    color: _seyruseferYenilendi ? cEmerald : cNavy,
+                    color: _girisYapildiMi
+                        ? (_seyruseferYenilendi ? cEmerald : cNavy)
+                        : cSlate,
                   ),
                 ),
               ),
               title: 'Seyrüsefer & Sigorta',
-              subtitle: _seyruseferYenilendi ? '2027 Harcı Ödendi' : '2026/2. Dönem',
+              subtitle: _girisYapildiMi
+                  ? (_seyruseferYenilendi ? '2027 Harcı Ödendi' : '2026/2. Dönem')
+                  : 'Araç Harç Durumu',
               onTap: () {
-                setState(() {
-                  _selectedTabIndex = 3;
-                  _cezaSigortaSubTab = 1;
-                });
+                _girisKontrolEt(
+                  islemAdi: 'Seyrüsefer harcı ve sigorta poliçelerini görüntülemek',
+                  onGirisSonrasi: () {
+                    setState(() {
+                      _selectedTabIndex = 3;
+                      _cezaSigortaSubTab = 1;
+                    });
+                  },
+                );
               },
             ),
 
@@ -5999,6 +6355,154 @@ class _KktcETrafikDashboardSayfasiState
   // 5. SON DURUM / CANLI UYARI KARTI
   // ===========================================================================
   Widget _buildLiveViolationCard() {
+    if (!_girisYapildiMi) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: cCard,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: cSoft.withOpacity(0.9)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.025),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: cNavy,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'CEZA & İHLAL SORGULAMA',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w800,
+                        color: cNavy,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: cSoft,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    'MİSAFİR MODU',
+                    style: TextStyle(
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w700,
+                      color: cSlate,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: cBg,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.lock_outline_rounded,
+                      size: 20,
+                      color: cNavy,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Radar ve İhlal Bildirimleri',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w800,
+                            color: cNavy,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Adınıza kayıtlı araçların cezalarını görmek için giriş yapın.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: cSlate,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  _girisEkraniniAc();
+                },
+                icon: const Icon(Icons.login_rounded, size: 16, color: cLime),
+                label: const Text(
+                  'Kimlik / Ehliyet ile Giriş Yap',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: cNavy,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -6276,15 +6780,20 @@ class _KktcETrafikDashboardSayfasiState
                 label: 'E-Denetim',
                 onTap: () {
                   HapticFeedback.heavyImpact();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const BarkodluBelgeSayfasi(
-                        kullanici: 'Ahmet Demir',
-                        puan: 85,
-                        turkceMi: true,
-                      ),
-                    ),
+                  _girisKontrolEt(
+                    islemAdi: 'E-Denetim barkodlu dijital belge oluşturmak',
+                    onGirisSonrasi: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BarkodluBelgeSayfasi(
+                            kullanici: _kullaniciAdi,
+                            puan: 85,
+                            turkceMi: true,
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -6293,15 +6802,20 @@ class _KktcETrafikDashboardSayfasiState
                 index: 3,
                 icon: Icons.receipt_long_rounded,
                 label: 'Cezalar & Sigorta',
-                hasNotificationBadge: !_cezaOdendi,
+                hasNotificationBadge: _girisYapildiMi && !_cezaOdendi,
                 onCustomTap: () {
-                  setState(() {
-                    _selectedTabIndex = 3;
-                    _cezaSigortaSubTab = 0;
-                  });
-                  if (widget.onOpenFines != null) {
-                    widget.onOpenFines!();
-                  }
+                  _girisKontrolEt(
+                    islemAdi: 'Ceza ve seyrüsefer durumunu sorgulamak',
+                    onGirisSonrasi: () {
+                      setState(() {
+                        _selectedTabIndex = 3;
+                        _cezaSigortaSubTab = 0;
+                      });
+                      if (widget.onOpenFines != null) {
+                        widget.onOpenFines!();
+                      }
+                    },
+                  );
                 },
               ),
               // 5. Menü (Referans Tasarımdaki Vurgulu Hap Kapsülü)
@@ -6335,9 +6849,10 @@ class _KktcETrafikDashboardSayfasiState
         child: InkWell(
           onTap: () {
             HapticFeedback.selectionClick();
-            setState(() => _selectedTabIndex = index);
             if (onCustomTap != null) {
               onCustomTap();
+            } else {
+              setState(() => _selectedTabIndex = index);
             }
           },
           child: Column(

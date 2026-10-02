@@ -840,6 +840,33 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        if (Navigator.canPop(context))
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => Navigator.pop(context),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withOpacity(0.15)),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70, size: 14),
+                    SizedBox(width: 6),
+                    Text('Panele Dön', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+            ),
+          )
+        else
+          const SizedBox.shrink(),
+
         // Resmi Kamu Ağı Hapı
         ClipRRect(
           borderRadius: BorderRadius.circular(999),
