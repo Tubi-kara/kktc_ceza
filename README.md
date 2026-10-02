@@ -4,7 +4,7 @@
 
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)
-![Version](https://img.shields.io/badge/Sürüm-v1.0.2-10B981?style=for-the-badge)
+![Version](https://img.shields.io/badge/Sürüm-v1.0.3-10B981?style=for-the-badge)
 ![Security](https://img.shields.io/badge/Siber%20Güvenlik-WAF%20%7C%20Anti--DDoS%20%7C%20RBAC-D90429?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web-4E73DF?style=for-the-badge)
 ![CI/CD](https://img.shields.io/badge/GitHub%20Actions-Otomatik%20APK%20%26%20IPA%20Build-success?style=for-the-badge&logo=githubactions&logoColor=white)
@@ -20,9 +20,12 @@
 
 </div>
 
-## 🚀 Son Sürümle Eklenenler (v1.0.2)
+## 🚀 Son Sürümle Eklenenler (v1.0.3)
 
-- **🔑 Özel Yönetici Girişi (`tubi` / `1907`) & Gizli SOC Erişimi:** Admin/SOC demo kartı genel giriş ekranından tamamen kaldırıldı. Halkın veya üçüncü şahısların güvenlik duvarı ayarlarına ve loglarına erişimi engellendi. Siber Operasyon Merkezi (SOC) ve yönetici paneline yalnızca yetkili kullanıcı adı `tubi` ve şifre `1907` ile özel olarak giriş yapılabilir.
+- **📥 Uygulama İçi Direkt İndirme (In-App Downloader):** Güncelle butonuna basıldığında artık tarayıcıya veya GitHub'a yönlendirilmez. Uygulama içinde gerçek zamanlı MB/boyut ve % ilerleme çubuğuyla APK doğrudan indirilir.
+- **⚡ Otomatik Paket Yükleyici (Direct Installer):** İndirme %100 tamamlandığı anda Android sistem paket yükleyicisi otomatik olarak ekrana gelir ve tek tıkla güncelleme kurulur.
+- **🛡️ Google Play Protect Uyarısı Desteği & İzinler:** Android 8-15 ve HyperOS uyumluluğu için `REQUEST_INSTALL_PACKAGES` izni ve `KKTC e-Trafik` resmi etiket tanımlandı. Kurulum ekranında kullanıcılar için Play Protect aşma rehberi eklendi (*"Daha Fazla Ayrıntı" ➔ "Yine de Yükle"*).
+- **🔑 Özel Yönetici Girişi (`tubi` / `1907`) & Gizli SOC Erişimi:** Admin demo kartı kaldırıldı; Siber Operasyon Merkezi ve güvenlik duvarı yalnızca yetkili kullanıcı adı `tubi` ve şifre `1907` ile özel olarak açılır.
 - **🎯 Haritaya Dokunarak Dinamik Rota Oluşturma (Touch-to-Route):** Haritada herhangi bir noktaya dokunulduğunda anlık ekran koordinatlarından gerçek GPS `(lat, lon)` ters projeksiyonu yapılır. Açılan amber renkli hedef rozeti ve alt panel üzerinden tek tıkla *"Buraya Git (Hedef)"* veya *"Buradan Başla (Kalkış)"* seçilebilir; canlı OSRM rotası anında çizilir.
 - **🧭 Google Maps Tarzı Gerçek Navigasyon HUD & Dönüş Manevraları:** Canlı yeşil dönüş banner'ı, *"200 m sonra Lefkoşa yönüne sola dönün"*, *"ŞİMDİ DÖNÜN"* sesli/görsel yönlendirmeleri, tahmini varış saati (ETA), kalan dakika/km telemetrisi ve canlı GPS takip pini.
 - **🛡️ Mobil Siber Güvenlik Duvarı (WAF & SOC Kalkanı):** SQL Injection, XSS, komut enjeksiyonu filtreleri, 3 saniyede 12 sorgu Anti-DDoS flood koruması, Strict HTTPS ve izinli domain whitelist denetleyicisi.
@@ -66,8 +69,10 @@ Artık telefonunuza kablo takmanıza gerek yoktur:
 
 1. **Otomatik Bulut Derlemesi:** Her `git push` yapıldığında `.github/workflows/build_apk.yml` devreye girer, GitHub sunucularında release APK'sını derler ve GitHub Releases sekmesine yükler.
 2. **Uygulama İçi Bildirim (OTA):** Uygulama açıldığında GitHub Releases API'sini sorgular. Yeni bir sürüm varsa ekrana modern glassmorphism güncelleme kartı gelir.
-3. **Tek Tıkla Kurulum:** Kullanıcı *"Hemen Güncelle"* butonuna basarak yeni APK'yı indirir ve eski verilerini kaybetmeden günceller.
-4. **Manuel Kontrol:** Üst çubuktaki mavi Bulut Güncelleme (`cloud_sync`) ikonu ile istenildiği an yeni sürüm kontrol edilebilir.
+3. **Uygulama İçi Canlı İndirme:** *"Direkt İndir & Kur"* butonuna basıldığında tarayıcıya gitmeden, uygulama içinde anlık MB ve % ilerleme çubuğuyla APK indirilir.
+4. **Otomatik Paket Yükleyici:** İndirme tamamlanır tamamlanmaz Android sistem yükleyicisi otomatik olarak açılır ve veriler kaybolmadan güncelleme yüklenir.
+5. **🛡️ Google Play Protect Notu:** Üçüncü taraf mağaza dışı doğrudan güncellemelerde Google Play Protect uyarı verebilir. Ekranda gösterilen rehber uyarınca *"Daha Fazla Ayrıntı"* ➔ *"Yine de Yükle"* seçilerek kurulum saniyeler içinde tamamlanır.
+6. **Manuel Kontrol:** Üst çubuktaki mavi Bulut Güncelleme (`cloud_sync`) ikonu ile istenildiği an yeni sürüm kontrol edilebilir.
 
 ---
 

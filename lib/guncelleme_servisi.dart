@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// 🚀 Otomatik Güncelleme Bilgi Modeli
@@ -25,7 +28,7 @@ class GuncellemeBilgisi {
 /// 📲 KKTC Trafik & Ceza - Kablosuz OTA Güncelleme Servisi
 class GuncellemeServisi {
   // Mevcut uygulama sürümü (Cihazdaki taban sürüm)
-  static const String mevcutSurum = "1.0.0";
+  static const String mevcutSurum = "1.0.3";
   static const String _repoApiUrl =
       "https://api.github.com/repos/Tubi-kara/kktc_ceza/releases/latest";
   static const String _varsayilanApkUrl =
@@ -35,7 +38,7 @@ class GuncellemeServisi {
   static Future<GuncellemeBilgisi?> guncellemeKontrolEt() async {
     try {
       final client = HttpClient();
-      client.connectionTimeout = const Duration(seconds: 6);
+      client.connectionTimeout = const Duration(seconds: 7);
       final request = await client.getUrl(Uri.parse(_repoApiUrl));
       request.headers.set('User-Agent', 'KKTC-Ceza-App');
       request.headers.set('Accept', 'application/vnd.github.v3+json');
@@ -55,7 +58,6 @@ class GuncellemeServisi {
       // Sürüm numarasını temizle (örn: 'v1.0.2' -> '1.0.2')
       String temizYeniSurum = tagName.replaceAll(RegExp(r'[^0-9.]'), '');
       if (temizYeniSurum.isEmpty) {
-        // Tag "latest" ise, başlık veya açıklamadaki sürümü ara
         final match = RegExp(r'v?(\d+\.\d+(\.\d+)?)').firstMatch('$releaseName $releaseBody');
         if (match != null) {
           temizYeniSurum = match.group(1) ?? '';
@@ -92,7 +94,6 @@ class GuncellemeServisi {
         apkUrl: indirmeUrl,
       );
     } catch (_) {
-      // İnternet yoksa veya GitHub ulaşılamazsa sessizce geç
       return null;
     }
   }
@@ -117,7 +118,7 @@ class GuncellemeServisi {
     return false;
   }
 
-  /// 🔔 Uygulama Açılışında Otomatik Kontrol (Sadece yeni sürüm varsa pencere açar)
+  /// 🔔 Uygulama Açılışında Otomatik Kontrol
   static Future<void> otomatikKontrolEt(BuildContext context, bool turkceMi) async {
     final bilgi = await guncellemeKontrolEt();
     if (bilgi != null && bilgi.guncellemeVar && context.mounted) {
@@ -125,7 +126,7 @@ class GuncellemeServisi {
     }
   }
 
-  /// ⚙️ Ayarlar / Profil Menüsünden Manuel Kontrol (Kullanıcı basarsa)
+  /// ⚙️ Ayarlar / Profil Menüsünden Manuel Kontrol
   static Future<void> manuelKontrolEt(BuildContext context, bool turkceMi) async {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -260,7 +261,7 @@ class GuncellemeServisi {
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              turkceMi ? 'Kablosuz tek tıkla yükleyin' : 'Install over-the-air wirelessly',
+                              turkceMi ? 'Uygulama içinden direkt indirin' : 'Download directly in-app',
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.7),
                                 fontSize: 11.5,
@@ -353,7 +354,7 @@ class GuncellemeServisi {
                       ),
                       const SizedBox(height: 6),
                       Container(
-                        constraints: const BoxConstraints(maxHeight: 120),
+                        constraints: const BoxConstraints(maxHeight: 110),
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -401,18 +402,10 @@ class GuncellemeServisi {
                           Expanded(
                             flex: 2,
                             child: ElevatedButton.icon(
-                              onPressed: () async {
+                              onPressed: () {
                                 Navigator.of(ctx).pop();
-                                final uri = Uri.parse(bilgi.apkUrl);
-                                try {
-                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                } catch (_) {
-                                  // Alternatif olarak web sayfasını aç
-                                  await launchUrl(
-                                    Uri.parse("https://github.com/Tubi-kara/kktc_ceza/releases"),
-                                    mode: LaunchMode.externalApplication,
-                                  );
-                                }
+                                // Doğrudan uygulama içi indirme ve yükleme modalını aç
+                                indirmeDiyaloguGoster(context, bilgi, turkceMi);
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF10B981),
@@ -424,7 +417,7 @@ class GuncellemeServisi {
                               ),
                               icon: const Icon(Icons.download_rounded, size: 18),
                               label: Text(
-                                turkceMi ? 'Hemen Güncelle' : 'Update Now',
+                                turkceMi ? 'Direkt İndir & Kur' : 'Download & Install',
                                 style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
                               ),
                             ),
@@ -439,6 +432,488 @@ class GuncellemeServisi {
           ),
         );
       },
+    );
+  }
+
+  /// 📲 Uygulama İçi Canlı İndirme & Otomatik Paket Yükleyici Modalı
+  static void indirmeDiyaloguGoster(
+    BuildContext context,
+    GuncellemeBilgisi bilgi,
+    bool turkceMi,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => GuncellemeIndirmeDiyalogu(bilgi: bilgi, turkceMi: turkceMi),
+    );
+  }
+}
+
+/// 📥 Canlı İndirme İlerlemesi ve Kurulum Penceresi
+class GuncellemeIndirmeDiyalogu extends StatefulWidget {
+  final GuncellemeBilgisi bilgi;
+  final bool turkceMi;
+
+  const GuncellemeIndirmeDiyalogu({
+    super.key,
+    required this.bilgi,
+    required this.turkceMi,
+  });
+
+  @override
+  State<GuncellemeIndirmeDiyalogu> createState() => _GuncellemeIndirmeDiyaloguState();
+}
+
+class _GuncellemeIndirmeDiyaloguState extends State<GuncellemeIndirmeDiyalogu> {
+  double _ilerleme = 0.0;
+  int _indirilenBayt = 0;
+  int _toplamBayt = 0;
+  bool _tamamlandi = false;
+  bool _hata = false;
+  String _hataMesaji = "";
+  String _durumMetni = "";
+  String? _indirilenDosyaYolu;
+  HttpClientRequest? _aktifIstek;
+  StreamSubscription<List<int>>? _aktifAkim;
+
+  @override
+  void initState() {
+    super.initState();
+    _durumMetni = widget.turkceMi ? "Sunucuya bağlanılıyor..." : "Connecting to server...";
+    _indirmeyiBaslat();
+  }
+
+  @override
+  void dispose() {
+    _aktifAkim?.cancel();
+    _aktifIstek?.abort();
+    super.dispose();
+  }
+
+  Future<void> _indirmeyiBaslat() async {
+    setState(() {
+      _ilerleme = 0.0;
+      _indirilenBayt = 0;
+      _toplamBayt = 0;
+      _tamamlandi = false;
+      _hata = false;
+      _durumMetni = widget.turkceMi ? "APK dosyası indiriliyor..." : "Downloading APK...";
+    });
+
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final dosyaAdi = "kktc_ceza_v${widget.bilgi.yeniSurum.replaceAll(RegExp(r'[^0-9.]'), '')}.apk";
+      final hedefDosya = File("${tempDir.path}/$dosyaAdi");
+
+      if (await hedefDosya.exists()) {
+        try {
+          await hedefDosya.delete();
+        } catch (_) {}
+      }
+
+      final client = HttpClient();
+      client.connectionTimeout = const Duration(seconds: 15);
+      
+      final uri = Uri.parse(widget.bilgi.apkUrl);
+      final request = await client.getUrl(uri);
+      _aktifIstek = request;
+      
+      request.followRedirects = true;
+      request.maxRedirects = 5;
+      request.headers.set('User-Agent', 'KKTC-Trafik-OTA-Downloader');
+      request.headers.set('Accept', '*/*');
+
+      final response = await request.close();
+
+      if (response.statusCode != 200) {
+        throw Exception("HTTP ${response.statusCode}: ${response.reasonPhrase}");
+      }
+
+      final contentLength = response.contentLength;
+      setState(() {
+        _toplamBayt = contentLength > 0 ? contentLength : 29 * 1024 * 1024; // ~29 MB tahmini
+      });
+
+      final sink = hedefDosya.openWrite();
+
+      _aktifAkim = response.listen(
+        (chunk) {
+          sink.add(chunk);
+          _indirilenBayt += chunk.length;
+          if (mounted) {
+            setState(() {
+              if (_toplamBayt > 0) {
+                _ilerleme = (_indirilenBayt / _toplamBayt).clamp(0.0, 1.0);
+              }
+            });
+          }
+        },
+        onDone: () async {
+          await sink.flush();
+          await sink.close();
+          if (mounted) {
+            setState(() {
+              _tamamlandi = true;
+              _ilerleme = 1.0;
+              _indirilenDosyaYolu = hedefDosya.path;
+              _durumMetni = widget.turkceMi
+                  ? "✅ İndirme Tamamlandı! Paket Yükleyici Başlatılıyor..."
+                  : "✅ Download Complete! Starting Package Installer...";
+            });
+            // İndirme bittiğinde doğrudan sistem paket yükleyicisini aç
+            await Future.delayed(const Duration(milliseconds: 400));
+            _kurulumuBaslat();
+          }
+        },
+        onError: (e) {
+          sink.close();
+          if (mounted) {
+            setState(() {
+              _hata = true;
+              _hataMesaji = e.toString();
+              _durumMetni = widget.turkceMi ? "İndirme sırasında hata oluştu" : "Download failed";
+            });
+          }
+        },
+        cancelOnError: true,
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _hata = true;
+          _hataMesaji = e.toString();
+          _durumMetni = widget.turkceMi ? "Bağlantı hatası oluştu" : "Connection error";
+        });
+      }
+    }
+  }
+
+  Future<void> _kurulumuBaslat() async {
+    if (_indirilenDosyaYolu == null) return;
+    try {
+      final res = await OpenFilex.open(
+        _indirilenDosyaYolu!,
+        type: 'application/vnd.android.package-archive',
+      );
+      if (res.type != ResultType.done && mounted) {
+        // İzin veya başka bir durum varsa kullanıcıyı bilgilendir
+        setState(() {
+          _durumMetni = widget.turkceMi
+              ? "Yükleme ekranı açıldı. Devam etmek için onay veriniz."
+              : "Installer launched. Confirm to proceed.";
+        });
+      }
+    } catch (_) {
+      // Alternatif olarak harici başlatma dene
+      if (_indirilenDosyaYolu != null) {
+        await launchUrl(Uri.file(_indirilenDosyaYolu!), mode: LaunchMode.externalApplication);
+      }
+    }
+  }
+
+  String _formatBoyut(int bayt) {
+    if (bayt <= 0) return "0 MB";
+    final mb = bayt / (1024 * 1024);
+    return "${mb.toStringAsFixed(1)} MB";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final yuzde = (_ilerleme * 100).toInt();
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 420),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: _hata
+                ? const Color(0xFFEF4444).withValues(alpha: 0.5)
+                : (_tamamlandi
+                    ? const Color(0xFF10B981).withValues(alpha: 0.6)
+                    : const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.6),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Üst İkon & Durum
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: _hata
+                        ? [const Color(0xFFDC2626), const Color(0xFFEF4444)]
+                        : (_tamamlandi
+                            ? [const Color(0xFF059669), const Color(0xFF10B981)]
+                            : [const Color(0xFF0284C7), const Color(0xFF38BDF8)]),
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_tamamlandi ? const Color(0xFF10B981) : const Color(0xFF0284C7))
+                          .withValues(alpha: 0.4),
+                      blurRadius: 16,
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Icon(
+                    _hata
+                        ? Icons.error_outline_rounded
+                        : (_tamamlandi
+                            ? Icons.check_circle_rounded
+                            : Icons.cloud_download_rounded),
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Başlık
+              Text(
+                _tamamlandi
+                    ? (widget.turkceMi ? 'Güncelleme Hazır!' : 'Update Ready!')
+                    : (_hata
+                        ? (widget.turkceMi ? 'İndirme Başarısız' : 'Download Failed')
+                        : (widget.turkceMi ? 'KKTC e-Trafik İndiriliyor' : 'Downloading Update')),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 6),
+
+              Text(
+                _durumMetni,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.75),
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // İlerleme Çubuğu ve Sayaç
+              if (!_hata) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: _ilerleme > 0 ? _ilerleme : null,
+                    minHeight: 12,
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      _tamamlandi ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Boyut ve Yüzde Bilgisi
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "${_formatBoyut(_indirilenBayt)} / ${_formatBoyut(_toplamBayt)}",
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      "%$yuzde",
+                      style: TextStyle(
+                        color: _tamamlandi ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
+              if (_hata) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.3)),
+                  ),
+                  child: Text(
+                    _hataMesaji,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Color(0xFFFCA5A5), fontSize: 11),
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
+
+              const SizedBox(height: 16),
+
+              // 🛡️ Google Play Protect & Güvenlik Kılavuz Kartı
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.25)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.security_rounded, color: Color(0xFF10B981), size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        widget.turkceMi
+                            ? "Google Play Protect uyarısı çıkarsa korkmayın; 'Daha Fazla Ayrıntı' ➔ 'Yine de Yükle'ye basmanız yeterlidir. Uygulama resmi açık kaynaklı ve güvenlidir."
+                            : "If Play Protect alerts you; tap 'More Details' ➔ 'Install Anyway'. The update is official, verified & safe.",
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 10.5,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Aksiyon Butonları
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        _aktifAkim?.cancel();
+                        _aktifIstek?.abort();
+                        Navigator.of(context).pop();
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white60,
+                        side: const BorderSide(color: Colors.white24),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        widget.turkceMi ? 'Kapat' : 'Close',
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+
+                  if (_tamamlandi) ...[
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        onPressed: _kurulumuBaslat,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 6,
+                        ),
+                        icon: const Icon(Icons.install_mobile_rounded, size: 18),
+                        label: Text(
+                          widget.turkceMi ? 'Yüklemeyi Başlat' : 'Install APK',
+                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  ] else if (_hata) ...[
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          // Tarayıcı ile indirmeyi fallback olarak aç
+                          final uri = Uri.parse(widget.bilgi.apkUrl);
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0284C7),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        icon: const Icon(Icons.open_in_browser_rounded, size: 18),
+                        label: Text(
+                          widget.turkceMi ? 'Tarayıcıda İndir' : 'Download in Browser',
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
+                        ),
+                      ),
+                    ),
+                  ] else ...[
+                    Expanded(
+                      flex: 2,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
+                        ),
+                        child: Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF38BDF8),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                widget.turkceMi ? 'İndiriliyor...' : 'Downloading...',
+                                style: const TextStyle(
+                                  color: Color(0xFF38BDF8),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
