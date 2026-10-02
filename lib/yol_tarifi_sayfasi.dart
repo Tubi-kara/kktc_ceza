@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'radar_haritasi.dart';
 import 'kktc_gov_sync_service.dart';
 import 'yardim_rehberi_sayfasi.dart';
+import 'canli_gps_servisi.dart';
 
 // ==========================================
 // 🎨 NAVİGASYON VE HARİTA TASARIM TOKENLARI (İNSAN DOSTU & SADE)
@@ -3230,6 +3231,24 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                       intZoom: intZoom,
                     ),
 
+                    // 5.5 CANLI KULLANICI GPS PİNİ
+                    if (CanliGpsServisi().sonKonum != null)
+                      _buildGpsPin(
+                        lat: CanliGpsServisi().sonKonum!.latitude,
+                        lon: CanliGpsServisi().sonKonum!.longitude,
+                        label: widget.turkceMi
+                            ? 'Siz (${CanliGpsServisi().gercekHizKmh.round()} km/s)'
+                            : 'You (${CanliGpsServisi().gercekHizKmh.round()} km/h)',
+                        color: const Color(0xFF0284C7),
+                        icon: Icons.navigation_rounded,
+                        width: width,
+                        height: height,
+                        tileSize: tileSize,
+                        centerTileX: centerTileX,
+                        centerTileY: centerTileY,
+                        intZoom: intZoom,
+                      ),
+
                     // 6. SOL ÜST: HARİTA BİLGİ & CANLI TRAFİK ROZETİ
                     Positioned(
                       top: 10,
@@ -3313,6 +3332,47 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                             icon: Icons.filter_center_focus_rounded,
                             tooltip: widget.turkceMi ? 'Rotaya Odaklan' : 'Fit Route',
                             onTap: () => setState(_rotayaOdaklanHesapla),
+                          ),
+                          const SizedBox(height: 6),
+                          _buildHaritaAksiyonButonu(
+                            icon: Icons.my_location_rounded,
+                            tooltip: widget.turkceMi ? 'Canlı GPS Konumum' : 'My GPS Location',
+                            aktifMi: CanliGpsServisi().sonKonum != null,
+                            aktifRenk: const Color(0xFF38BDF8),
+                            onTap: () {
+                              final pos = CanliGpsServisi().sonKonum;
+                              if (pos != null) {
+                                setState(() {
+                                  _centerLat = pos.latitude;
+                                  _centerLon = pos.longitude;
+                                  _zoom = 12.5;
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      widget.turkceMi
+                                          ? 'Canlı GPS konumunuza odaklanıldı (${pos.latitude.toStringAsFixed(4)}, ${pos.longitude.toStringAsFixed(4)})'
+                                          : 'Centered on live GPS location',
+                                    ),
+                                    duration: const Duration(seconds: 2),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              } else {
+                                CanliGpsServisi().servisiBaslat();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      widget.turkceMi
+                                          ? 'GPS uyduları taranıyor, lütfen bekleyin...'
+                                          : 'Searching for GPS signal...',
+                                    ),
+                                    duration: const Duration(seconds: 2),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            },
                           ),
                           const SizedBox(height: 6),
                           _buildHaritaAksiyonButonu(
@@ -3766,6 +3826,42 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
     super.dispose();
   }
 
+  Future<void> _canliGpsSec() async {
+    final gps = CanliGpsServisi();
+    if (!gps.gpsAktif) {
+      await gps.servisiBaslat();
+    }
+    if (!mounted) return;
+
+    final pos = gps.sonKonum;
+    if (pos != null) {
+      final liveNokta = RotaNoktasi(
+        id: "live_gps",
+        ad: widget.turkceMi
+            ? "📍 Canlı GPS Konumum (${pos.latitude.toStringAsFixed(3)}, ${pos.longitude.toStringAsFixed(3)})"
+            : "📍 Live GPS Location (${pos.latitude.toStringAsFixed(3)}, ${pos.longitude.toStringAsFixed(3)})",
+        adEn: "📍 Live GPS Location",
+        kisaAd: widget.turkceMi ? "Canlı Konumum" : "My Location",
+        bolge: "Anlık GPS",
+        lat: pos.latitude,
+        lon: pos.longitude,
+        ikon: Icons.my_location_rounded,
+      );
+      widget.onSecildi(liveNokta);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.turkceMi
+                ? 'GPS uyduları aranıyor, lütfen açık alanda birkaç saniye bekleyin...'
+                : 'Acquiring GPS fix, please wait a few seconds...',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   int _noktaSayisi(String b) {
     if (b == 'Tümü') return widget.noktalar.length;
     return widget.noktalar.where((n) => n.bolge.toLowerCase().contains(b.toLowerCase())).length;
@@ -3949,6 +4045,71 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
           ),
 
           const Divider(color: Colors.white10, height: 16),
+
+          // 📍 CANLI GPS KONUMUNU KULLAN BUTONU
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: InkWell(
+              onTap: _canliGpsSec,
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0369A1), Color(0xFF0284C7)],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        color: Colors.white24,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.my_location_rounded, color: Colors.white, size: 18),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.turkceMi ? 'Canlı GPS Konumumu Seç' : 'Use Current Live GPS',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            widget.turkceMi
+                                ? 'Cihazınızın anlık uydu koordinatlarını başlangıç noktası yapar'
+                                : 'Sets start point to live satellite coordinates',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
 
           // Liste Görünümü
           Expanded(

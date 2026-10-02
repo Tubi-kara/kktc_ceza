@@ -1389,18 +1389,24 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                         ),
                       ),
                       const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: badgeBg,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          badge,
-                          style: TextStyle(
-                            color: badgeColor,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
+                      Flexible(
+                        flex: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: badgeBg,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              badge,
+                              style: TextStyle(
+                                color: badgeColor,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -2875,15 +2881,26 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                         style: TextStyle(color: _HtmlColors.secondary, fontSize: 12),
                       ),
                       const SizedBox(width: 8),
-                      const Flexible(
-                        child: Text(
-                          'e3b0c44298fc1c149afbf4c8996fb92427ae41e4',
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            color: _HtmlColors.tertiaryFixed,
-                            fontSize: 11,
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _HtmlColors.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                          overflow: TextOverflow.ellipsis,
+                          child: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              'e3b0c44298fc1c149afbf4c8996fb92427ae41e4',
+                              style: TextStyle(
+                                fontFamily: 'monospace',
+                                color: _HtmlColors.tertiaryFixed,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -2977,83 +2994,97 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: _HtmlColors.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(10),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: _HtmlColors.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.directions_car_rounded,
+                          color: _HtmlColors.primary,
+                          size: 24,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.directions_car_rounded,
-                        color: _HtmlColors.primary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: _HtmlColors.surfaceContainerLowest,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                _secilenPlaka.isNotEmpty ? _secilenPlaka : "RZ 123",
-                                style: const TextStyle(
-                                  fontFamily: 'monospace',
-                                  color: _HtmlColors.onSurface,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
                             Row(
                               children: [
-                                FadeTransition(
-                                  opacity: _pingController,
-                                  child: Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: const BoxDecoration(
-                                      color: _HtmlColors.tertiary,
-                                      shape: BoxShape.circle,
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: _HtmlColors.surfaceContainerLowest,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    _secilenPlaka.isNotEmpty ? _secilenPlaka : "RZ 123",
+                                    style: const TextStyle(
+                                      fontFamily: 'monospace',
+                                      color: _HtmlColors.onSurface,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.8,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  widget.turkceMi ? 'Aktif Kayıt' : 'Active Record',
-                                  style: const TextStyle(
-                                    color: _HtmlColors.tertiaryFixed,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      FadeTransition(
+                                        opacity: _pingController,
+                                        child: Container(
+                                          width: 6,
+                                          height: 6,
+                                          decoration: const BoxDecoration(
+                                            color: _HtmlColors.tertiary,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Flexible(
+                                        child: Text(
+                                          widget.turkceMi ? 'Aktif Kayıt' : 'Active Record',
+                                          style: const TextStyle(
+                                            color: _HtmlColors.tertiaryFixed,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
+                            const SizedBox(height: 3),
+                            Text(
+                              seciliModel,
+                              style: const TextStyle(
+                                color: _HtmlColors.secondary,
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ],
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          seciliModel,
-                          style: const TextStyle(
-                            color: _HtmlColors.secondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 GestureDetector(
                   onTap: _aracDegistirSheet,
                   child: Container(
@@ -3240,15 +3271,39 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${g['tarih']} • ${g['kod']}',
-                              style: const TextStyle(
-                                color: _HtmlColors.secondary,
-                                fontSize: 11,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            const SizedBox(height: 3),
+                            Row(
+                              children: [
+                                Text(
+                                  g['tarih']!,
+                                  style: const TextStyle(
+                                    color: _HtmlColors.secondary,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Text('•', style: TextStyle(color: _HtmlColors.secondary, fontSize: 10)),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: _HtmlColors.surfaceContainerLowest,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      g['kod']!,
+                                      style: const TextStyle(
+                                        fontFamily: 'monospace',
+                                        color: _HtmlColors.tertiaryFixed,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -3492,14 +3547,27 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            const Text(
-                              '#KKTC-2024-884912',
-                              style: TextStyle(
-                                fontFamily: 'monospace',
-                                color: _HtmlColors.primaryFixedDim,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                            const SizedBox(height: 3),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: _HtmlColors.surfaceContainerLowest,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: _HtmlColors.primaryFixedDim.withValues(alpha: 0.3)),
+                                ),
+                                child: Text(
+                                  ceza['kod'] ?? '#KKTC-2024-884912',
+                                  style: const TextStyle(
+                                    fontFamily: 'monospace',
+                                    color: _HtmlColors.primaryFixedDim,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -3639,38 +3707,48 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.speed_rounded, color: _HtmlColors.primaryContainer, size: 18),
-                                const SizedBox(width: 6),
-                                Text(
-                                  widget.turkceMi ? 'Ölçülen Radar Hızı:' : 'Recorded Speed:',
-                                  style: const TextStyle(color: _HtmlColors.secondary, fontSize: 11),
+                            Expanded(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.speed_rounded, color: _HtmlColors.primaryContainer, size: 18),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      widget.turkceMi ? 'Ölçülen Radar Hızı:' : 'Recorded Speed:',
+                                      style: const TextStyle(color: _HtmlColors.secondary, fontSize: 11),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    const Text(
+                                      '78 km/h',
+                                      style: TextStyle(
+                                        fontFamily: 'monospace',
+                                        color: _HtmlColors.primaryContainer,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 6),
-                                const Text(
-                                  '78 km/h',
-                                  style: TextStyle(
-                                    fontFamily: 'monospace',
-                                    color: _HtmlColors.primaryContainer,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.3),
-                                borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Text(
-                                'Limit: 65 km/h',
-                                style: TextStyle(
-                                  color: _HtmlColors.tertiaryFixed,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                            ),
+                            const SizedBox(width: 8),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Text(
+                                  'Limit: 65 km/h',
+                                  style: TextStyle(
+                                    color: _HtmlColors.tertiaryFixed,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
@@ -3699,19 +3777,25 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                           ),
                         ),
                         const SizedBox(height: 5),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('0 km/h', style: TextStyle(color: _HtmlColors.secondary, fontSize: 10)),
-                            const Text(
-                              'Yasal Limit 65 km/h',
-                              style: TextStyle(color: _HtmlColors.tertiaryFixed, fontSize: 10, fontWeight: FontWeight.w600),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: SizedBox(
+                            width: 320,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text('0 km/h', style: TextStyle(color: _HtmlColors.secondary, fontSize: 10)),
+                                const Text(
+                                  'Yasal Limit 65 km/h',
+                                  style: TextStyle(color: _HtmlColors.tertiaryFixed, fontSize: 10, fontWeight: FontWeight.w600),
+                                ),
+                                const Text(
+                                  '+13 km/h Aşım',
+                                  style: TextStyle(color: _HtmlColors.primaryContainer, fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ],
                             ),
-                            const Text(
-                              '+13 km/h Aşım',
-                              style: TextStyle(color: _HtmlColors.primaryContainer, fontSize: 10, fontWeight: FontWeight.bold),
-                            ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
@@ -3809,41 +3893,55 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.85),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: const Row(
-                                        children: [
-                                          Icon(Icons.verified_user_rounded, color: _HtmlColors.tertiary, size: 12),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            'CAM-04-GONYELI',
-                                            style: TextStyle(
-                                              fontFamily: 'monospace',
-                                              color: _HtmlColors.secondary,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                    Flexible(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.85),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerLeft,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.verified_user_rounded, color: _HtmlColors.tertiary, size: 12),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                'CAM-04-GONYELI',
+                                                style: TextStyle(
+                                                  fontFamily: 'monospace',
+                                                  color: _HtmlColors.secondary,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
+                                        ),
                                       ),
                                     ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: _HtmlColors.primaryContainer.withValues(alpha: 0.9),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: const Text(
-                                        'DELİL NO: #884912',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: 0.5,
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: _HtmlColors.primaryContainer.withValues(alpha: 0.9),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerRight,
+                                          child: Text(
+                                            'DELİL NO: #884912',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -3852,49 +3950,64 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.9),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.zoom_in_rounded, color: _HtmlColors.onSurface, size: 14),
-                                          const SizedBox(width: 4),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                    Flexible(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.9),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerLeft,
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              const Text(
-                                                'PLAKA ONAYI',
-                                                style: TextStyle(color: _HtmlColors.secondary, fontSize: 8),
-                                              ),
-                                              Text(
-                                                '${_secilenPlaka.isNotEmpty ? _secilenPlaka : "RZ 123"} [TRNC]',
-                                                style: const TextStyle(
-                                                  fontFamily: 'monospace',
-                                                  color: _HtmlColors.onSurface,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                              const Icon(Icons.zoom_in_rounded, color: _HtmlColors.onSurface, size: 14),
+                                              const SizedBox(width: 4),
+                                              Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Text(
+                                                    'PLAKA ONAYI',
+                                                    style: TextStyle(color: _HtmlColors.secondary, fontSize: 8),
+                                                  ),
+                                                  Text(
+                                                    '${_secilenPlaka.isNotEmpty ? _secilenPlaka : "RZ 123"} [TRNC]',
+                                                    style: const TextStyle(
+                                                      fontFamily: 'monospace',
+                                                      color: _HtmlColors.onSurface,
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
-                                        ],
+                                        ),
                                       ),
                                     ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.8),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: const Text(
-                                        '2024-05-18 14:32:08',
-                                        style: TextStyle(
-                                          fontFamily: 'monospace',
-                                          color: _HtmlColors.secondary,
-                                          fontSize: 9,
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.8),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          alignment: Alignment.centerRight,
+                                          child: Text(
+                                            '2024-05-18 14:32:08',
+                                            style: TextStyle(
+                                              fontFamily: 'monospace',
+                                              color: _HtmlColors.secondary,
+                                              fontSize: 9,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -4861,33 +4974,36 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: _HtmlColors.surfaceContainer,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _sigortaOtpKodu,
-                              style: const TextStyle(
-                                fontFamily: 'monospace',
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: _HtmlColors.onSurface,
-                                letterSpacing: 1.2,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _HtmlColors.surfaceContainer,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _sigortaOtpKodu,
+                                style: const TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: _HtmlColors.onSurface,
+                                  letterSpacing: 1.2,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            const Icon(
-                              Icons.verified,
-                              size: 18,
-                              color: _HtmlColors.tertiary,
-                            ),
-                          ],
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.verified,
+                                size: 18,
+                                color: _HtmlColors.tertiary,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -5732,11 +5848,17 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          Text(
-                            widget.turkceMi ? '2025/2. Yıllık Dönem • Makbuz: #SYR-89210' : '2025/2 Period • Receipt: #SYR-89210',
-                            style: const TextStyle(color: _HtmlColors.secondary, fontSize: 10),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              widget.turkceMi ? '2025/2. Yıllık Dönem • Makbuz: #SYR-89210' : '2025/2 Period • Receipt: #SYR-89210',
+                              style: const TextStyle(
+                                color: _HtmlColors.secondary,
+                                fontSize: 10,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -6090,20 +6212,23 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         ),
         const SizedBox(width: 6),
         Flexible(
-          child: RichText(
-            overflow: TextOverflow.ellipsis,
-            text: TextSpan(
-              style: const TextStyle(fontSize: 11, color: _HtmlColors.secondary),
-              children: [
-                TextSpan(text: '$etiket: '),
-                TextSpan(
-                  text: deger,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: _HtmlColors.onSurface,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: RichText(
+              text: TextSpan(
+                style: const TextStyle(fontSize: 11, color: _HtmlColors.secondary),
+                children: [
+                  TextSpan(text: '$etiket: '),
+                  TextSpan(
+                    text: deger,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: _HtmlColors.onSurface,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -7099,9 +7224,26 @@ class _BarkodluBelgeSayfasiState extends State<BarkodluBelgeSayfasi> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                const Text(
-                  'Barkod No: KKTC-TR-2026-99182',
-                  style: TextStyle(fontSize: 11, color: AppColors.slate400, fontWeight: FontWeight.w600),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceMuted,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.slate200),
+                  ),
+                  child: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'Barkod No: KKTC-TR-2026-99182',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 11,
+                        color: AppColors.slate500,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -7118,7 +7260,18 @@ class _BarkodluBelgeSayfasiState extends State<BarkodluBelgeSayfasi> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(baslik, style: const TextStyle(fontSize: 13, color: AppColors.slate500)),
-          Text(deger, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.slate900)),
+          const SizedBox(width: 8),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                deger,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.slate900),
+                textAlign: TextAlign.right,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -7170,10 +7323,46 @@ class DekontlarSayfasi extends StatelessWidget {
                 child: const Icon(Icons.receipt_long_rounded, color: AppColors.success, size: 24),
               ),
               title: Text(islemAdi, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.slate900)),
-              subtitle: Text('${turkceMi ? 'Tarih' : 'Date'}: ${dekont['tarih']} | ${dekont['kod']}', style: const TextStyle(fontSize: 12, color: AppColors.slate500)),
-              trailing: Text(
-                dekont['tutar']!,
-                style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.success, fontSize: 16),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 3),
+                child: Row(
+                  children: [
+                    Text(
+                      '${turkceMi ? 'Tarih' : 'Date'}: ${dekont['tarih']}',
+                      style: const TextStyle(fontSize: 11.5, color: AppColors.slate500),
+                    ),
+                    const SizedBox(width: 5),
+                    const Text('•', style: TextStyle(fontSize: 10, color: AppColors.slate400)),
+                    const SizedBox(width: 5),
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceMuted,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: AppColors.slate200),
+                        ),
+                        child: Text(
+                          dekont['kod']!,
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.slate700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              trailing: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  dekont['tutar']!,
+                  style: const TextStyle(fontWeight: FontWeight.w900, color: AppColors.success, fontSize: 15),
+                ),
               ),
               onTap: () {
                 Navigator.push(
@@ -7306,11 +7495,21 @@ class DekontDetaySayfasi extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(baslik, style: const TextStyle(fontSize: 13, color: AppColors.slate500)),
-          Expanded(
-            child: Text(
-              deger,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.slate900),
-              textAlign: TextAlign.right,
+          const SizedBox(width: 8),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                deger,
+                style: TextStyle(
+                  fontFamily: deger.contains('-') || deger.contains('#') ? 'monospace' : null,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.slate900,
+                ),
+                textAlign: TextAlign.right,
+              ),
             ),
           ),
         ],

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'canli_gps_servisi.dart';
 
 // ==========================================
 // 📍 RADAR & HIZ KAMERASI VERİ MODELİ
@@ -749,6 +751,8 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
     'Gerçek Uydu',
   ];
 
+  final CanliGpsServisi _gps = CanliGpsServisi();
+
   @override
   void initState() {
     super.initState();
@@ -756,10 +760,19 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     )..repeat();
+    _gps.addListener(_onGpsChanged);
+    _gps.servisiBaslat();
+  }
+
+  void _onGpsChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _gps.removeListener(_onGpsChanged);
     _pulseController.dispose();
     super.dispose();
   }
@@ -805,6 +818,38 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
     });
   }
 
+  void centerOnUserOrKktc() {
+    final pos = _gps.sonKonum;
+    if (pos != null) {
+      flyToLocation(pos.latitude, pos.longitude, zoom: 12.5);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.turkceMi
+                ? 'Canlı GPS konumunuza odaklanıldı (${pos.latitude.toStringAsFixed(4)}, ${pos.longitude.toStringAsFixed(4)})'
+                : 'Centered on live GPS coordinates',
+          ),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      _gps.servisiBaslat();
+      centerOnKktc();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.turkceMi
+                ? 'GPS uyduları taranıyor... Harita KKTC merkezine alındı.'
+                : 'Scanning GPS satellites... Centered on TRNC.',
+          ),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   void flyToLocation(double lat, double lon, {double zoom = 10.5}) {
     setState(() {
       _centerLat = lat;
@@ -817,6 +862,108 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
     setState(() {
       _mapStyleIndex = (_mapStyleIndex + 1) % _tileProviders.length;
     });
+  }
+
+  Widget _buildCanliGpsKonumIsaretcisi(
+    Position pos,
+    double width,
+    double height,
+    double centerTileX,
+    double centerTileY,
+    double tileSize,
+    int intZoom,
+  ) {
+    final double uTileX = lonToTileX(pos.longitude, intZoom.toDouble());
+    final double uTileY = latToTileY(pos.latitude, intZoom.toDouble());
+
+    final double pinX = width / 2.0 + (uTileX - centerTileX) * tileSize;
+    final double pinY = height / 2.0 + (uTileY - centerTileY) * tileSize;
+
+    if (pinX < -80 || pinX > width + 80 || pinY < -80 || pinY > height + 80) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned(
+      left: pinX - 32,
+      top: pinY - 32,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0284C7),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white, width: 1.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.navigation_rounded, color: Colors.white, size: 9),
+                const SizedBox(width: 3),
+                Text(
+                  '${_gps.gercekHizKmh.round()} km/s',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 3),
+          SizedBox(
+            width: 36,
+            height: 36,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                FadeTransition(
+                  opacity: _pulseController,
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                      border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF0284C7),
+                    border: Border.all(color: Colors.white, width: 2.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0284C7).withValues(alpha: 0.6),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.circle, color: Colors.white, size: 6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -1041,7 +1188,19 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                     );
                   }),
 
-                  // 3. ÜST BAR: OSM ROZETİ & HARİTA TÜRÜ SEÇİCİ
+                  // 2.5 GERÇEK KULLANICI CANLI GPS İŞARETÇİSİ
+                  if (_gps.sonKonum != null)
+                    _buildCanliGpsKonumIsaretcisi(
+                      _gps.sonKonum!,
+                      width,
+                      height,
+                      centerTileX,
+                      centerTileY,
+                      tileSize,
+                      intZoom,
+                    ),
+
+                  // 3. ÜST BAR: OSM ROZETİ & CANLI GPS & HARİTA TÜRÜ SEÇİCİ
                   Positioned(
                     top: 8,
                     left: 8,
@@ -1064,8 +1223,8 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                                   child: Container(
                                     width: 6,
                                     height: 6,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF10B981),
+                                    decoration: BoxDecoration(
+                                      color: _gps.gpsAktif ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -1073,13 +1232,60 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                                 const SizedBox(width: 5),
                                 Flexible(
                                   child: Text(
-                                    widget.turkceMi ? 'OpenStreetMap • 18 Radar' : 'OpenStreetMap • 18 Radars',
+                                    _gps.gpsAktif
+                                        ? (_gps.sonKonum != null
+                                            ? '🛰️ GPS: ${_gps.gercekHizKmh.round()} km/s'
+                                            : '🛰️ GPS Aranıyor...')
+                                        : (widget.turkceMi ? 'OpenStreetMap • 18 Radar' : 'OpenStreetMap • 18 Radars'),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 9.5,
                                       fontWeight: FontWeight.bold,
                                     ),
                                     overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        // Canlı GPS Aç/Kapat Butonu
+                        GestureDetector(
+                          onTap: () {
+                            if (_gps.gpsAktif) {
+                              _gps.servisiDurdur();
+                            } else {
+                              _gps.servisiBaslat();
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _gps.gpsAktif
+                                  ? const Color(0xFF0284C7).withValues(alpha: 0.85)
+                                  : const Color(0xFF0F172A).withValues(alpha: 0.92),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: _gps.gpsAktif ? const Color(0xFF38BDF8) : Colors.white24,
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _gps.gpsAktif ? Icons.gps_fixed_rounded : Icons.gps_not_fixed_rounded,
+                                  color: _gps.gpsAktif ? Colors.white : const Color(0xFF94A3B8),
+                                  size: 12,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  _gps.gpsAktif ? 'Canlı GPS' : 'GPS Başlat',
+                                  style: TextStyle(
+                                    color: _gps.gpsAktif ? Colors.white : const Color(0xFFCBD5E1),
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
@@ -1151,7 +1357,7 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                         const SizedBox(height: 6),
                         _buildFloatingButton(
                           Icons.my_location_rounded,
-                          centerOnKktc,
+                          centerOnUserOrKktc,
                           isAccent: true,
                         ),
                       ],
@@ -1265,6 +1471,8 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey<KktcOpenStreetMapTileViewState> _osmKey = GlobalKey<KktcOpenStreetMapTileViewState>();
 
+  final CanliGpsServisi _gpsServisi = CanliGpsServisi();
+
   final List<String> _sehirler = [
     "Tümü",
     "Lefkoşa",
@@ -1282,8 +1490,11 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
       duration: const Duration(milliseconds: 1400),
     )..repeat();
 
+    _gpsServisi.addListener(_onGpsGuncellendi);
+    _gpsServisi.servisiBaslat();
+
     _speedTimer = Timer.periodic(const Duration(milliseconds: 2800), (t) {
-      if (mounted) {
+      if (mounted && !_gpsServisi.gpsAktif) {
         final speeds = [61, 62, 63, 62, 64];
         setState(() {
           _canliHiz = speeds[t.tick % speeds.length];
@@ -1296,8 +1507,21 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
     }
   }
 
+  void _onGpsGuncellendi() {
+    if (!mounted) return;
+    setState(() {
+      if (_gpsServisi.gpsAktif) {
+        _canliHiz = _gpsServisi.gercekHizKmh.round();
+        if (_gpsServisi.enYakinRadar != null) {
+          _seciliRadar = _gpsServisi.enYakinRadar;
+        }
+      }
+    });
+  }
+
   @override
   void dispose() {
+    _gpsServisi.removeListener(_onGpsGuncellendi);
     _speedTimer?.cancel();
     _pulseController.dispose();
     _searchController.dispose();
@@ -1348,6 +1572,11 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
       mesafe: "350m",
     ));
 
+    final bool hizLimitiAsildi = _canliHiz > secili.hizLimiti;
+    final String mesafeGosterim = _gpsServisi.gpsAktif && _gpsServisi.enYakinRadarMesafeFormatli.isNotEmpty
+        ? '${_gpsServisi.enYakinRadarMesafeFormatli} ${widget.turkceMi ? 'Kaldı' : 'Ahead'}'
+        : (secili.mesafe.isNotEmpty ? '${secili.mesafe} ${widget.turkceMi ? 'Kaldı' : 'Ahead'}' : '350m Kaldı');
+
     return Container(
       color: _RadarHtmlColors.background,
       child: SingleChildScrollView(
@@ -1361,9 +1590,14 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
               decoration: BoxDecoration(
                 color: _RadarHtmlColors.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(16),
+                border: hizLimitiAsildi
+                    ? Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.6), width: 1.5)
+                    : null,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.25),
+                    color: hizLimitiAsildi
+                        ? const Color(0xFFEF4444).withValues(alpha: 0.2)
+                        : Colors.black.withValues(alpha: 0.25),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
@@ -1386,7 +1620,7 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                                     width: 44,
                                     height: 44,
                                     decoration: BoxDecoration(
-                                      color: _RadarHtmlColors.primaryContainer.withValues(alpha: 0.3),
+                                      color: (hizLimitiAsildi ? const Color(0xFFEF4444) : _RadarHtmlColors.primaryContainer).withValues(alpha: 0.3),
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -1394,12 +1628,12 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                                 Container(
                                   width: 32,
                                   height: 32,
-                                  decoration: const BoxDecoration(
-                                    color: _RadarHtmlColors.primaryContainer,
+                                  decoration: BoxDecoration(
+                                    color: hizLimitiAsildi ? const Color(0xFFEF4444) : _RadarHtmlColors.primaryContainer,
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(
-                                    Icons.sensors_rounded,
+                                  child: Icon(
+                                    hizLimitiAsildi ? Icons.warning_rounded : Icons.sensors_rounded,
                                     color: Colors.white,
                                     size: 18,
                                   ),
@@ -1416,8 +1650,8 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                                       Flexible(
                                         child: Text(
                                           widget.turkceMi ? 'EN YAKIN SABİT RADAR' : 'NEAREST RADAR',
-                                          style: const TextStyle(
-                                            color: _RadarHtmlColors.primary,
+                                          style: TextStyle(
+                                            color: hizLimitiAsildi ? const Color(0xFFFCA5A5) : _RadarHtmlColors.primary,
                                             fontSize: 10,
                                             fontWeight: FontWeight.w900,
                                             letterSpacing: 0.5,
@@ -1433,7 +1667,7 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
-                                          secili.mesafe.isNotEmpty ? '${secili.mesafe} ${widget.turkceMi ? 'Kaldı' : 'Ahead'}' : '350m Kaldı',
+                                          mesafeGosterim,
                                           style: const TextStyle(
                                             color: _RadarHtmlColors.tertiary,
                                             fontSize: 9,
@@ -1453,13 +1687,48 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  Text(
-                                    '${secili.yon} • ${secili.sehir}',
-                                    style: const TextStyle(
-                                      color: _RadarHtmlColors.secondary,
-                                      fontSize: 11,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          '${secili.yon} • ${secili.sehir}',
+                                          style: const TextStyle(
+                                            color: _RadarHtmlColors.secondary,
+                                            fontSize: 11,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                        decoration: BoxDecoration(
+                                          color: _gpsServisi.gpsAktif
+                                              ? const Color(0xFF10B981).withValues(alpha: 0.18)
+                                              : Colors.white.withValues(alpha: 0.08),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              _gpsServisi.gpsAktif ? Icons.gps_fixed_rounded : Icons.sensors_rounded,
+                                              size: 8.5,
+                                              color: _gpsServisi.gpsAktif ? const Color(0xFF10B981) : Colors.white60,
+                                            ),
+                                            const SizedBox(width: 2.5),
+                                            Text(
+                                              _gpsServisi.gpsAktif ? 'Canlı GPS' : 'Simülasyon',
+                                              style: TextStyle(
+                                                color: _gpsServisi.gpsAktif ? const Color(0xFF10B981) : Colors.white70,
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -1490,9 +1759,9 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                                   children: [
                                     Text(
                                       '$_canliHiz',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontFamily: 'monospace',
-                                        color: _RadarHtmlColors.tertiary,
+                                        color: hizLimitiAsildi ? const Color(0xFFEF4444) : _RadarHtmlColors.tertiary,
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -1535,10 +1804,12 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
                   ClipRRect(
                     borderRadius: BorderRadius.circular(3),
                     child: LinearProgressIndicator(
-                      value: 0.76,
+                      value: (_canliHiz / (secili.hizLimiti * 1.3)).clamp(0.0, 1.0),
                       minHeight: 5,
                       backgroundColor: _RadarHtmlColors.surfaceContainerLowest,
-                      valueColor: const AlwaysStoppedAnimation<Color>(_RadarHtmlColors.tertiary),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        hizLimitiAsildi ? const Color(0xFFEF4444) : _RadarHtmlColors.tertiary,
+                      ),
                     ),
                   ),
                 ],

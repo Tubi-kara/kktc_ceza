@@ -762,7 +762,7 @@ class _YardimRehberiSayfasiState extends State<YardimRehberiSayfasi>
             style: ElevatedButton.styleFrom(
               backgroundColor: renk,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               elevation: 0,
             ),
@@ -778,9 +778,12 @@ class _YardimRehberiSayfasiState extends State<YardimRehberiSayfasi>
                 ),
               );
             },
-            child: Text(
-              numara,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                numara,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+              ),
             ),
           ),
         ],

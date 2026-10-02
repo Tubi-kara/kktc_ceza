@@ -11,9 +11,9 @@
 
 <br/>
 
-**Kuzey Kıbrıs Türk Cumhuriyeti (KKTC)** sürücüleri ve ziyaretçileri için geliştirilmiş yeni nesil dijital trafik, ceza sorgulama, seyrüsefer (yol vergisi) takibi, zorunlu sigorta, sabit radarlar, akıllı rota rehberi ve canlı navigasyon mobil uygulaması.
+**Kuzey Kıbrıs Türk Cumhuriyeti (KKTC)** sürücüleri ve ziyaretçileri için geliştirilmiş yeni nesil dijital trafik, ceza sorgulama, seyrüsefer (yol vergisi) takibi, zorunlu sigorta, sabit radarlar, canlı trafik analitiği, akıllı rota rehberi ve canlı navigasyon mobil uygulaması.
 
-[Özellikler](#-öne-çıkan-özellikler) • [Modüller](#-modüller-ve-fonksiyonlar) • [Ekran Uyumluluğu](#-cihaz-ve-ekran-uyumluluğu) • [Kurulum & iOS](#-kurulum-ve-çalıştırma) • [Teknolojiler](#-teknoloji-yığını) • [Lisans](#-katkı-ve-lisans)
+[Özellikler](#-öne-çıkan-özellikler) • [Modüller](#-modüller-ve-fonksiyonlar) • [Redmi & Cihaz Uyumluluğu](#-cihaz-ve-ekran-uyumluluğu-redmi-note-13-pro-optimizasyonu) • [Kurulum & iOS](#-kurulum-ve-çalıştırma) • [Teknolojiler](#-teknoloji-yığını) • [Lisans](#-katkı-ve-lisans)
 
 ---
 
@@ -22,6 +22,8 @@
 ## 🌟 Öne Çıkan Özellikler
 
 - **🔍 Akıllı Arama & Doğrudan Yönlendirme (Spotlight Search):** Ekranın üstündeki arama çubuğundan *"seyrüsefer"*, *"ceza"*, *"radar"*, *"itiraz"* veya *"rota"* yazıldığında; Türkçe karakter toleranslı arama motoru ile anında tespit edip kullanıcının tek tıkla doğrudan ilgili sekmeye ve alt sekmeye gitmesini sağlar.
+- **🚦 Canlı Trafik Yoğunluğu & Kalabalık Bölgeler Analitiği:** Ada içi kritik koridorlarda (Gönyeli Çemberi, Lefkoşa Dereboyu, Girne Sahil Şeridi, Değirmenlik Dağ Yolu) canlı trafik yoğunluğu seviyeleri (Akıcı / Yoğun / Kilitli), dakika bazlı gecikme tahmini ve alternatif baypas yolları.
+- **🔔 Bildirimler Merkezi & Canlı Test Simülasyonu:** AppBar bildirim zilinden erişilen bildirim geçmişi, okunmamış sayaç rozeti, tek tıkla tümünü okundu işaretleme ve anlık ceza bildirimi simülasyon motoru.
 - **🧭 Nasıl Giderim? & KKTC Sürüş ve Yardım Rehberi:** Ada içi kritik rotalar (Kalkanlı/ODTÜ ➔ Erülkü Demirhan, Girne ➔ Lapta & Alsancak Sahili, Lefkoşa ➔ Ercan Havalimanı vb.) için radar ve ışık baypas önerileri, tek dokunuşla rota haritasına aktarma, sol trafik sürüş kuralları, çember geçiş üstünlükleri ve acil durum hatları (155, 112, 199, 159, 7/24 Çekici).
 - **🗺️ Canlı OpenStreetMap Navigasyonu & Rota Motoru:** Canlı GPS ve OSRM altyapısıyla harita üzerinde adım adım güzergah çizimi, güzergahtaki sabit hız kameralarının sayısı, mesafe ve varış süresi hesaplama.
 - **🚨 Ceza Sorgulama & Erken Ödeme İndirimi:** Plaka veya kimlik numarasıyla anlık trafik cezası sorgulama, ceza puanı görüntüleme ve yasal 15 gün içinde **%15 erken ödeme indirimi** hesaplama.
@@ -41,39 +43,56 @@
 * Hızlı öneri çipleri (`🚗 Seyrüsefer`, `⚖️ Cezalarım`, `📸 Sabit Radarlar`, `🗺️ Yol Tarifi`, `🛡️ Sigorta & QR`, `📝 İtiraz Dilekçesi`, `💡 Nasıl Giderim?`).
 * Arama sonucuna basıldığında arama modali kapanır ve ilgili tab/alt sekme otomatik seçilip açılır.
 
-### 2. 🧭 Yardım, Sürüş ve Rota Rehberi
+### 2. 🚦 Canlı Trafik ve Rota Navigasyonu
+* Lefkoşa, Girne, Gazimağusa ve Ercan Havalimanı hatları için OSRM tabanlı canlı güzergah çizimi.
+* Yol boyundaki sabit hız radarları, izin verilen yasal limitler ve yaklaşma uyarıları.
+* Trafik yoğunluğuna göre dinamik varış süresi ve gecikme hesaplaması.
+
+### 3. 🧭 Yardım, Sürüş ve Rota Rehberi
 * **Kalkanlı / ODTÜ ➔ Erülkü Demirhan:** Gönyeli şehir içi 50 km/s radarlarına takılmadan Kuzey Çevre Yolu viyadüğünden bağlanma ipuçları.
 * **Girne ➔ Lapta & Alsancak Sahili:** Alsancak çevre yolu tüneli ve çift şerit avantajı, dar viraj ve yaya uyarısı.
 * **Lefkoşa ➔ Ercan Havalimanı (Yeni Terminal):** Değirmenlik dağ yolu kavşağı, yeni terminal bağlantısı ve 90 km/s hız sınırları.
 * **KKTC Trafik Kuralları:** Soldan akan trafik, dönel kavşaklarda (çember) geçiş hakkı ve 100 ceza puanı sistemi.
 * **Acil Yardım Rehberi:** 155 Polis İmdat, 112 Ambulans, 199 İtfaiye, 159 Karayolları Yol Yardım ve 7/24 Kurtarıcı Çekici.
 
-### 3. 💳 Trafik Cezaları ve Ödeme Yönetimi
+### 4. 💳 Trafik Cezaları ve Ödeme Yönetimi
 * Plakaya kayıtlı aktif ve geçmiş cezalar.
 * Kamera görüntüleri, ihlal yeri, radar hızı ve ceza puanı dökümü.
 * 15 gün içinde ödemede geçerli indirimli tutar hesaplama.
 * Kredi kartı ile hızlı ve güvenli ceza ödeme simülasyonu.
 
-### 4. ⏳ Seyrüsefer (Yol Vergisi) & Araç Muayenesi
+### 5. ⏳ Seyrüsefer (Yol Vergisi) & Araç Muayenesi
 * Kalan gün sayacı (Görsel ilerleme çubuğu & durum rozetleri).
 * Gecikme faizi ve trafik cezası risk analizi.
 * Yıllık ve dönemsel harç yenileme seçeneği.
 * Resmi Seyrüsefer Belgesi (.PDF) indirme imkânı.
 
-### 5. 🗺️ Radar ve Canlı Sürüş Haritası
+### 6. 🗺️ Radar ve Canlı Sürüş Haritası
 * Ada genelindeki tüm sabit hız kameraları (Lefkoşa, Girne, Gazimağusa, Güzelyurt, İskele, Lefke).
 * Güzergaha göre hız limitleri (50 km/s, 65 km/s, 75 km/s, 90 km/s, 100 km/s).
 * Sesli ve görsel radar yaklaşma ikazları.
 
-### 6. 🪪 Dijital Denetim & QR Ruhsat
+### 7. 🪪 Dijital Denetim & QR Ruhsat
 * Trafik kontrol noktalarında polise gösterilmek üzere optimize edilmiş hızlı denetim kartı.
 * Seyrüsefer, sigorta ve muayene durumunu tek bir dinamik QR kodda birleştiren altyapı.
 
 ---
 
-## 📱 Cihaz ve Ekran Uyumluluğu
+## 📱 Cihaz ve Ekran Uyumluluğu (Redmi Note 13 Pro+ Optimizasyonu)
 
-* **Sıfır Taşma (No Overflow):** Redmi Note 13 Pro+, iPhone SE, iPhone 15/16 Pro Max gibi farklı en-boy oranlarına ve font ölçeklerine sahip cihazlarda `FittedBox` ve esnek grid yapılarıyla optimize edildi.
+Uygulama, farklı ekran en-boy oranlarına ve özellikle Xiaomi/MIUI/HyperOS cihazlarda karşılaşılan yüksek DPI ve büyük font ölçeklendirmelerine karşı titizlikle optimize edilmiştir:
+
+* **Sıfır Taşma (No RenderFlex Overflow):** Redmi Note 13 Pro+, iPhone SE, iPhone 15/16 Pro Max gibi farklı boyutlardaki cihazlarda `FittedBox`, `Flexible` ve `Expanded` widget mimarisi ile taşma hataları engellenmiştir.
+* **Kod ve Referans Numaraları Düzenlemesi:** 
+  - Ceza Referans Kodları (`#KKTC-2024-884912`),
+  - Geçmiş Ödeme Makbuz Kodları (`#KKTC-2024-110294`, `#SYR-89210`),
+  - Elektronik Tahsilat & Dekont Kodları (`DEKONT-...`, `SIGORTA-...`, `SYR-...`),
+  - MOBESE Kanıt Zaptı ve Kamera Kodları (`CAM-04-GONYELI`, `DELİL NO: #884912`),
+  - Dinamik Polis QR Güvenlik Kodu (`_sigortaOtpKodu`),
+  - Resmi Barkod No (`Barkod No: KKTC-TR-2026-99182`),
+  özelleştirilmiş monospace kapsayıcı hap rozetler (pills) ve otomatik ölçeklendirme ile korunarak kaymalar, satır kırılmaları veya metin kesilmeleri tamamen ortadan kaldırılmıştır.
+* **Telemetri ve Radar Hız Ölçer Koruması:** Radar hızı ve hız limiti panelleri `FittedBox` içine alınarak dar alanlarda çakışmasız ve hizalı görüntülenmesi garanti altına alınmıştır.
+* **Acil Yardım Butonları:** 14 karakterli acil çağrı numaraları (örn. `0392 228 88 88`) metin kayması yaşanmadan dinamik olarak buton içine sığdırılmıştır.
 * **iOS Liquid Glass & Slate Tasarım:** Derin lacivert (`#0A122A`), KKTC Crimson Kırmızı ve Neon Emerald tonlarında modern ve estetik görsel dil.
 
 ---
@@ -84,7 +103,7 @@
 | :--- | :--- | :--- |
 | **Framework** | [Flutter](https://flutter.dev/) (3.x) | Çapraz platform yüksek performanslı mobil UI |
 | **Dil** | [Dart](https://dart.dev/) | Tip güvenli ve modern mobil programlama dili |
-| **Harita & Navigasyon** | OpenStreetMap & OSRM Engine | Canlı harita çizimi ve güzergah motoru |
+| **Harita & Navigasyon** | OpenStreetMap & OSRM Engine | Canlı harita çizimi, radar noktaları ve güzergah motoru |
 | **Tasarım Dili** | Material 3 & Custom Tokens | KKTC resmi renkleri ve modern Slate/Crimson paleti |
 | **İkonlar** | Cupertino & Material Rounded Icons | Kusursuz platform uyumluluğu |
 | **CI / CD** | GitHub Actions | Otomatik macOS tabanlı iOS IPA derleme ve dağıtım |
@@ -148,7 +167,7 @@ kktc_ceza_app/
 │   ├── main.dart                  # Ana giriş, tab yönetimi, cezalar & sigorta, servisler
 │   ├── hizli_arama_modali.dart    # Spotlight arama ve doğrudan sekme yönlendirici
 │   ├── yardim_rehberi_sayfasi.dart # Nasıl giderim, KKTC sürüş kuralları, acil rehber ve SSS
-│   ├── yol_tarifi_sayfasi.dart    # Canlı OpenStreetMap navigasyonu ve rota motoru
+│   ├── yol_tarifi_sayfasi.dart    # Canlı OpenStreetMap navigasyonu, trafik analitiği ve rota motoru
 │   ├── radar_haritasi.dart        # KKTC geneli sabit radar koordinatları ve hız limitleri
 │   └── kktc_gov_sync_service.dart # Canlı kamu sunucuları senkronizasyon şeridi
 ├── pubspec.yaml                   # Proje bağımlılıkları ve yapılandırma
