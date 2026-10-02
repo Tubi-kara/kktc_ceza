@@ -1347,88 +1347,105 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    // Misafir Avatarı
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: cNavy.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.person_outline_rounded,
-                          color: cNavy,
-                          size: 26,
+                Expanded(
+                  child: Row(
+                    children: [
+                      // Misafir Avatarı
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: cNavy.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Text(
-                              'Misafir Kullanıcı',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w800,
-                                color: cNavy,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              child: const Text(
-                                'Giriş Yapılmadı',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: cSlate,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 3),
-                        const Text(
-                          'Cezalar ve araç dökümü için tıklayın',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: cSlate,
-                            fontWeight: FontWeight.w500,
+                        child: const Center(
+                          child: Icon(
+                            Icons.person_outline_rounded,
+                            color: cNavy,
+                            size: 24,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        const Row(
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.login_rounded, size: 13, color: Color(0xFF059669)),
-                            SizedBox(width: 4),
-                            Text(
-                              'Kimlik / Ehliyet ile Giriş Yap',
+                            Row(
+                              children: [
+                                const Flexible(
+                                  child: Text(
+                                    'Misafir Kullanıcı',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: cNavy,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(999),
+                                    border: Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  child: const Text(
+                                    'Giriş Yapılmadı',
+                                    style: TextStyle(
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: cSlate,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            const Text(
+                              'Cezalar ve araç dökümü için tıklayın',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF059669),
-                                fontWeight: FontWeight.w700,
+                                fontSize: 11.5,
+                                color: cSlate,
+                                fontWeight: FontWeight.w500,
                               ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Row(
+                              children: [
+                                Icon(Icons.login_rounded, size: 12, color: Color(0xFF059669)),
+                                SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    'Kimlik / Ehliyet ile Giriş Yap',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF059669),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                   decoration: BoxDecoration(
                     color: cNavy,
                     borderRadius: BorderRadius.circular(12),
@@ -1445,7 +1462,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                         ),
                       ),
                       SizedBox(width: 4),
-                      Icon(Icons.arrow_forward_rounded, size: 14, color: Colors.white),
+                      Icon(Icons.arrow_forward_rounded, size: 13, color: Colors.white),
                     ],
                   ),
                 ),
@@ -1495,122 +1512,132 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  // AD İnisiyal Avatarı ve Yeşil Çevrimiçi Nokta
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFE4E6),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Center(
-                          child: Text(
-                            initials,
-                            style: const TextStyle(
-                              color: Color(0xFFBE123C),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: -2,
-                        right: -2,
-                        child: Container(
-                          width: 14,
-                          height: 14,
+              Expanded(
+                child: Row(
+                  children: [
+                    // AD İnisiyal Avatarı ve Yeşil Çevrimiçi Nokta
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
+                            color: const Color(0xFFFFE4E6),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 14),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            widget.kullaniciAdi,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                              color: cNavy,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: cAccentLight,
-                              borderRadius: BorderRadius.circular(999),
-                              border: Border.all(color: cAccent.withOpacity(0.4)),
-                            ),
-                            child: const Text(
-                              '85/100 Puan',
-                              style: TextStyle(
-                                fontSize: 10,
+                          child: Center(
+                            child: Text(
+                              initials,
+                              style: const TextStyle(
+                                color: Color(0xFFBE123C),
+                                fontSize: 18,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF857B0D),
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 3),
-                      const Text(
-                        'KKTC Ehliyet: 123456',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: cSlate,
-                          fontWeight: FontWeight.w500,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                        Positioned(
+                          bottom: -2,
+                          right: -2,
+                          child: Container(
+                            width: 14,
+                            height: 14,
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Text(
-                              'Sınıf A2, B, D',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF374151),
-                              ),
+                              color: const Color(0xFF10B981),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          const Text('•', style: TextStyle(color: cSlate, fontSize: 11)),
-                          const SizedBox(width: 6),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  widget.kullaniciAdi,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: cNavy,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: cAccentLight,
+                                  borderRadius: BorderRadius.circular(999),
+                                  border: Border.all(color: cAccent.withOpacity(0.4)),
+                                ),
+                                child: const Text(
+                                  '85/100 Puan',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF857B0D),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
                           const Text(
-                            'Geçerli Sürücü',
+                            'KKTC Ehliyet: 123456',
                             style: TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFF059669),
-                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                              color: cSlate,
+                              fontWeight: FontWeight.w500,
                             ),
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text(
+                                  'Sınıf A2, B, D',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF374151),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Text('•', style: TextStyle(color: cSlate, fontSize: 11)),
+                              const SizedBox(width: 6),
+                              const Text(
+                                'Geçerli Sürücü',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFF059669),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 width: 32,
                 height: 32,
