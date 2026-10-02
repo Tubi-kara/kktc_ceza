@@ -607,11 +607,20 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                                       ),
                                     ),
                                   ),
-                                  const Center(
-                                    child: Icon(
-                                      Icons.shield_outlined,
-                                      size: 38,
-                                      color: _HtmlColors.primary,
+                                  Center(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Image.asset(
+                                        'assets/app_logo.png',
+                                        width: 64,
+                                        height: 64,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, _, _) => const Icon(
+                                          Icons.shield_outlined,
+                                          size: 38,
+                                          color: _HtmlColors.primary,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],

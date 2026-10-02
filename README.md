@@ -22,6 +22,7 @@
 
 ## 🚀 Son Sürümle Eklenenler (v1.0.3)
 
+- **🎨 Özel Resmi KKTC e-Trafik Uygulama Logosu & Başlatıcı İkonu:** Varsayılan Flutter logosu tamamen kaldırılarak; KKTC ay-yıldızı, altın işlemeli resmi polis arması, dijital yol haritası ve radar tarayıcısından oluşan yüksek çözünürlüklü 3D özel uygulama ikonu Android (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi) ve Web platformlarına uyarlandı.
 - **📥 Uygulama İçi Direkt İndirme (In-App Downloader):** Güncelle butonuna basıldığında artık tarayıcıya veya GitHub'a yönlendirilmez. Uygulama içinde gerçek zamanlı MB/boyut ve % ilerleme çubuğuyla APK doğrudan indirilir.
 - **⚡ Otomatik Paket Yükleyici (Direct Installer):** İndirme %100 tamamlandığı anda Android sistem paket yükleyicisi otomatik olarak ekrana gelir ve tek tıkla güncelleme kurulur.
 - **🛡️ Google Play Protect Uyarısı Desteği & İzinler:** Android 8-15 ve HyperOS uyumluluğu için `REQUEST_INSTALL_PACKAGES` izni ve `KKTC e-Trafik` resmi etiket tanımlandı. Kurulum ekranında kullanıcılar için Play Protect aşma rehberi eklendi (*"Daha Fazla Ayrıntı" ➔ "Yine de Yükle"*).
