@@ -9,6 +9,8 @@ import 'yardim_rehberi_sayfasi.dart';
 import 'hizli_arama_modali.dart';
 import 'guncelleme_servisi.dart';
 import 'guvenlik_duvari.dart';
+import 'kktc_e_trafik_dashboard_sayfasi.dart';
+import 'kktc_e_trafik_giris_sayfasi.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,12 +60,12 @@ class KktcCezaApp extends StatefulWidget {
 }
 
 class _KktcCezaAppState extends State<KktcCezaApp> {
-  bool _splashGosteriliyor = true;
+  bool _splashGosteriliyor = true; // Sinematik açılış animasyonu devrede
   bool _turkceMi = true;
-  bool _girisYapildiMi = false;
-  String _kullaniciAdi = "";
-  String _kullaniciRolu = "";
-  List<String> _araclar = [];
+  bool _girisYapildiMi = false; // Giriş yapıldıktan sonra Dashboard'a geçer
+  String _kullaniciAdi = "Ahmet Demir";
+  String _kullaniciRolu = "Sürücü";
+  List<String> _araclar = ["RZ 123", "LZ 555"];
 
   void _dilDegistir(bool turkceMi) {
     setState(() {
@@ -96,33 +98,16 @@ class _KktcCezaAppState extends State<KktcCezaApp> {
       title: 'KKTC e-Trafik',
       theme: ThemeData(
         useMaterial3: true,
-        scaffoldBackgroundColor: AppColors.background,
+        scaffoldBackgroundColor: const Color(0xFFF4F5F7),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
-          primary: AppColors.primary,
-          surface: AppColors.surface,
+          seedColor: const Color(0xFF010E3C),
+          primary: const Color(0xFF010E3C),
+          surface: Colors.white,
           surfaceTint: Colors.transparent,
-        ),
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          backgroundColor: AppColors.surface,
-          foregroundColor: AppColors.slate900,
-          centerTitle: false,
-          surfaceTintColor: Colors.transparent,
-        ),
-        cardTheme: CardThemeData(
-          elevation: 0,
-          color: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: AppColors.slate200, width: 1),
-          ),
         ),
       ),
       home: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 550),
-        switchInCurve: Curves.easeIn,
-        switchOutCurve: Curves.easeOut,
+        duration: const Duration(milliseconds: 400),
         child: _splashGosteriliyor
             ? AcilisAnimasyonuSayfasi(
                 key: const ValueKey('splash_screen'),
@@ -132,20 +117,15 @@ class _KktcCezaAppState extends State<KktcCezaApp> {
                 },
               )
             : (_girisYapildiMi
-                ? AnaSayfaTabs(
-                    key: const ValueKey('ana_sayfa_tabs'),
-                    kullaniciAdi: _kullaniciAdi,
-                    kullaniciRolu: _kullaniciRolu,
-                    araclar: _araclar,
-                    turkceMi: _turkceMi,
-                    onDilDegistir: _dilDegistir,
+                ? KktcETrafikDashboardSayfasi(
+                    key: const ValueKey('kktc_modern_dashboard'),
                     onCikisYap: _cikisYap,
                   )
-                : GirisSayfasi(
-                    key: const ValueKey('giris_sayfasi'),
-                    turkceMi: _turkceMi,
-                    onDilDegistir: _dilDegistir,
-                    onGirisBasarili: _girisYapBasarili,
+                : KktcETrafikGirisSayfasi(
+                    key: const ValueKey('kktc_modern_giris'),
+                    onLoginSuccess: () {
+                      _girisYapBasarili("Ahmet Demir", ["RZ 123", "LZ 555"]);
+                    },
                   )),
       ),
     );
@@ -498,8 +478,8 @@ class _AcilisAnimasyonuSayfasiState extends State<AcilisAnimasyonuSayfasi>
                           // Açıklama
                           Text(
                             widget.turkceMi
-                                ? 'Polis Genel Müdürlüğü • Trafik & Navigasyon'
-                                : 'Police HQ • Smart Traffic & Navigation',
+                                ? 'KKTC e-TRAFİK • Akıllı Trafik & Güvenli Kamu Portalı'
+                                : 'TRNC e-TRAFFIC • Smart Traffic & Secure Public Portal',
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.65),
                               fontSize: 12,
@@ -616,8 +596,7 @@ class _HtmlColors {
   static const Color primaryFixedDim = Color(0xFFFFB3AF);
   static const Color onPrimary = Color(0xFF68000E);
   static const Color onPrimaryContainer = Color(0xFFFFEAE8);
-  static const Color onSurfaceVariant = Color(0xFFE7BCBA);
-  static const Color outlineVariant = Color(0xFF5D3F3D);
+  // onSurfaceVariant ve outlineVariant gelecekte kullanılmak üzere kaldırıldı
   static const Color onSecondaryContainer = Color(0xFFABB4D7);
   static const Color tertiaryFixedDim = Color(0xFF4EDEA3);
 }
@@ -648,27 +627,31 @@ class GirisSayfasi extends StatefulWidget {
 
 class _GirisSayfasiState extends State<GirisSayfasi>
     with TickerProviderStateMixin {
+  // 0 = Giriş Yap, 1 = Kayıt Ol
+  int _seciliSegment = 0;
+
+  // Giriş Controllerları
   final TextEditingController _girisController = TextEditingController();
   final TextEditingController _sifreController = TextEditingController();
-  KullaniciTuru _seciliRol = KullaniciTuru.kktcVatandas;
-  String _secilenUniversite = "ODTU";
 
-  final List<Map<String, String>> _universiteler = [
-    {"kod": "ODTU", "ad": "ODTÜ Kuzey Kıbrıs Kampüsü", "kisa": "ODTÜ KKK"},
-    {"kod": "DAU", "ad": "Doğu Akdeniz Üniversitesi (DAÜ)", "kisa": "DAÜ / EMU"},
-    {"kod": "YDU", "ad": "Yakın Doğu Üniversitesi (YDÜ)", "kisa": "YDÜ / NEU"},
-    {"kod": "UKU", "ad": "Uluslararası Kıbrıs Üniversitesi", "kisa": "UKÜ / CIU"},
-    {"kod": "LAU", "ad": "Lefke Avrupa Üniversitesi", "kisa": "LAÜ / EUL"},
-    {"kod": "GU", "ad": "Girne Üniversitesi", "kisa": "GÜ / UoK"},
-    {"kod": "DIGER", "ad": "Diğer KKTC Yükseköğretim (YÖBİS)", "kisa": "Diğer / YÖBİS"},
-  ];
+  // Kayıt Controllerları
+  final TextEditingController _kayitAdSoyadController = TextEditingController();
+  final TextEditingController _kayitKimlikController = TextEditingController();
+  final TextEditingController _kayitTelefonController = TextEditingController();
+  final TextEditingController _kayitPlakaController = TextEditingController();
+  final TextEditingController _kayitSifreController = TextEditingController();
 
   bool _sifreGizli = true;
+  bool _kayitSifreGizli = true;
   bool _biyometrikYukleniyor = false;
   bool _biyometrikBasarili = false;
   bool _girisYukleniyor = false;
   bool _girisBasariliAnimasyon = false;
-  int _authMethod = 0; // 0 = Kimlik&Şifre, 1 = SMS
+
+  // Kayıt: Kullanıcı Tipi Seçimi (0=KKTC, 1=TC, 2=Öğrenci, 3=Uluslararası)
+  int _secilenKullaniciTipi = 0;
+  // Kayıt: Öğrenci için üniversite seçimi
+  int _secilenUni = 0;
 
   late final AnimationController _pingController;
 
@@ -685,6 +668,11 @@ class _GirisSayfasiState extends State<GirisSayfasi>
   void dispose() {
     _girisController.dispose();
     _sifreController.dispose();
+    _kayitAdSoyadController.dispose();
+    _kayitKimlikController.dispose();
+    _kayitTelefonController.dispose();
+    _kayitPlakaController.dispose();
+    _kayitSifreController.dispose();
     _pingController.dispose();
     super.dispose();
   }
@@ -696,8 +684,8 @@ class _GirisSayfasiState extends State<GirisSayfasi>
     if (numara.isEmpty || sifre.isEmpty) {
       _snack(
         widget.turkceMi
-            ? 'Lütfen kimlik/öğrenci no ve şifrenizi girin.'
-            : 'Please enter your ID/credentials and password.',
+            ? 'Lütfen kimlik/kullanıcı adı ve şifrenizi girin.'
+            : 'Please enter your ID/username and password.',
         isError: true,
       );
       return;
@@ -706,13 +694,13 @@ class _GirisSayfasiState extends State<GirisSayfasi>
     // 🛡️ ÖZEL SİSTEM YÖNETİCİSİ GİRİŞİ: Kullanıcı Adı: "tubi" • Şifre: "1907"
     if (numara.toLowerCase() == 'tubi' && sifre == '1907') {
       setState(() => _girisYukleniyor = true);
-      Future.delayed(const Duration(milliseconds: 650), () {
+      Future.delayed(const Duration(milliseconds: 600), () {
         if (!mounted) return;
         setState(() {
           _girisYukleniyor = false;
           _girisBasariliAnimasyon = true;
         });
-        Future.delayed(const Duration(milliseconds: 400), () {
+        Future.delayed(const Duration(milliseconds: 350), () {
           widget.onGirisBasarili(
             widget.turkceMi ? "Tubi (Sistem Yöneticisi)" : "Tubi (System Admin)",
             ["PGM 001", "POLIS 155", "ST 999"],
@@ -725,97 +713,94 @@ class _GirisSayfasiState extends State<GirisSayfasi>
 
     setState(() => _girisYukleniyor = true);
 
-    Future.delayed(const Duration(milliseconds: 950), () {
+    Future.delayed(const Duration(milliseconds: 700), () {
       if (!mounted) return;
-
-      List<String> tanimliAraclar = [];
-      String adSoyad = "";
-      String rolAciklama = "";
-
-      switch (_seciliRol) {
-        case KullaniciTuru.kktcVatandas:
-          adSoyad = widget.turkceMi ? "Ahmet Demir" : "Ahmet Demir (Citizen)";
-          rolAciklama = widget.turkceMi ? "KKTC Vatandaşı (Merkezi Kayıt)" : "TRNC Citizen";
-          tanimliAraclar = ["RZ 123", "LZ 555"];
-          break;
-
-        case KullaniciTuru.tcVatandas:
-          adSoyad = widget.turkceMi ? "Mehmet Yılmaz" : "Mehmet Yilmaz";
-          rolAciklama = widget.turkceMi ? "T.C. Vatandaşı (İkamet & Görevli)" : "TR Citizen (Resident & Duty)";
-          tanimliAraclar = ["KY 440", "RZ 123"];
-          break;
-
-        case KullaniciTuru.ogrenci:
-          final uni = _universiteler.firstWhere(
-            (u) => u["kod"] == _secilenUniversite,
-            orElse: () => _universiteler[0],
-          );
-          final uniKisa = uni["kisa"]!;
-          adSoyad = widget.turkceMi ? "Caner Yıldız ($uniKisa)" : "Caner Yildiz ($uniKisa Student)";
-          rolAciklama = widget.turkceMi ? "$uniKisa Öğrenci (YÖBİS Aktif)" : "$uniKisa Student (YOBIS Active)";
-          if (_secilenUniversite == "ODTU") {
-            tanimliAraclar = ["ODTU 107", "ST 999"];
-          } else if (_secilenUniversite == "DAU") {
-            tanimliAraclar = ["ST 999", "GM 202"];
-          } else {
-            tanimliAraclar = ["GM 202", "ST 999"];
-          }
-          break;
-
-        case KullaniciTuru.uluslararasi:
-          adSoyad = "Alex Smith";
-          rolAciklama = widget.turkceMi ? "Uluslararası Misafir (İkamet İzni)" : "International Guest (Residence Permit)";
-          tanimliAraclar = ["GM 202", "ST 999"];
-          break;
-
-        case KullaniciTuru.admin:
-          adSoyad = widget.turkceMi ? "Tubi (Sistem Yöneticisi)" : "Tubi (System Admin)";
-          rolAciklama = "PGM Siber Operasyon Merkezi (SOC / Admin)";
-          tanimliAraclar = ["PGM 001", "POLIS 155", "ST 999"];
-          break;
-      }
 
       setState(() {
         _girisYukleniyor = false;
         _girisBasariliAnimasyon = true;
       });
 
-      Future.delayed(const Duration(milliseconds: 550), () {
-        widget.onGirisBasarili(adSoyad, tanimliAraclar, rolAciklama);
+      Future.delayed(const Duration(milliseconds: 400), () {
+        widget.onGirisBasarili(
+          widget.turkceMi ? "Ahmet Demir" : "Ahmet Demir",
+          ["KY 987", "LZ 555"],
+          widget.turkceMi ? "Kayıtlı Sürücü (KKTC)" : "Registered Driver (TRNC)",
+        );
       });
     });
   }
 
-  void _hizliDemoGiris(KullaniciTuru rol, {String? uniKod}) {
-    setState(() {
-      _seciliRol = rol;
-      if (uniKod != null) _secilenUniversite = uniKod;
+  void _kayitOl() {
+    String adSoyad = _kayitAdSoyadController.text.trim();
+    String kimlik = _kayitKimlikController.text.trim();
+    final _ = _kayitTelefonController.text.trim(); // telefon ileride backend için kullanılacak
+    String plaka = _kayitPlakaController.text.trim().toUpperCase();
+    String sifre = _kayitSifreController.text.trim();
 
-      switch (rol) {
-        case KullaniciTuru.kktcVatandas:
-          _girisController.text = "123456";
-          _sifreController.text = "123456";
-          break;
-        case KullaniciTuru.tcVatandas:
-          _girisController.text = "19283746501";
-          _sifreController.text = "tc1234";
-          break;
-        case KullaniciTuru.ogrenci:
-          _girisController.text = uniKod == "ODTU" ? "21703517" : "20210042";
-          _sifreController.text = "ogrenci123";
-          break;
-        case KullaniciTuru.uluslararasi:
-          _girisController.text = "U8819201";
-          _sifreController.text = "alex123";
-          break;
-        case KullaniciTuru.admin:
-          // Admin için demo butonu kaldırıldı. Yalnızca tubi / 1907 ile özel giriş yapılır.
-          break;
-      }
-    });
-    if (rol != KullaniciTuru.admin) {
-      _girisYap();
+    if (adSoyad.isEmpty || kimlik.isEmpty || sifre.isEmpty) {
+      _snack(
+        widget.turkceMi
+            ? 'Lütfen Ad Soyad, Kimlik No ve Şifre alanlarını doldurun.'
+            : 'Please fill in Full Name, ID and Password.',
+        isError: true,
+      );
+      return;
     }
+
+    final String seciliRol;
+    switch (_secilenKullaniciTipi) {
+      case 0:
+        seciliRol = widget.turkceMi ? 'KKTC Vatandaşı (Kayıtlı Sürücü)' : 'TRNC Citizen (Registered Driver)';
+        break;
+      case 1:
+        seciliRol = widget.turkceMi ? 'T.C. Vatandaşı / İkamet' : 'TR Citizen / Resident';
+        break;
+      case 2:
+        final List<String> uniAdlari = [
+          'ODTÜ KKK', 'YDÜ', 'DAÜ (EMU)', 'GAÜ', 'UKÜ', 'LAÜ', 'Beykent KKK', 'Diğer',
+        ];
+        final String uni = (_secilenUni >= 0 && _secilenUni < uniAdlari.length)
+            ? uniAdlari[_secilenUni]
+            : 'KKTC Üniversitesi';
+        seciliRol = widget.turkceMi
+            ? 'Öğrenci • $uni'
+            : 'Student • $uni';
+        break;
+      case 3:
+        seciliRol = widget.turkceMi ? 'Uluslararası Sürücü / Turist' : 'International Driver / Tourist';
+        break;
+      default:
+        seciliRol = widget.turkceMi ? 'Kayıtlı Sürücü' : 'Registered Driver';
+    }
+
+    if (plaka.isEmpty) {
+      plaka = "KY 987";
+    }
+
+    setState(() => _girisYukleniyor = true);
+
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      setState(() {
+        _girisYukleniyor = false;
+        _girisBasariliAnimasyon = true;
+      });
+
+      _snack(
+        widget.turkceMi
+            ? 'Tebrikler! Kaydınız oluşturuldu, güvenli giriş yapılıyor...'
+            : 'Congratulations! Account created, logging in...',
+      );
+
+      Future.delayed(const Duration(milliseconds: 450), () {
+        widget.onGirisBasarili(
+          adSoyad,
+          [plaka],
+          seciliRol,
+        );
+      });
+    });
   }
 
   void _biyometrikGiris() async {
@@ -823,18 +808,26 @@ class _GirisSayfasiState extends State<GirisSayfasi>
       _biyometrikYukleniyor = true;
       _biyometrikBasarili = false;
     });
-    await Future.delayed(const Duration(milliseconds: 900));
+    await Future.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
     setState(() {
       _biyometrikYukleniyor = false;
       _biyometrikBasarili = true;
-      _girisController.text = '21894019284';
+      _girisController.text = '123456';
       _sifreController.text = '••••••••••••';
     });
-    await Future.delayed(const Duration(milliseconds: 600));
+    await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
     setState(() => _biyometrikBasarili = false);
     _girisYap();
+  }
+
+  void _demoGirisSec(String isim, String plaka, String rol) {
+    setState(() => _girisYukleniyor = true);
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      widget.onGirisBasarili(isim, [plaka], rol);
+    });
   }
 
   void _snack(String msg, {bool isError = false}) {
@@ -851,813 +844,488 @@ class _GirisSayfasiState extends State<GirisSayfasi>
             Expanded(child: Text(msg)),
           ],
         ),
-        backgroundColor: isError ? const Color(0xFF93000A) : const Color(0xFF007C55),
+        backgroundColor: isError ? const Color(0xFFEF4444) : const Color(0xFF10B981),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  void _demoSecimSheetGoster() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      widget.turkceMi ? 'Hızlı Test Profili Seçin' : 'Select Quick Demo Profile',
+                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white54),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _demoSecimTile(
+                  icon: Icons.badge_outlined,
+                  ad: 'Ahmet Demir (KKTC Vatandaşı)',
+                  plaka: 'KY 987',
+                  rol: 'KKTC Vatandaşı',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _demoGirisSec('Ahmet Demir', 'KY 987', 'KKTC Vatandaşı');
+                  },
+                ),
+                _demoSecimTile(
+                  icon: Icons.credit_card_rounded,
+                  ad: 'Mehmet Yılmaz (T.C. İkamet)',
+                  plaka: 'RZ 123',
+                  rol: 'T.C. İkamet / Görevli',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _demoGirisSec('Mehmet Yılmaz', 'RZ 123', 'T.C. Vatandaşı');
+                  },
+                ),
+                _demoSecimTile(
+                  icon: Icons.school_rounded,
+                  ad: 'Caner Yıldız (ODTÜ Öğrencisi)',
+                  plaka: 'ST 999',
+                  rol: 'ODTÜ KKK Öğrenci',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _demoGirisSec('Caner Yıldız (ODTÜ)', 'ST 999', 'ODTÜ Öğrenci');
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _demoSecimTile({
+    required IconData icon,
+    required String ad,
+    required String plaka,
+    required String rol,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF10B981).withValues(alpha: 0.20),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: const Color(0xFF10B981), size: 20),
+        ),
+        title: Text(ad, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+        subtitle: Text('Plaka: $plaka • $rol', style: const TextStyle(color: Colors.white54, fontSize: 11)),
+        trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white30, size: 14),
+        onTap: onTap,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Dynamic Labels & Hints based on selected user type
-    String idEtiketi = widget.turkceMi ? 'KKTC KİMLİK KARTI NO' : 'TRNC IDENTITY NO';
-    String idHint = widget.turkceMi ? 'Örn: 123456 (KKTC Kimlik No)' : 'E.g.: 123456';
-    IconData idIkon = Icons.badge_outlined;
-    String idAciklama = widget.turkceMi
-        ? 'KKTC Polis Genel Müdürlüğü Merkezi Kaydı'
-        : 'TRNC Police Headquarters Registry';
-
-    switch (_seciliRol) {
-      case KullaniciTuru.kktcVatandas:
-        idEtiketi = widget.turkceMi ? 'KKTC KİMLİK KARTI NO' : 'TRNC ID NUMBER';
-        idHint = widget.turkceMi ? 'Örn: 123456 (KKTC Kimlik No)' : 'E.g.: 123456';
-        idIkon = Icons.badge_outlined;
-        idAciklama = widget.turkceMi
-            ? 'KKTC Nüfus Kayıt Dairesi ve Polis Genel Müdürlüğü Entegre'
-            : 'TRNC Civil Registry & Police HQ Integrated';
-        break;
-      case KullaniciTuru.tcVatandas:
-        idEtiketi = widget.turkceMi ? 'T.C. KİMLİK NO (11 HANE) VEYA YKN' : 'TR ID NO (11-DIGIT) OR TRNC YKN';
-        idHint = widget.turkceMi ? 'Örn: 19283746501 (T.C. Kimlik / Askeri & Görevli)' : 'E.g.: 19283746501';
-        idIkon = Icons.credit_card_rounded;
-        idAciklama = widget.turkceMi
-            ? 'İkamet, Çalışma İzni & Görevli / Askeri Personel T.C. Kimlik Entegrasyonu'
-            : 'TR Citizen, Resident, Duty & Military Personnel ID Integrated';
-        break;
-      case KullaniciTuru.ogrenci:
-        idEtiketi = widget.turkceMi ? 'ÖĞRENCİ NO VEYA T.C. / PASAPORT NO' : 'STUDENT ID OR PASSPORT / TR ID';
-        idHint = widget.turkceMi ? 'Örn: 21703517 veya tubi' : 'E.g.: 21703517 or tubi';
-        idIkon = Icons.school_rounded;
-        idAciklama = widget.turkceMi
-            ? 'KKTC MEB & YÖBİS Öğrenci İkamet İzni ve Kampüs Araç Pulu Portalı'
-            : 'TRNC Ministry of Education & YOBIS Student Permit Portal';
-        break;
-      case KullaniciTuru.uluslararasi:
-        idEtiketi = widget.turkceMi ? 'PASAPORT NUMARASI' : 'PASSPORT NUMBER';
-        idHint = widget.turkceMi ? 'Örn: U12345678 (Uluslararası Pasaport)' : 'E.g.: U12345678';
-        idIkon = Icons.public_rounded;
-        idAciklama = widget.turkceMi
-            ? 'Yabancı Uyruklular İkamet ve Geçici İthal / Z Plaka Kaydı'
-            : 'Foreign Residents Permit & Temporary Import / Z Plate Registry';
-        break;
-      case KullaniciTuru.admin:
-        idEtiketi = widget.turkceMi ? 'PGM YÖNETİCİ KULLANICI ADI' : 'POLICE ADMIN USERNAME';
-        idHint = widget.turkceMi ? 'Örn: admin.pgm' : 'E.g.: admin.pgm';
-        idIkon = Icons.admin_panel_settings_rounded;
-        idAciklama = widget.turkceMi
-            ? 'KKTC PGM Bilgi İşlem ve Siber Operasyon Merkezi (SOC)'
-            : 'TRNC Police HQ Cyber Operations Center (SOC)';
-        break;
-    }
-
     return Scaffold(
-      backgroundColor: _HtmlColors.background,
+      backgroundColor: const Color(0xFF0A0E1A),
       body: Stack(
         children: [
-          // ── Ambient glow orbs ──
+          // ── Ambient Glassmorphism Orbs ──
           Positioned(
-            top: -96,
-            left: -80,
+            top: -60,
+            left: -50,
             child: Container(
-              width: 288,
-              height: 288,
+              width: 260,
+              height: 260,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _HtmlColors.primaryContainer.withValues(alpha: 0.20),
+                color: const Color(0xFF00C853).withValues(alpha: 0.14),
               ),
             ),
           ),
           Positioned(
-            top: MediaQuery.of(context).size.height * 0.33,
-            right: -96,
+            top: MediaQuery.of(context).size.height * 0.40,
+            right: -80,
             child: Container(
-              width: 320,
-              height: 320,
+              width: 280,
+              height: 280,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _HtmlColors.surfaceBright.withValues(alpha: 0.25),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 40,
-            left: MediaQuery.of(context).size.width * 0.25,
-            child: Container(
-              width: 240,
-              height: 240,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF007C55).withValues(alpha: 0.15),
+                color: const Color(0xFF0284C7).withValues(alpha: 0.16),
               ),
             ),
           ),
 
-          // ── Main content ──
+          // ── Ana İçerik ──
           SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── Top Bar ──
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8, bottom: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Active network pill
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.80),
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              AnimatedBuilder(
-                                animation: _pingController,
-                                builder: (ctx, child) {
-                                  final s = 0.7 + 0.3 * (1 - _pingController.value);
-                                  return Transform.scale(
-                                    scale: s,
-                                    child: Container(
-                                      width: 8,
-                                      height: 8,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: _HtmlColors.tertiary.withValues(
-                                          alpha: 0.5 + 0.5 * (1 - _pingController.value),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                widget.turkceMi ? 'KKTC Kamu & Trafik Ağı Aktif' : 'TRNC Traffic Network Active',
-                                style: const TextStyle(
-                                  color: _HtmlColors.tertiary,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // TR / EN Toggle
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: _HtmlColors.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                          child: Row(
-                            children: [
-                              _langButton('TR', widget.turkceMi, () => widget.onDilDegistir(true)),
-                              _langButton('EN', !widget.turkceMi, () => widget.onDilDegistir(false)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // ── Institutional Crest & Branding ──
-                  Center(
-                    child: Column(
-                      children: [
-                        Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Container(
-                              width: 76,
-                              height: 76,
-                              decoration: BoxDecoration(
-                                color: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.90),
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.35),
-                                    blurRadius: 24,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(20),
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          _HtmlColors.primaryContainer.withValues(alpha: 0.20),
-                                          Colors.transparent,
-                                          _HtmlColors.surfaceBright.withValues(alpha: 0.30),
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                    ),
-                                  ),
-                                  Center(
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: Image.asset(
-                                        'assets/app_logo.png',
-                                        width: 64,
-                                        height: 64,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, _, _) => const Icon(
-                                          Icons.shield_outlined,
-                                          size: 38,
-                                          color: _HtmlColors.primary,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Positioned(
-                              right: -4,
-                              bottom: -4,
-                              child: Container(
-                                width: 22,
-                                height: 22,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: const Color(0xFF007C55),
-                                  border: Border.all(color: _HtmlColors.background, width: 2),
-                                ),
-                                child: const Icon(
-                                  Icons.verified,
-                                  size: 12,
-                                  color: Color(0xFFB4FFD7),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          widget.turkceMi ? 'KKTC RESMİ GEÇİT' : 'TRNC OFFICIAL PORTAL',
-                          style: const TextStyle(
-                            color: _HtmlColors.primary,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 2.0,
-                            fontFamily: 'monospace',
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          widget.turkceMi ? 'KKTC e-Trafik' : 'TRNC e-Traffic',
-                          style: const TextStyle(
-                            color: _HtmlColors.onSurface,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          widget.turkceMi
-                              ? 'Polis Genel Müdürlüğü • Maliye Bakanlığı • MEB\nTrafik, Ceza, Seyrüsefer & Ruhsat Portalı'
-                              : 'Police HQ • Ministry of Finance • MEB\nTraffic, Fines, Road Tax & License Portal',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: _HtmlColors.secondary,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // ── Segmented Role Selector ──
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: _HtmlColors.surfaceContainerLow.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Row(
-                        children: [
-                          _roleChip(
-                            icon: Icons.badge_outlined,
-                            label: widget.turkceMi ? 'KKTC Vatandaşı' : 'TRNC Citizen',
-                            selected: _seciliRol == KullaniciTuru.kktcVatandas,
-                            onTap: () => setState(() => _seciliRol = KullaniciTuru.kktcVatandas),
-                          ),
-                          _roleChip(
-                            icon: Icons.credit_card_rounded,
-                            label: widget.turkceMi ? 'T.C. İkamet' : 'TR Resident',
-                            selected: _seciliRol == KullaniciTuru.tcVatandas,
-                            onTap: () => setState(() => _seciliRol = KullaniciTuru.tcVatandas),
-                          ),
-                          _roleChip(
-                            icon: Icons.school_rounded,
-                            label: widget.turkceMi ? 'Üniversite (Öğrenci)' : 'University (Student)',
-                            selected: _seciliRol == KullaniciTuru.ogrenci,
-                            onTap: () => setState(() => _seciliRol = KullaniciTuru.ogrenci),
-                          ),
-                          _roleChip(
-                            icon: Icons.public_rounded,
-                            label: widget.turkceMi ? 'Uluslararası / Pasaport' : 'International / Passport',
-                            selected: _seciliRol == KullaniciTuru.uluslararasi,
-                            onTap: () => setState(() => _seciliRol = KullaniciTuru.uluslararasi),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // ── Extra Contextual Selector: Üniversite Seçimi ──
-                  if (_seciliRol == KullaniciTuru.ogrenci)
-                    Container(
-                      margin: const EdgeInsets.only(top: 10),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: _HtmlColors.tertiary.withValues(alpha: 0.35)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.school, size: 16, color: _HtmlColors.tertiary),
-                              const SizedBox(width: 6),
-                              Text(
-                                widget.turkceMi ? 'ÜNİVERSİTE SEÇİMİ (KKTC YÖBİS ENTEGRASYONU)' : 'SELECT UNIVERSITY (TRNC YOBIS)',
-                                style: const TextStyle(
-                                  color: _HtmlColors.tertiaryFixed,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            physics: const BouncingScrollPhysics(),
-                            child: Row(
-                              children: _universiteler.map((uni) {
-                                final secili = _secilenUniversite == uni["kod"];
-                                return GestureDetector(
-                                  onTap: () => setState(() => _secilenUniversite = uni["kod"]!),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    margin: const EdgeInsets.only(right: 6),
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: secili ? _HtmlColors.tertiaryContainer : _HtmlColors.surfaceContainerLow,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: secili ? _HtmlColors.tertiaryFixed : Colors.white10,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      uni["kisa"]!,
-                                      style: TextStyle(
-                                        color: secili ? Colors.white : _HtmlColors.secondary,
-                                        fontSize: 11,
-                                        fontWeight: secili ? FontWeight.w800 : FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  const SizedBox(height: 12),
-
-                  // ── Authentication Form Card ──
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: _HtmlColors.surfaceContainer.withValues(alpha: 0.75),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: _HtmlColors.outlineVariant.withValues(alpha: 0.5),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.30),
-                          blurRadius: 30,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Auth method sub-tabs
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: _HtmlColors.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              _authMethodTab(
-                                icon: Icons.pin,
-                                label: widget.turkceMi ? 'Kimlik & Şifre' : 'ID & Password',
-                                selected: _authMethod == 0,
-                                onTap: () => setState(() => _authMethod = 0),
-                              ),
-                              _authMethodTab(
-                                icon: Icons.sms,
-                                label: widget.turkceMi ? 'SMS / Mobil Onay' : 'SMS / Mobile Code',
-                                selected: _authMethod == 1,
-                                onTap: () => setState(() => _authMethod = 1),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
-                        // System Info Pill
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: _HtmlColors.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.info_outline, size: 14, color: _HtmlColors.secondary),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  idAciklama,
-                                  style: const TextStyle(color: _HtmlColors.secondary, fontSize: 10),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
-                        // ID Field Label
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              idEtiketi,
-                              style: const TextStyle(
-                                color: _HtmlColors.secondary,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.6,
-                              ),
-                            ),
-                            Text(
-                              widget.turkceMi ? 'ZORUNLU' : 'REQUIRED',
-                              style: const TextStyle(
-                                color: _HtmlColors.onSurfaceVariant,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        // ID Input
-                        _darkInputField(
-                          controller: _girisController,
-                          hint: idHint,
-                          prefixIcon: idIkon,
-                          obscure: false,
-                        ),
-                        const SizedBox(height: 14),
-
-                        // Password Label
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              widget.turkceMi ? 'PORTAL ŞİFRESİ / PIN' : 'PORTAL PASSWORD / PIN',
-                              style: const TextStyle(
-                                color: _HtmlColors.secondary,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.6,
-                              ),
-                            ),
-                            Text(
-                              widget.turkceMi ? 'SMS ile Şifre Al' : 'Get SMS Code',
-                              style: const TextStyle(
-                                color: _HtmlColors.primary,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        // Password Input
-                        _darkInputField(
-                          controller: _sifreController,
-                          hint: '••••••••••••',
-                          prefixIcon: Icons.lock,
-                          obscure: _sifreGizli,
-                          suffixIcon: IconButton(
-                            padding: EdgeInsets.zero,
-                            icon: Icon(
-                              _sifreGizli ? Icons.visibility : Icons.visibility_off,
-                              color: _HtmlColors.secondary,
-                              size: 20,
-                            ),
-                            onPressed: () => setState(() => _sifreGizli = !_sifreGizli),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // ── Primary Login Button ──
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: _girisBasariliAnimasyon
-                                  ? null
-                                  : const LinearGradient(
-                                      colors: [
-                                        Color(0xFFD90429),
-                                        Color(0xFFDC2626),
-                                        Color(0xFF930018),
-                                      ],
-                                    ),
-                              color: _girisBasariliAnimasyon ? const Color(0xFF007C55) : null,
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFD90429).withValues(alpha: 0.50),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 8),
-                                  spreadRadius: -4,
-                                ),
-                              ],
-                            ),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                              onPressed: _girisYukleniyor ? null : _girisYap,
-                              child: _girisYukleniyor
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          _girisBasariliAnimasyon ? Icons.lock_open : Icons.login,
-                                          size: 20,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          _girisBasariliAnimasyon
-                                              ? (widget.turkceMi ? 'Giriş Başarılı' : 'Login Successful')
-                                              : (widget.turkceMi ? 'Güvenli Giriş Yap' : 'Secure Login'),
-                                          style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-
-                        // ── Biometric / Face ID Button ──
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.60),
-                              side: BorderSide(
-                                color: _HtmlColors.outlineVariant.withValues(alpha: 0.5),
-                                width: 1,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                            onPressed: _biyometrikYukleniyor ? null : _biyometrikGiris,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                if (_biyometrikYukleniyor)
-                                  const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: _HtmlColors.primary,
-                                    ),
-                                  )
-                                else
-                                  Icon(
-                                    _biyometrikBasarili ? Icons.check_circle : Icons.face,
-                                    color: _biyometrikBasarili ? _HtmlColors.tertiary : _HtmlColors.primary,
-                                    size: 22,
-                                  ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  _biyometrikYukleniyor
-                                      ? (widget.turkceMi ? 'Kimlik Doğrulanıyor...' : 'Verifying...')
-                                      : _biyometrikBasarili
-                                          ? (widget.turkceMi ? 'Biyometri Doğrulandı' : 'Biometrics Verified')
-                                          : (widget.turkceMi ? 'Yüz Tanıma (Face ID) ile Giriş' : 'Login with Face ID'),
-                                  style: TextStyle(
-                                    color: _biyometrikBasarili ? _HtmlColors.tertiary : _HtmlColors.onSurface,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-
-                  // ── Demo Presets Section Header ──
-                  Row(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.touch_app, color: _HtmlColors.tertiary, size: 14),
-                      const SizedBox(width: 6),
-                      Text(
-                        widget.turkceMi ? 'HIZLI TEST & DEMO PROFİLLERİ' : 'QUICK DEMO SIMULATOR',
-                        style: const TextStyle(
-                          color: _HtmlColors.secondary,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.8,
+                      // Üst Çubuk (Kamu Ağı Rozeti + Dil Değiştirici)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF172033),
+                              borderRadius: BorderRadius.circular(100),
+                              border: Border.all(color: Colors.white10),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                FadeTransition(
+                                  opacity: _pingController,
+                                  child: Container(
+                                    width: 7,
+                                    height: 7,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Color(0xFF10B981),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  widget.turkceMi ? 'Resmi e-Trafik Portalı' : 'Official Portal',
+                                  style: const TextStyle(
+                                    color: Color(0xFF10B981),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // TR / EN Toggle
+                          Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF172033),
+                              borderRadius: BorderRadius.circular(100),
+                              border: Border.all(color: Colors.white10),
+                            ),
+                            child: Row(
+                              children: [
+                                _langButton('TR', widget.turkceMi, () => widget.onDilDegistir(true)),
+                                _langButton('EN', !widget.turkceMi, () => widget.onDilDegistir(false)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // 🛡️ Resmi 3D KKTC Logosu
+                      Container(
+                        width: 78,
+                        height: 78,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF00C853).withValues(alpha: 0.25),
+                              blurRadius: 28,
+                              spreadRadius: 2,
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.50),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(22),
+                          child: Image.asset(
+                            'assets/app_logo.png',
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => Container(
+                              color: const Color(0xFF1E293B),
+                              child: const Icon(Icons.shield_rounded, color: Color(0xFF10B981), size: 40),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      Text(
+                        widget.turkceMi ? 'KKTC e-Trafik' : 'TRNC e-Traffic',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.turkceMi
+                            ? 'Polis Genel Müdürlüğü • Akıllı Sürüş ve Ceza Sistemi'
+                            : 'Police HQ • Smart Traffic & Enforcement System',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.60),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // ==========================================
+                      // 🌟 APPLE SEGMENTED CONTROL: [ Giriş Yap | Kayıt Ol ]
+                      // ==========================================
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF161F33),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(() => _seciliSegment = 0),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: _seciliSegment == 0 ? const Color(0xFF243248) : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: _seciliSegment == 0
+                                        ? [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(alpha: 0.35),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      widget.turkceMi ? 'Giriş Yap' : 'Sign In',
+                                      style: TextStyle(
+                                        color: _seciliSegment == 0 ? Colors.white : Colors.white60,
+                                        fontSize: 13,
+                                        fontWeight: _seciliSegment == 0 ? FontWeight.w800 : FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(() => _seciliSegment = 1),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: _seciliSegment == 1 ? const Color(0xFF243248) : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: _seciliSegment == 1
+                                        ? [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(alpha: 0.35),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      widget.turkceMi ? 'Kayıt Ol' : 'Sign Up',
+                                      style: TextStyle(
+                                        color: _seciliSegment == 1 ? Colors.white : Colors.white60,
+                                        fontSize: 13,
+                                        fontWeight: _seciliSegment == 1 ? FontWeight.w800 : FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+
+                      // ==========================================
+                      // 📄 FORM GÖVDESİ (Giriş Yap vs Kayıt Ol)
+                      // ==========================================
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: _seciliSegment == 0 ? _buildGirisFormu() : _buildKayitFormu(),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // Gizli Demo Butonu & Yardım
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          TextButton.icon(
+                            onPressed: _demoSecimSheetGoster,
+                            icon: const Icon(Icons.flash_on_rounded, color: Color(0xFF10B981), size: 14),
+                            label: Text(
+                              widget.turkceMi ? 'Hızlı Demo Girişi' : 'Quick Demo',
+                              style: const TextStyle(
+                                color: Color(0xFF10B981),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '•',
+                            style: TextStyle(color: Colors.white.withValues(alpha: 0.25)),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Trafik Acil: 155',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.45),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                  // Demo 1: KKTC Vatandaşı
-                  _demoCard(
-                    icon: Icons.directions_car,
-                    name: 'Ahmet Demir',
-                    badge: widget.turkceMi ? 'KKTC Vatandaşı' : 'TRNC Citizen',
-                    subtitle: 'BMW 3.20i & Mercedes E220d (Aktif Koçan)',
-                    iconBg: _HtmlColors.primaryContainer.withValues(alpha: 0.20),
-                    iconColor: _HtmlColors.primary,
-                    badgeBg: _HtmlColors.surfaceBright,
-                    badgeColor: _HtmlColors.secondary,
-                    onTap: () => _hizliDemoGiris(KullaniciTuru.kktcVatandas),
-                  ),
-                  const SizedBox(height: 8),
+  // ── Giriş Formu ──
+  Widget _buildGirisFormu() {
+    return Container(
+      key: const ValueKey('form_giris'),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131B2E).withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _inputLabel(widget.turkceMi ? 'E-POSTA, KİMLİK VEYA TELEFON' : 'EMAIL, ID OR PHONE'),
+          const SizedBox(height: 6),
+          _appleInputField(
+            controller: _girisController,
+            hint: widget.turkceMi ? 'Örn: 123456 veya Telefon' : 'E.g.: 123456 or Phone',
+            prefixIcon: Icons.person_outline_rounded,
+          ),
+          const SizedBox(height: 14),
 
-                  // Demo 2: T.C. Vatandaşı / KKTC İkamet
-                  _demoCard(
-                    icon: Icons.credit_card_rounded,
-                    name: widget.turkceMi ? 'Mehmet Yılmaz' : 'Mehmet Yilmaz',
-                    badge: widget.turkceMi ? 'T.C. İkamet / Çalışma' : 'TR Resident',
-                    subtitle: 'Renault Megane Sedan (T.C. İkamet / YKN)',
-                    iconBg: const Color(0xFF0284C7).withValues(alpha: 0.20),
-                    iconColor: const Color(0xFF38BDF8),
-                    badgeBg: const Color(0xFF0284C7).withValues(alpha: 0.30),
-                    badgeColor: const Color(0xFF7DD3FC),
-                    onTap: () => _hizliDemoGiris(KullaniciTuru.tcVatandas),
-                  ),
-                  const SizedBox(height: 8),
+          _inputLabel(widget.turkceMi ? 'ŞİFRE' : 'PASSWORD'),
+          const SizedBox(height: 6),
+          _appleInputField(
+            controller: _sifreController,
+            hint: '••••••••••••',
+            prefixIcon: Icons.lock_outline_rounded,
+            obscure: _sifreGizli,
+            suffixIcon: IconButton(
+              icon: Icon(
+                _sifreGizli ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                color: Colors.white54,
+                size: 20,
+              ),
+              onPressed: () => setState(() => _sifreGizli = !_sifreGizli),
+            ),
+          ),
+          const SizedBox(height: 18),
 
-                  // Demo 3: Öğrenci (ODTÜ / DAÜ / YDÜ)
-                  _demoCard(
-                    icon: Icons.school_rounded,
-                    name: widget.turkceMi ? 'Caner Yıldız (ODTÜ / DAÜ Öğrencisi)' : 'Caner Yildiz (Student Profile)',
-                    badge: widget.turkceMi ? 'Kampüs Araç Pulu' : 'Campus Permit',
-                    subtitle: 'Honda Civic & VW Polo (ODTÜ / DAÜ Pulu)',
-                    iconBg: const Color(0xFF007C55).withValues(alpha: 0.20),
-                    iconColor: _HtmlColors.tertiary,
-                    badgeBg: const Color(0xFF007C55).withValues(alpha: 0.30),
-                    badgeColor: _HtmlColors.tertiary,
-                    onTap: () => _hizliDemoGiris(KullaniciTuru.ogrenci, uniKod: "ODTU"),
-                  ),
-                  const SizedBox(height: 8),
+          // Giriş Yap Butonu
+          _actionButton(
+            label: widget.turkceMi ? 'Giriş Yap' : 'Sign In',
+            isLoading: _girisYukleniyor,
+            isSuccess: _girisBasariliAnimasyon,
+            onTap: _girisYap,
+          ),
+          const SizedBox(height: 10),
 
-                  // Demo 4: Uluslararası / Pasaport
-                  _demoCard(
-                    icon: Icons.public_rounded,
-                    name: 'Alex Smith',
-                    badge: widget.turkceMi ? 'Uluslararası / UK' : 'International / UK',
-                    subtitle: 'Toyota Corolla (Geçici İkamet İzni / Pasaport)',
-                    iconBg: const Color(0xFF6D28D9).withValues(alpha: 0.20),
-                    iconColor: const Color(0xFFA78BFA),
-                    badgeBg: const Color(0xFF6D28D9).withValues(alpha: 0.30),
-                    badgeColor: const Color(0xFFDDD6FE),
-                    onTap: () => _hizliDemoGiris(KullaniciTuru.uluslararasi),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // ── Security Footer ──
-                  Center(
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.lock_outline, color: _HtmlColors.tertiary, size: 14),
-                            const SizedBox(width: 6),
-                            const Text(
-                              '256-Bit SSL Uçtan Uca Şifreleme',
-                              style: TextStyle(
-                                color: _HtmlColors.secondary,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'KKTC Polis Genel Müdürlüğü & Bayındırlık\nve Ulaştırma Bakanlığı Trafik Portalı',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: _HtmlColors.secondary,
-                            fontSize: 10,
-                            height: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              widget.turkceMi ? 'Yardım Masası' : 'Help Desk',
-                              style: const TextStyle(
-                                color: _HtmlColors.secondary,
-                                fontSize: 11,
-                                decoration: TextDecoration.underline,
-                                decorationColor: _HtmlColors.secondary,
-                              ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 12),
-                              child: Text('•', style: TextStyle(color: _HtmlColors.outlineVariant)),
-                            ),
-                            Text(
-                              widget.turkceMi ? 'Trafik Çağrı: 155' : 'Traffic Hotline: 155',
-                              style: const TextStyle(
-                                color: _HtmlColors.secondary,
-                                fontSize: 11,
-                                decoration: TextDecoration.underline,
-                                decorationColor: _HtmlColors.secondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                      ],
+          // Face ID Butonu
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                backgroundColor: const Color(0xFF1A243B).withValues(alpha: 0.60),
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+              onPressed: _biyometrikYukleniyor ? null : _biyometrikGiris,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_biyometrikYukleniyor)
+                    const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF10B981)),
+                    )
+                  else
+                    Icon(
+                      _biyometrikBasarili ? Icons.check_circle : Icons.face,
+                      color: _biyometrikBasarili ? const Color(0xFF10B981) : Colors.white70,
+                      size: 22,
                     ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _biyometrikYukleniyor
+                        ? (widget.turkceMi ? 'Kimlik Doğrulanıyor...' : 'Verifying...')
+                        : (widget.turkceMi ? 'Face ID ile Giriş' : 'Sign in with Face ID'),
+                    style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
@@ -1668,278 +1336,490 @@ class _GirisSayfasiState extends State<GirisSayfasi>
     );
   }
 
-  // ── Helper widgets ──
+  // ── Kayıt Ol Formu ──
+  Widget _buildKayitFormu() {
+    // Kullanıcı tipi tanımları
+    final List<Map<String, dynamic>> kullaniciTipleri = [
+      {
+        'ikon': Icons.flag_rounded,
+        'renk': const Color(0xFF10B981),
+        'etiket': widget.turkceMi ? 'KKTC Vatandaşı' : 'TRNC Citizen',
+        'aciklama': widget.turkceMi ? 'KKTC kimlik belgesi' : 'TRNC ID card',
+      },
+      {
+        'ikon': Icons.credit_card_rounded,
+        'renk': const Color(0xFF38BDF8),
+        'etiket': widget.turkceMi ? 'T.C. Vatandaşı' : 'TR Citizen',
+        'aciklama': widget.turkceMi ? 'T.C. kimlik / pasaport' : 'TR ID / passport',
+      },
+      {
+        'ikon': Icons.school_rounded,
+        'renk': const Color(0xFFA78BFA),
+        'etiket': widget.turkceMi ? 'Üniversite Öğrencisi' : 'University Student',
+        'aciklama': widget.turkceMi ? 'KKTC üniv. öğrenci kimliği' : 'TRNC student card',
+      },
+      {
+        'ikon': Icons.public_rounded,
+        'renk': const Color(0xFFF59E0B),
+        'etiket': widget.turkceMi ? 'Uluslararası / Turist' : 'International / Tourist',
+        'aciklama': widget.turkceMi ? 'Pasaport veya sürücü belgesi' : 'Passport or foreign license',
+      },
+    ];
 
-  Widget _langButton(String label, bool selected, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: selected ? _HtmlColors.surfaceBright : Colors.transparent,
-          borderRadius: BorderRadius.circular(100),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? _HtmlColors.onSurface : _HtmlColors.secondary,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
+    return Container(
+      key: const ValueKey('form_kayit'),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131B2E).withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
-        ),
+        ],
       ),
-    );
-  }
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
 
-  Widget _roleChip({
-    required IconData icon,
-    required String label,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.symmetric(horizontal: 3),
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        decoration: BoxDecoration(
-          color: selected ? _HtmlColors.surfaceContainerHigh : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: selected ? _HtmlColors.primaryContainer.withValues(alpha: 0.6) : Colors.transparent,
-            width: 1,
-          ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  )
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 15,
-              color: selected ? _HtmlColors.primary : _HtmlColors.secondary,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: selected ? _HtmlColors.onSurface : _HtmlColors.secondary,
-                fontSize: 12,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _authMethodTab({
-    required IconData icon,
-    required String label,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-          decoration: BoxDecoration(
-            color: selected ? _HtmlColors.surfaceContainerHigh : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 14,
-                color: selected ? _HtmlColors.primary : _HtmlColors.secondary,
-              ),
-              const SizedBox(width: 5),
-              Flexible(
-                child: Text(
-                  label,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: selected ? _HtmlColors.onSurface : _HtmlColors.secondary,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.3,
+          // ── KULLANICI TİPİ SEÇİCİ ──
+          _inputLabel(widget.turkceMi ? 'HESAP TÜRÜNÜZÜ SEÇİN' : 'SELECT YOUR ACCOUNT TYPE'),
+          const SizedBox(height: 8),
+          Row(
+            children: List.generate(kullaniciTipleri.length, (i) {
+              final tip = kullaniciTipleri[i];
+              final secili = _secilenKullaniciTipi == i;
+              final renk = tip['renk'] as Color;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _secilenKullaniciTipi = i),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    margin: EdgeInsets.only(right: i < 3 ? 6 : 0),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: secili ? renk.withValues(alpha: 0.18) : const Color(0xFF0F172A).withValues(alpha: 0.60),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: secili ? renk : Colors.white.withValues(alpha: 0.08),
+                        width: secili ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          tip['ikon'] as IconData,
+                          color: secili ? renk : Colors.white38,
+                          size: 20,
+                        ),
+                        const SizedBox(height: 4),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            tip['etiket'] as String,
+                            style: TextStyle(
+                              color: secili ? renk : Colors.white38,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              );
+            }),
           ),
-        ),
+
+          // Seçilen tip açıklaması
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: (kullaniciTipleri[_secilenKullaniciTipi]['renk'] as Color).withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  kullaniciTipleri[_secilenKullaniciTipi]['ikon'] as IconData,
+                  color: kullaniciTipleri[_secilenKullaniciTipi]['renk'] as Color,
+                  size: 13,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  kullaniciTipleri[_secilenKullaniciTipi]['aciklama'] as String,
+                  style: TextStyle(
+                    color: (kullaniciTipleri[_secilenKullaniciTipi]['renk'] as Color),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // ── ÜNİVERSİTE SEÇİCİ: Sadece Öğrenci seçilince görünür ──
+          AnimatedSize(
+            duration: const Duration(milliseconds: 280),
+            curve: Curves.easeInOut,
+            child: _secilenKullaniciTipi == 2
+                ? _buildUniSecici()
+                : const SizedBox.shrink(),
+          ),
+
+          _inputLabel(widget.turkceMi ? 'AD SOYAD' : 'FULL NAME'),
+          const SizedBox(height: 6),
+          _appleInputField(
+            controller: _kayitAdSoyadController,
+            hint: widget.turkceMi ? 'Örn: Ahmet Demir' : 'E.g.: John Doe',
+            prefixIcon: Icons.badge_outlined,
+          ),
+          const SizedBox(height: 12),
+
+          // Kimlik label türe göre değişiyor
+          _inputLabel(
+            _secilenKullaniciTipi == 0
+                ? (widget.turkceMi ? 'KKTC KİMLİK NUMARASI' : 'TRNC ID NUMBER')
+                : _secilenKullaniciTipi == 1
+                    ? (widget.turkceMi ? 'T.C. KİMLİK NUMARASI (11 hane)' : 'TR ID NUMBER (11 digits)')
+                    : _secilenKullaniciTipi == 2
+                        ? (widget.turkceMi ? 'ÖĞRENCİ NUMARASI' : 'STUDENT ID')
+                        : (widget.turkceMi ? 'PASAPORT NUMARASI' : 'PASSPORT NUMBER'),
+          ),
+          const SizedBox(height: 6),
+          _appleInputField(
+            controller: _kayitKimlikController,
+            hint: _secilenKullaniciTipi == 0
+                ? 'Örn: 123456'
+                : _secilenKullaniciTipi == 1
+                    ? 'Örn: 12345678901'
+                    : _secilenKullaniciTipi == 2
+                        ? 'Örn: 2023120001'
+                        : 'Örn: A1234567',
+            prefixIcon: _secilenKullaniciTipi == 3
+                ? Icons.airplane_ticket_rounded
+                : Icons.credit_card_rounded,
+          ),
+          const SizedBox(height: 12),
+
+          _inputLabel(widget.turkceMi ? 'TELEFON NUMARASI' : 'PHONE NUMBER'),
+          const SizedBox(height: 6),
+          _appleInputField(
+            controller: _kayitTelefonController,
+            hint: '0533 800 00 00',
+            prefixIcon: Icons.phone_android_rounded,
+          ),
+          const SizedBox(height: 12),
+
+          _inputLabel(widget.turkceMi ? 'ARAÇ PLAKANIZ (İSTEĞE BAĞLI)' : 'VEHICLE LICENSE PLATE (OPTIONAL)'),
+          const SizedBox(height: 6),
+          _appleInputField(
+            controller: _kayitPlakaController,
+            hint: _secilenKullaniciTipi == 3 ? 'Örn: YU 123 (Yabancı plaka)' : 'Örn: KY 987',
+            prefixIcon: Icons.directions_car_rounded,
+          ),
+          const SizedBox(height: 12),
+
+          _inputLabel(widget.turkceMi ? 'ŞİFRE BELİRLEYİN' : 'CREATE PASSWORD'),
+          const SizedBox(height: 6),
+          _appleInputField(
+            controller: _kayitSifreController,
+            hint: '••••••••••••',
+            prefixIcon: Icons.lock_outline_rounded,
+            obscure: _kayitSifreGizli,
+            suffixIcon: IconButton(
+              icon: Icon(
+                _kayitSifreGizli ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                color: Colors.white54,
+                size: 20,
+              ),
+              onPressed: () => setState(() => _kayitSifreGizli = !_kayitSifreGizli),
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // Kayıt Ol Butonu
+          _actionButton(
+            label: widget.turkceMi ? 'Hesap Oluştur ve Başla' : 'Create Account & Start',
+            isLoading: _girisYukleniyor,
+            isSuccess: _girisBasariliAnimasyon,
+            onTap: _kayitOl,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _darkInputField({
+  // ── Yardımcı Bileşenler ──
+  Widget _inputLabel(String text) {
+    return Text(
+      text,
+      style: TextStyle(
+        color: Colors.white.withValues(alpha: 0.65),
+        fontSize: 10,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.6,
+      ),
+    );
+  }
+
+  Widget _appleInputField({
     required TextEditingController controller,
     required String hint,
     required IconData prefixIcon,
-    required bool obscure,
+    bool obscure = false,
     Widget? suffixIcon,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: _HtmlColors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.20),
-            blurRadius: 8,
-            spreadRadius: -2,
-          ),
-        ],
+        color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
       child: TextField(
         controller: controller,
         obscureText: obscure,
-        style: const TextStyle(
-          color: _HtmlColors.onSurface,
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          fontFamily: 'monospace',
-        ),
+        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(
-            color: _HtmlColors.secondary.withValues(alpha: 0.60),
-            fontSize: 13,
-            fontWeight: FontWeight.w400,
-          ),
-          prefixIcon: Icon(prefixIcon, color: _HtmlColors.secondary, size: 20),
+          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.35), fontSize: 13),
+          prefixIcon: Icon(prefixIcon, color: const Color(0xFF10B981), size: 20),
           suffixIcon: suffixIcon,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: _HtmlColors.primaryContainer.withValues(alpha: 0.70),
-              width: 2,
-            ),
-          ),
-          filled: true,
-          fillColor: Colors.transparent,
+          border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         ),
       ),
     );
   }
 
-  Widget _demoCard({
-    required IconData icon,
-    required String name,
-    required String badge,
-    required String subtitle,
-    required Color iconBg,
-    required Color iconColor,
-    required Color badgeBg,
-    required Color badgeColor,
+  Widget _actionButton({
+    required String label,
+    required bool isLoading,
+    required bool isSuccess,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
       child: Container(
-        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: _HtmlColors.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: _HtmlColors.outlineVariant.withValues(alpha: 0.30),
-            width: 1,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF00C853), Color(0xFF10B981)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: iconBg,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: iconColor, size: 20),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF00C853).withValues(alpha: 0.40),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          name,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: _HtmlColors.onSurface,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        flex: 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: badgeBg,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              badge,
-                              style: TextStyle(
-                                color: badgeColor,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      color: _HtmlColors.secondary,
-                      fontSize: 11,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Icon(Icons.bolt, color: _HtmlColors.secondary, size: 20),
           ],
+        ),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+          onPressed: isLoading ? null : onTap,
+          child: isLoading
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(isSuccess ? Icons.check_circle_rounded : Icons.arrow_forward_rounded, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      label,
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                    ),
+                  ],
+                ),
         ),
       ),
     );
   }
+
+  Widget _langButton(String label, bool selected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF243248) : Colors.transparent,
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : Colors.white54,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── ÜNİVERSİTE SEÇİCİ WIDGET ──
+  Widget _buildUniSecici() {
+    final List<Map<String, dynamic>> uniler = [
+      {
+        'kisaAd': 'ODTÜ KKK',
+        'tamAd': 'Orta Doğu Teknik Üni. KKK',
+        'renk': const Color(0xFF10B981),
+        'ikon': Icons.science_rounded,
+      },
+      {
+        'kisaAd': 'YDÜ',
+        'tamAd': 'Yakın Doğu Üniversitesi',
+        'renk': const Color(0xFF38BDF8),
+        'ikon': Icons.account_balance_rounded,
+      },
+      {
+        'kisaAd': 'DAÜ',
+        'tamAd': 'Doğu Akdeniz Üni. (EMU)',
+        'renk': const Color(0xFFF59E0B),
+        'ikon': Icons.school_rounded,
+      },
+      {
+        'kisaAd': 'GAÜ',
+        'tamAd': 'Girne Amerikan Üniversitesi',
+        'renk': const Color(0xFFA78BFA),
+        'ikon': Icons.castle_rounded,
+      },
+      {
+        'kisaAd': 'UKÜ',
+        'tamAd': 'Uluslararası Kıbrıs Üni.',
+        'renk': const Color(0xFFE11D48),
+        'ikon': Icons.public_rounded,
+      },
+      {
+        'kisaAd': 'LAÜ',
+        'tamAd': 'Lefke Avrupa Üniversitesi',
+        'renk': const Color(0xFF06B6D4),
+        'ikon': Icons.local_library_rounded,
+      },
+      {
+        'kisaAd': 'Beykent KKK',
+        'tamAd': 'Beykent Üni. KKTC Kampüsü',
+        'renk': const Color(0xFFFF6B35),
+        'ikon': Icons.emoji_objects_rounded,
+      },
+      {
+        'kisaAd': 'Diğer',
+        'tamAd': 'Diğer KKTC Üniversitesi',
+        'renk': const Color(0xFF64748B),
+        'ikon': Icons.more_horiz_rounded,
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _inputLabel(widget.turkceMi ? 'ÜNİVERSİTENİZİ SEÇİN' : 'SELECT YOUR UNIVERSITY'),
+        const SizedBox(height: 8),
+        // Yatay kaydırmalı chip listesi
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: List.generate(uniler.length, (i) {
+              final uni = uniler[i];
+              final secili = _secilenUni == i;
+              final renk = uni['renk'] as Color;
+              return GestureDetector(
+                onTap: () => setState(() => _secilenUni = i),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  margin: EdgeInsets.only(right: i < uniler.length - 1 ? 8 : 0),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: secili ? renk.withValues(alpha: 0.20) : const Color(0xFF0F172A).withValues(alpha: 0.60),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: secili ? renk : Colors.white.withValues(alpha: 0.08),
+                      width: secili ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        uni['ikon'] as IconData,
+                        color: secili ? renk : Colors.white30,
+                        size: 15,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        uni['kisaAd'] as String,
+                        style: TextStyle(
+                          color: secili ? renk : Colors.white38,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+        // Seçilen üniversite tam adı
+        if (_secilenUni >= 0 && _secilenUni < uniler.length)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: (uniler[_secilenUni]['renk'] as Color).withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    uniler[_secilenUni]['ikon'] as IconData,
+                    color: uniler[_secilenUni]['renk'] as Color,
+                    size: 12,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    uniler[_secilenUni]['tamAd'] as String,
+                    style: TextStyle(
+                      color: uniler[_secilenUni]['renk'] as Color,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        const SizedBox(height: 14),
+      ],
+    );
+  }
 }
+
 
 // ==========================================
 // 🏠 2. MODERN ANA SAYFA & TABS
@@ -1978,6 +1858,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
   String _cezaSigortaAltSekme = "ceza"; // 'ceza' or 'sigorta'
   bool _gizliAdminModuAcik = false;
   int _gizliTikSayisi = 0;
+  bool _tamEkranNavigasyon = false;
 
   bool get _adminYetkisiVarMi {
     final r = widget.kullaniciRolu.toLowerCase();
@@ -2393,6 +2274,13 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
       ),
       YolTarifiSayfasi(
         turkceMi: widget.turkceMi,
+        onTamEkranDegisti: (tamEkran) {
+          setState(() {
+            _tamEkranNavigasyon = tamEkran;
+            // Navigasyon başladığında otomatik olarak Yol Tarifi sekmesine geç
+            if (tamEkran) _seciliIndex = 1;
+          });
+        },
       ),
       _cezaVeSigortaEkrani(
         markaModel: markaModel,
@@ -2401,7 +2289,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
         muayeneGun: muayeneGun,
         ehliyetPuani: ehliyetPuani,
       ),
-      _menuHizmetlerEkrani(
+      _kullaniciProfiliEkrani(
         ehliyetPuani: ehliyetPuani,
         markaModel: markaModel,
       ),
@@ -2409,7 +2297,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
 
     return Scaffold(
       backgroundColor: _HtmlColors.background,
-      appBar: PreferredSize(
+      appBar: _tamEkranNavigasyon ? null : PreferredSize(
         preferredSize: const Size.fromHeight(64),
         child: Container(
           decoration: BoxDecoration(
@@ -2680,75 +2568,79 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
       ),
     ),
   ),
-  body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: Column(
-            children: [
-              KamuSunucuDurumSeridi(turkceMi: widget.turkceMi),
-              _hizliAramaCubugu(ehliyetPuani: ehliyetPuani),
-              Expanded(
-                child: sayfalar[_seciliIndex],
+  body: _tamEkranNavigasyon
+        ? sayfalar[_seciliIndex]
+        : Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                children: [
+                  KamuSunucuDurumSeridi(turkceMi: widget.turkceMi),
+                  _hizliAramaCubugu(ehliyetPuani: ehliyetPuani),
+                  Expanded(
+                    child: sayfalar[_seciliIndex],
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.95),
-          border: Border(
-            top: BorderSide(color: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.4), width: 1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.45),
-              blurRadius: 24,
-              offset: const Offset(0, -4),
             ),
-          ],
-        ),
-        child: SafeArea(
-          top: false,
-          child: SizedBox(
-            height: 64,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _navItem(
-                        0,
-                        Icons.radar_rounded,
-                        widget.turkceMi ? 'Radar & Sürüş' : 'Radar & Drive',
+          ),
+      bottomNavigationBar: _tamEkranNavigasyon
+          ? null
+          : Container(
+              decoration: BoxDecoration(
+                color: _HtmlColors.surfaceContainerLowest.withValues(alpha: 0.95),
+                border: Border(
+                  top: BorderSide(color: _HtmlColors.surfaceContainerHigh.withValues(alpha: 0.4), width: 1),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    blurRadius: 24,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: SizedBox(
+                  height: 64,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _navItem(
+                              0,
+                              Icons.radar_rounded,
+                              widget.turkceMi ? 'Radar & Sürüş' : 'Radar & Drive',
+                            ),
+                            _navItem(
+                              1,
+                              Icons.alt_route_rounded,
+                              widget.turkceMi ? 'Yol Tarifi' : 'Route & Radar',
+                            ),
+                            _navItem(
+                              2,
+                              Icons.receipt_long_rounded,
+                              widget.turkceMi ? 'Cezalar & Sigorta' : 'Fines & Insurance',
+                              rozet: odenmemisCezaSayisi,
+                            ),
+                            _navItem(
+                              3,
+                              Icons.person_rounded,
+                              widget.turkceMi ? 'Profil' : 'Profile',
+                            ),
+                          ],
+                        ),
                       ),
-                      _navItem(
-                        1,
-                        Icons.alt_route_rounded,
-                        widget.turkceMi ? 'Yol Tarifi' : 'Route & Radar',
-                      ),
-                      _navItem(
-                        2,
-                        Icons.receipt_long_rounded,
-                        widget.turkceMi ? 'Cezalar & Sigorta' : 'Fines & Insurance',
-                        rozet: odenmemisCezaSayisi,
-                      ),
-                      _navItem(
-                        3,
-                        Icons.grid_view_rounded,
-                        widget.turkceMi ? 'Menü' : 'Menu',
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -6912,125 +6804,508 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
     required int toplamBorc,
     required int sigortaGun,
   }) {
-    return Column(
+    final aracVerisi = _aracBilgileriVeritabani[_secilenPlaka] ?? {};
+    final markaModel = (aracVerisi['markaModel'] as String? ?? '').split('(').first.trim();
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+      physics: const BouncingScrollPhysics(),
       children: [
-        // Sürücü Durum & Ceza İkaz Şeridi
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-          child: odenmemisCezaSayisi > 0
-              ? Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: () {
-                      setState(() {
-                        _seciliIndex = 2;
-                        _cezaSigortaAltSekme = 'ceza';
-                      });
-                    },
+
+        // ═══════════════════════════════════════════════
+        // 1. ARAç DURUMU + AKTİF RADAR + ARAMA ÇUBUĞU
+        // ═══════════════════════════════════════════════
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: _HtmlColors.surfaceContainer,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.40), blurRadius: 14, offset: const Offset(0, 4)),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Araç Pill + Radar Pill
+              Row(
+                children: [
+                  // Aktif araç
+                  Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [_HtmlColors.errorContainer, Color(0xFF6B0006)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: _HtmlColors.primaryContainer, width: 1.5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _HtmlColors.errorContainer.withValues(alpha: 0.35),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
+                        color: _HtmlColors.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(100),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.turkceMi
-                                      ? '$odenmemisCezaSayisi Adet Ödenmemiş Ceza (₺$toplamBorc)'
-                                      : '$odenmemisCezaSayisi Unpaid Ticket(s) (₺$toplamBorc)',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  widget.turkceMi
-                                      ? 'İndirimli ödemek veya itiraz etmek için dokunun'
-                                      : 'Tap to pay with discount or file dispute',
-                                  style: const TextStyle(
-                                    color: Color(0xFFFFDAD6),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
+                          const Icon(Icons.directions_car_rounded, color: _HtmlColors.primary, size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            _secilenPlaka.isNotEmpty ? _secilenPlaka : 'KY 987',
+                            style: const TextStyle(
+                              color: _HtmlColors.secondary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              fontFamily: 'monospace',
                             ),
                           ),
-                          const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
+                          const Text(' • ', style: TextStyle(color: _HtmlColors.secondary)),
+                          Flexible(
+                            child: Text(
+                              markaModel.isNotEmpty ? markaModel : 'BMW',
+                              style: const TextStyle(color: _HtmlColors.secondary, fontSize: 11),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          FadeTransition(
+                            opacity: _pingController,
+                            child: Container(
+                              width: 7, height: 7,
+                              decoration: const BoxDecoration(color: _HtmlColors.tertiary, shape: BoxShape.circle),
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ),
-                )
-              : Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  const SizedBox(width: 8),
+                  // Aktif Radar Sayacı
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: _HtmlColors.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.radar_rounded, color: _HtmlColors.onSurface, size: 14),
+                        const SizedBox(width: 5),
+                        Text(
+                          widget.turkceMi ? '4 Aktif Radar' : '4 Active Radars',
+                          style: const TextStyle(
+                            color: _HtmlColors.onSurface,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              // Arama + Rota Çubuğu
+              GestureDetector(
+                onTap: () => setState(() => _seciliIndex = 1),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                   decoration: BoxDecoration(
-                    color: _HtmlColors.surfaceContainerLow,
+                    color: _HtmlColors.surfaceContainerLowest,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: _HtmlColors.tertiary.withValues(alpha: 0.25), width: 1),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle_rounded, color: _HtmlColors.tertiary, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        widget.turkceMi ? 'Tüm Cezalar Ödenmiş' : 'All Fines Settled',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12),
+                      const Icon(Icons.explore_rounded, color: _HtmlColors.onSurface, size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.turkceMi ? 'Lefkoşa — Girne Boğazı' : 'Nicosia — Kyrenia Pass',
+                              style: const TextStyle(
+                                color: _HtmlColors.secondary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              widget.turkceMi ? 'Hedef ara veya haritaya dokun' : 'Search destination or tap map',
+                              style: const TextStyle(color: _HtmlColors.secondary, fontSize: 10),
+                            ),
+                          ],
+                        ),
                       ),
-                      const Spacer(),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        width: 36, height: 36,
                         decoration: BoxDecoration(
-                          color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.25),
-                          borderRadius: BorderRadius.circular(6),
+                          color: _HtmlColors.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text(
-                          widget.turkceMi ? 'Sigorta Aktif ($sigortaGun G)' : 'Insurance OK ($sigortaGun D)',
-                          style: const TextStyle(
-                            color: _HtmlColors.tertiary,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 10,
-                          ),
-                        ),
+                        child: const Icon(Icons.near_me_rounded, color: _HtmlColors.onSurface, size: 18),
                       ),
                     ],
                   ),
                 ),
+              ),
+            ],
+          ),
         ),
-        // Ana Radar ve Canlı Hız Uyarı Haritası
-        Expanded(
-          child: RadarHaritasiSayfasi(turkceMi: widget.turkceMi),
+        const SizedBox(height: 10),
+
+        // ═══════════════════════════════════════════════
+        // 2. HARİTA & TELEMETRİ KOKPİT KATMANI
+        // ═══════════════════════════════════════════════
+        Container(
+          height: 300,
+          decoration: BoxDecoration(
+            color: const Color(0xFF0B1424),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.60), blurRadius: 20, offset: const Offset(0, 6)),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              // Harita içeriği
+              Positioned.fill(
+                child: RadarHaritasiSayfasi(turkceMi: widget.turkceMi),
+              ),
+
+              // HUD: Sol Üst — Hızometre + Hız Limiti
+              Positioned(
+                top: 12, left: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Hızometre
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.turkceMi ? 'HIZINIZ' : 'YOUR SPEED',
+                            style: const TextStyle(color: _HtmlColors.secondary, fontSize: 8, fontWeight: FontWeight.w800, letterSpacing: 0.8),
+                          ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              const Text(
+                                '68',
+                                style: TextStyle(color: _HtmlColors.onSurface, fontSize: 28, fontWeight: FontWeight.w900, height: 1.0),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.turkceMi ? 'km/s' : 'km/h',
+                                style: const TextStyle(color: _HtmlColors.secondary, fontSize: 10),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    // Hız Limiti Tabelası
+                    Container(
+                      width: 48, height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFDC2626), width: 3.5),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.40), blurRadius: 8, offset: const Offset(0, 2)),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Text('LİMİT', style: TextStyle(color: Color(0xFFDC2626), fontSize: 7, fontWeight: FontWeight.w800, height: 1.0)),
+                          Text('65', style: TextStyle(color: Color(0xFF0A0E1A), fontSize: 16, fontWeight: FontWeight.w900, height: 1.1)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // HUD: Sağ Üst — Hızlı Kontroller
+              Positioned(
+                top: 12, right: 12,
+                child: Column(
+                  children: [
+                    _mapHudButon(Icons.volume_up_rounded),
+                    const SizedBox(height: 6),
+                    _mapHudButon(Icons.layers_rounded),
+                    const SizedBox(height: 6),
+                    _mapHudButon(Icons.my_location_rounded),
+                  ],
+                ),
+              ),
+
+              // Alt Şerit: Mesafe + Süre
+              Positioned(
+                left: 0, right: 0, bottom: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: _HtmlColors.surfaceContainer.withValues(alpha: 0.95),
+                    border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.06))),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.navigation_rounded, color: _HtmlColors.onSurface, size: 16),
+                      const SizedBox(width: 6),
+                      Text(
+                        widget.turkceMi ? 'Touch-to-Route devrede' : 'Touch-to-Route active',
+                        style: const TextStyle(color: _HtmlColors.secondary, fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
+                      const Spacer(),
+                      const Text(
+                        '18.4 km • 14 dk',
+                        style: TextStyle(color: _HtmlColors.onSurface, fontSize: 12, fontWeight: FontWeight.w800, fontFamily: 'monospace'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        // ═══════════════════════════════════════════════
+        // 3. TAKTİKSEL YOL KARTI
+        // ═══════════════════════════════════════════════
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: _HtmlColors.surfaceContainer,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.40), blurRadius: 14, offset: const Offset(0, 4)),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Anlık Tehlike / Radar Uyarısı
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _HtmlColors.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42, height: 42,
+                      decoration: BoxDecoration(
+                        color: _HtmlColors.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.photo_camera_rounded, color: _HtmlColors.onSurface, size: 20),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                widget.turkceMi ? 'SABİT RADAR DENETİMİ' : 'FIXED SPEED CAMERA',
+                                style: const TextStyle(color: _HtmlColors.onSurface, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.8),
+                              ),
+                              const Text(
+                                '500m',
+                                style: TextStyle(color: _HtmlColors.secondary, fontSize: 12, fontWeight: FontWeight.w800, fontFamily: 'monospace'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.turkceMi ? 'Gönyeli Çemberi Kamerası' : 'Gonyeli Roundabout Camera',
+                            style: const TextStyle(color: _HtmlColors.secondary, fontSize: 13, fontWeight: FontWeight.w700),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            widget.turkceMi ? 'Yasal Hız Sınırı: 65 km/s' : 'Speed Limit: 65 km/h',
+                            style: const TextStyle(color: _HtmlColors.secondary, fontSize: 10),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Trafik Yoğunluğu Grid
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: _HtmlColors.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(width: 8, height: 8, decoration: const BoxDecoration(color: _HtmlColors.tertiary, shape: BoxShape.circle)),
+                              const SizedBox(width: 6),
+                              Text(widget.turkceMi ? 'GÖNYELI' : 'GONYELI', style: const TextStyle(color: _HtmlColors.secondary, fontSize: 8, fontWeight: FontWeight.w800)),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.turkceMi ? 'Akıcı (62 km/s)' : 'Clear (62 km/h)',
+                            style: const TextStyle(color: _HtmlColors.secondary, fontSize: 12, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: _HtmlColors.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFF59E0B), shape: BoxShape.circle)),
+                              const SizedBox(width: 6),
+                              Text(widget.turkceMi ? 'BOĞAZ' : 'BOGAZ PASS', style: const TextStyle(color: _HtmlColors.secondary, fontSize: 8, fontWeight: FontWeight.w800)),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.turkceMi ? 'Orta (38 km/s)' : 'Moderate (38 km/h)',
+                            style: const TextStyle(color: _HtmlColors.secondary, fontSize: 12, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              // Aksiyon Barı: Navigasyonu Başlat + Radar Listesi
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _seciliIndex = 1),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: _HtmlColors.secondary,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(color: _HtmlColors.secondary.withValues(alpha: 0.25), blurRadius: 10, offset: const Offset(0, 4)),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.turn_sharp_right_rounded, color: _HtmlColors.surfaceContainerLowest, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              widget.turkceMi ? 'Navigasyonu Başlat' : 'Start Navigation',
+                              style: const TextStyle(color: _HtmlColors.surfaceContainerLowest, fontSize: 14, fontWeight: FontWeight.w800),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => setState(() => _seciliIndex = 1),
+                    child: Container(
+                      width: 50, height: 50,
+                      decoration: BoxDecoration(
+                        color: _HtmlColors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(Icons.list_alt_rounded, color: _HtmlColors.secondary, size: 22),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        // ═══════════════════════════════════════════════
+        // 4. SİGORTA & SEYRÜSEFER DURUM ŞERİDİ
+        // ═══════════════════════════════════════════════
+        GestureDetector(
+          onTap: () => setState(() {
+            _seciliIndex = 2;
+            _cezaSigortaAltSekme = 'sigorta';
+          }),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: _HtmlColors.surfaceContainer.withValues(alpha: 0.60),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.verified_rounded, color: _HtmlColors.tertiary, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    widget.turkceMi
+                        ? (odenmemisCezaSayisi > 0
+                            ? '$odenmemisCezaSayisi ödenmemiş ceza • Sigorta aktif ($sigortaGun gün)'
+                            : 'Seyrüsefer & Sigorta Geçerli')
+                        : (odenmemisCezaSayisi > 0
+                            ? '$odenmemisCezaSayisi unpaid fine(s) • Insurance active ($sigortaGun days)'
+                            : 'Road Tax & Insurance Valid'),
+                    style: const TextStyle(color: _HtmlColors.secondary, fontSize: 12, fontWeight: FontWeight.w500),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  '$sigortaGun ${widget.turkceMi ? "Gün" : "Days"}',
+                  style: const TextStyle(color: _HtmlColors.onSurface, fontSize: 12, fontWeight: FontWeight.w800, fontFamily: 'monospace'),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
+    );
+  }
+
+  // Harita HUD yuvarlak buton yardımcısı
+  Widget _mapHudButon(IconData ikon) {
+    return Container(
+      width: 40, height: 40,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.30), blurRadius: 8)],
+      ),
+      child: Icon(ikon, color: _HtmlColors.onSurface, size: 18),
     );
   }
 
@@ -7162,8 +7437,10 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
     );
   }
 
-  // --- TAB 2: MENÜ & RESMİ HİZMETLER (Kıdemli ve Sade Tasarım) ---
-  Widget _menuHizmetlerEkrani({
+  // ==========================================
+  // 👤 KİŞİSEL KULLANICI & SÜRÜCÜ PROFİLİ KOKPİTİ (TESLA & APPLE DİLİ)
+  // ==========================================
+  Widget _kullaniciProfiliEkrani({
     required int ehliyetPuani,
     required String markaModel,
   }) {
@@ -7171,24 +7448,198 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       physics: const BouncingScrollPhysics(),
       children: [
-        // Sürücü Profil Kartı
+        // 1. SÜRÜCÜ PUANI DAİRESEL GÖSTERGE KARTI (Apple & Tesla Kokpit)
         Container(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
           decoration: BoxDecoration(
-            color: _HtmlColors.surfaceContainerLow,
+            color: const Color(0xFF131B2E).withValues(alpha: 0.85),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 20,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Yeşil Işıltılı Halka Widget'ı
+              Container(
+                width: 140,
+                height: 140,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF0F172A),
+                  border: Border.all(color: const Color(0xFF10B981), width: 5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                      blurRadius: 24,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: '$ehliyetPuani',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            TextSpan(
+                              text: ' / 100',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.50),
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.turkceMi ? 'Sürücü Puanı' : 'Driver Score',
+                        style: const TextStyle(
+                          color: Color(0xFF10B981),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Icon(Icons.directions_car_rounded, color: Color(0xFF10B981), size: 16),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Kullanıcı Kimliği & Rozet
+              Text(
+                widget.kullaniciAdi.isNotEmpty ? widget.kullaniciAdi : 'Ahmet Demir',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.verified, color: Color(0xFF10B981), size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    widget.kullaniciRolu.isNotEmpty ? widget.kullaniciRolu : 'KKTC Onaylı Sürücü Sicili',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.65),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // 2. ARAÇ GARAJIM (Tesla / CarPlay Stili Kayıtlı Araçlar)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.garage_rounded, color: Color(0xFF38BDF8), size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  widget.turkceMi ? 'Araç Garajım' : 'My Vehicles',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+            TextButton.icon(
+              onPressed: _yeniAracEkleModaliniAc,
+              icon: const Icon(Icons.add_circle_outline_rounded, size: 16, color: Color(0xFF10B981)),
+              label: Text(
+                widget.turkceMi ? 'Araç Ekle' : 'Add Car',
+                style: const TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // Araç Kartı
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF131B2E).withValues(alpha: 0.85),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
           ),
           child: Row(
             children: [
+              // Plaka Rozeti
               Container(
-                width: 52,
-                height: 52,
-                decoration: const BoxDecoration(
-                  color: _HtmlColors.primary,
-                  shape: BoxShape.circle,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.black, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 6,
+                    ),
+                  ],
                 ),
-                child: const Icon(Icons.person_rounded, color: _HtmlColors.onPrimary, size: 30),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 14,
+                      height: 14,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFF0284C7),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          '🇨🇾',
+                          style: TextStyle(fontSize: 8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _secilenPlaka.isNotEmpty ? _secilenPlaka : "KY 987",
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.0,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -7196,120 +7647,49 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.kullaniciAdi.isNotEmpty ? widget.kullaniciAdi : 'Ahmet Demir',
+                      markaModel.isNotEmpty ? markaModel : "Tesla Model 3 / BMW",
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: _HtmlColors.onSurface,
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      widget.kullaniciRolu.isNotEmpty
-                          ? widget.kullaniciRolu
-                          : (widget.turkceMi ? 'KKTC Kayıtlı Sürücü Belgesi' : 'TRNC Registered Driver License'),
-                      style: const TextStyle(fontSize: 12, color: _HtmlColors.secondary),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: _HtmlColors.tertiaryContainer.withValues(alpha: 0.30),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        widget.turkceMi ? 'Ehliyet Puanı: $ehliyetPuani / 100' : 'License Points: $ehliyetPuani / 100',
-                        style: const TextStyle(
-                          color: _HtmlColors.tertiaryFixed,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      widget.turkceMi ? 'Sigorta & Muayene Aktif' : 'Insurance & Inspection OK',
+                      style: const TextStyle(
+                        color: Color(0xFF10B981),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
+              const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 20),
             ],
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 18),
 
-        // Hızlı Acil Yardım & Yol Yardım Kutusu
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: _HtmlColors.surfaceContainer,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _acilButon(
-                ikon: Icons.local_police_rounded,
-                baslik: widget.turkceMi ? 'Polis 155' : 'Police 155',
-                renk: _HtmlColors.primaryContainer,
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(widget.turkceMi ? '155 Polis İmdat aranıyor...' : 'Calling 155 Police...'),
-                    ),
-                  );
-                },
-              ),
-              Container(width: 1, height: 32, color: Colors.white.withValues(alpha: 0.08)),
-              _acilButon(
-                ikon: Icons.medical_services_rounded,
-                baslik: widget.turkceMi ? 'Acil 112' : 'Ambulance 112',
-                renk: const Color(0xFFF59E0B),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(widget.turkceMi ? '112 Acil Servis aranıyor...' : 'Calling 112 Ambulance...'),
-                    ),
-                  );
-                },
-              ),
-              Container(width: 1, height: 32, color: Colors.white.withValues(alpha: 0.08)),
-              _acilButon(
-                ikon: Icons.car_repair_rounded,
-                baslik: widget.turkceMi ? 'Çekici 7/24' : 'Towing 24/7',
-                renk: _HtmlColors.tertiary,
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(widget.turkceMi ? '7/24 KKTC Yol Yardım: 0392 228 88 88' : 'Calling 24/7 Towing...'),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+        // 3. SÜRÜŞ MENÜSÜ & HİZMETLER
+        _menuAyarSatiri(
+          icon: Icons.history_rounded,
+          iconColor: const Color(0xFF38BDF8),
+          baslik: widget.turkceMi ? 'Sürüş & Radar Geçmişi' : 'Drive & Radar History',
+          subtitle: widget.turkceMi ? 'Son güzergahlar ve kamera kayıtları' : 'Recent routes and camera alerts',
+          onTap: () {
+            setState(() => _seciliIndex = 1);
+          },
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 8),
 
-        // Büyük Hizmet Menü Kartları
-        _buyukMenuKarti(
-          ikon: Icons.help_center_rounded,
-          ikonRenk: const Color(0xFF38BDF8),
-          baslik: widget.turkceMi ? 'Yardım & Akıllı Rota Rehberi' : 'Help & Smart Route Guide',
-          aciklama: widget.turkceMi
-              ? 'Nasıl gidilir, KKTC sürüş kuralları, acil numaralar ve S.S.S.'
-              : 'How to navigate, TRNC driving rules, emergencies & FAQs',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => YardimRehberiSayfasi(turkceMi: widget.turkceMi),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-
-        _buyukMenuKarti(
-          ikon: Icons.qr_code_2_rounded,
-          ikonRenk: _HtmlColors.primary,
-          baslik: widget.turkceMi ? 'Barkodlu Resmi Sürücü Belgesi' : 'Official Barcoded Driver License',
-          aciklama: widget.turkceMi ? 'Polis denetimlerinde gösterilebilir dijital ehliyet' : 'Digital license with QR verification',
+        _menuAyarSatiri(
+          icon: Icons.qr_code_rounded,
+          iconColor: const Color(0xFF10B981),
+          baslik: widget.turkceMi ? 'Barkodlu Dijital Sürücü Belgesi' : 'Digital License with Barcode',
+          subtitle: widget.turkceMi ? 'Polis kontrolünde geçerli onaylı belge' : 'Valid for official traffic checks',
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -7321,13 +7701,13 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
 
-        _buyukMenuKarti(
-          ikon: Icons.receipt_long_rounded,
-          ikonRenk: _HtmlColors.tertiary,
-          baslik: widget.turkceMi ? 'Ödeme Dekontlarım & Geçmiş' : 'Payment Slips & History',
-          aciklama: widget.turkceMi ? 'Ödenen cezalar ve sigorta yenileme makbuzları' : 'Official paid receipts and invoices',
+        _menuAyarSatiri(
+          icon: Icons.receipt_long_rounded,
+          iconColor: const Color(0xFFA78BFA),
+          baslik: widget.turkceMi ? 'Ödemeler & Dekontlarım' : 'Payments & Invoices',
+          subtitle: widget.turkceMi ? 'Ödenen seyrüsefer ve ceza makbuzları' : 'Official payment receipts',
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -7335,27 +7715,13 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
 
-        _buyukMenuKarti(
-          ikon: Icons.gavel_rounded,
-          ikonRenk: const Color(0xFFF59E0B),
-          baslik: widget.turkceMi ? 'Trafik Hakem Heyeti İtirazı' : 'Traffic Dispute & Petition',
-          aciklama: widget.turkceMi ? 'Hatalı yazılan cezalara online resmi itiraz dilekçesi' : 'Submit petition for incorrect traffic fines',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ItirazSayfasi(turkceMi: widget.turkceMi),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-
-        _buyukMenuKarti(
-          ikon: Icons.notifications_active_outlined,
-          ikonRenk: const Color(0xFFA78BFA),
-          baslik: widget.turkceMi ? 'Sesli Uyarı & Hatırlatıcı Ayarları' : 'Audio Alerts & Reminders',
-          aciklama: widget.turkceMi ? 'Radar yaklaşım sesi, sigorta ve muayene ikazları' : 'Speed proximity sound & renewal alerts',
+        _menuAyarSatiri(
+          icon: Icons.security_rounded,
+          iconColor: const Color(0xFFF59E0B),
+          baslik: widget.turkceMi ? 'Siber Güvenlik & Bildirim Ayarları' : 'Security & Notifications',
+          subtitle: widget.turkceMi ? 'Radar yaklaşım sesi, SSL koruması' : 'Speed alerts, sound & SSL security',
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -7363,134 +7729,209 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
 
-        // Güvenli Çıkış Butonu
+        // Güvenli Çıkış Yap Butonu
         SizedBox(
           height: 48,
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _HtmlColors.surfaceContainerLow,
-              foregroundColor: const Color(0xFFFFB4AB),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-                side: BorderSide(color: _HtmlColors.errorContainer.withValues(alpha: 0.5)),
-              ),
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.12),
+              side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.40)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
             onPressed: widget.onCikisYap,
-            icon: const Icon(Icons.logout_rounded, size: 20),
+            icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 18),
             label: Text(
-              widget.turkceMi ? 'Güvenli Çıkış Yap' : 'Secure Logout',
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+              widget.turkceMi ? 'Güvenli Çıkış Yap' : 'Secure Sign Out',
+              style: const TextStyle(
+                color: Color(0xFFEF4444),
+                fontWeight: FontWeight.w800,
+                fontSize: 13,
+              ),
             ),
           ),
         ),
-        const SizedBox(height: 20),
-
-        // Kurumsal Alt Bilgi
-        Center(
-          child: Text(
-            widget.turkceMi ? 'KKTC Polis Genel Müdürlüğü Trafik Portalı v2.0' : 'TRNC Police Headquarters Portal v2.0',
-            style: const TextStyle(fontSize: 11, color: _HtmlColors.secondary),
-          ),
-        ),
+        const SizedBox(height: 24),
       ],
     );
   }
 
-  Widget _acilButon({
-    required IconData ikon,
+  void _yeniAracEkleModaliniAc() {
+    final plakaCtrl = TextEditingController();
+    final modelCtrl = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    widget.turkceMi ? 'Yeni Araç Kaydı' : 'Register Vehicle',
+                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white54),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                widget.turkceMi ? 'ARAÇ PLAKASI' : 'PLATE NUMBER',
+                style: const TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TextField(
+                  controller: plakaCtrl,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  decoration: InputDecoration(
+                    hintText: widget.turkceMi ? 'Örn: KY 987' : 'E.g. KY 987',
+                    hintStyle: const TextStyle(color: Colors.white30),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                widget.turkceMi ? 'MARKA VE MODEL' : 'MAKE & MODEL',
+                style: const TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TextField(
+                  controller: modelCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: widget.turkceMi ? 'Örn: Tesla Model 3' : 'E.g. Tesla Model 3',
+                    hintStyle: const TextStyle(color: Colors.white30),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    final plk = plakaCtrl.text.trim().toUpperCase();
+                    final mdl = modelCtrl.text.trim();
+                    if (plk.isNotEmpty) {
+                      setState(() {
+                        _secilenPlaka = plk;
+                        _aracBilgileriVeritabani[plk] = {
+                          "markaModel": mdl.isNotEmpty ? mdl : "Yeni Kayıtlı Araç",
+                          "sigortaKalanGun": 365,
+                          "muayeneKalanGun": 365,
+                          "ehliyetPuani": 100,
+                          "sigortaAktif": true,
+                          "seyruseferKalanGun": 365,
+                          "seyruseferBitisTarihi": "01 Ekim 2027",
+                          "seyruseferHarc": "₺3.500,00",
+                          "seyruseferHarcMiktar": 3500,
+                          "seyruseferDonem": "2026/2. Dönem",
+                          "sasiNo": "TRNC-$plk-2026",
+                          "motorHacmi": "1600 cc",
+                          "cezalar": [],
+                        };
+                      });
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            widget.turkceMi ? '✅ $plk plakalı araç başarıyla eklendi!' : '✅ Vehicle $plk added successfully!',
+                          ),
+                          backgroundColor: const Color(0xFF10B981),
+                        ),
+                      );
+                    }
+                  },
+                  child: Text(
+                    widget.turkceMi ? 'Aracı Garaja Ekle' : 'Add Vehicle to Garage',
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _menuAyarSatiri({
+    required IconData icon,
+    required Color iconColor,
     required String baslik,
-    required Color renk,
+    required String subtitle,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(ikon, color: renk, size: 18),
-            const SizedBox(width: 6),
-            Text(
-              baslik,
-              style: const TextStyle(
-                color: _HtmlColors.onSurface,
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF131B2E).withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: iconColor, size: 22),
         ),
+        title: Text(
+          baslik,
+          style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.50), fontSize: 11),
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white30, size: 14),
       ),
     );
   }
 
-  Widget _buyukMenuKarti({
-    required IconData ikon,
-    required Color ikonRenk,
-    required String baslik,
-    required String aciklama,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: _HtmlColors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: ikonRenk.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(ikon, color: ikonRenk, size: 22),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      baslik,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: _HtmlColors.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      aciklama,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: _HtmlColors.secondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.arrow_forward_ios_rounded, color: _HtmlColors.secondary, size: 14),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // _acilButon ve _buyukMenuKarti: İleride menü genişlemesi için rezerve edildi
 
   String _baslikDondur(int index) {
     if (widget.turkceMi) {

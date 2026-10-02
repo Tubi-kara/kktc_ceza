@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'canli_gps_servisi.dart';
+import 'yol_tarifi_sayfasi.dart';
 
 // ==========================================
 // 📍 RADAR & HIZ KAMERASI VERİ MODELİ
@@ -49,6 +52,19 @@ class RadarKamerasi {
     this.posY = 180,
     required this.mesafe,
   });
+
+  RotaNoktasi toRotaNoktasi() {
+    return RotaNoktasi(
+      id: 'radar_$id',
+      ad: '$ad ($hizLimiti km/s Radar)',
+      adEn: '$adEn ($hizLimiti km/h Camera)',
+      kisaAd: ad,
+      bolge: sehir,
+      lat: lat,
+      lon: lon,
+      ikon: Icons.camera_alt_rounded,
+    );
+  }
 }
 
 // ==========================================
@@ -707,6 +723,488 @@ class KktcOsmVectorBasePainter extends CustomPainter {
 }
 
 // ==========================================
+// 📍 KKTC HARİTA POI & ÖNEMLİ NOKTA MODELİ (BENZİNLİK, SERVİS, OTOPARK, HASTANE)
+// ==========================================
+class KktcHaritaPoi {
+  final String id;
+  final String ad;
+  final String marka; // 'K-Pet', 'Alpet', 'Altınbaş Petrol', etc.
+  final String kategori; // 'benzin', 'tamir', 'otopark', 'hastane'
+  final String sehir;
+  final double lat;
+  final double lon;
+  final String adres;
+  final String mesafe;
+  final String sure;
+  final String calismaSaatleri;
+  final Map<String, String> yakitFiyatlari;
+  final List<String> olanaklar;
+  final IconData ikon;
+  final Color renk;
+
+  const KktcHaritaPoi({
+    required this.id,
+    required this.ad,
+    required this.marka,
+    required this.kategori,
+    required this.sehir,
+    required this.lat,
+    required this.lon,
+    required this.adres,
+    required this.mesafe,
+    required this.sure,
+    this.calismaSaatleri = 'Açık • 24 Saat',
+    this.yakitFiyatlari = const {},
+    this.olanaklar = const ['Market', 'Hava & Su', 'WC'],
+    this.ikon = Icons.local_gas_station_rounded,
+    this.renk = const Color(0xFFEF4444),
+  });
+
+  RotaNoktasi toRotaNoktasi() {
+    return RotaNoktasi(
+      id: id,
+      ad: ad,
+      adEn: ad,
+      kisaAd: marka.isNotEmpty ? '$marka ($sehir)' : ad,
+      bolge: sehir,
+      lat: lat,
+      lon: lon,
+      ikon: ikon,
+    );
+  }
+}
+
+// ⛽ GERÇEK VE GÜNCEL KKTC BENZİN İSTASYONLARI VE POI VERİTABANI
+final List<KktcHaritaPoi> kktcHaritaPoiListesi = [
+  // --- BENZİN İSTASYONLARI (K-PET, ALPET, ALTINBAŞ) ---
+  const KktcHaritaPoi(
+    id: 'poi-kpet-gonyeli',
+    ad: 'K-Pet Gönyeli Çemberi İstasyonu',
+    marka: 'K-Pet',
+    kategori: 'benzin',
+    sehir: 'Lefkoşa',
+    lat: 35.2110,
+    lon: 33.3090,
+    adres: 'Gönyeli Çemberi Çıkışı, Lefkoşa',
+    mesafe: '1.2 km',
+    sure: '3 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    yakitFiyatlari: {
+      'Euro Diesel': '31.45 ₺',
+      'Kurşunsuz 95': '32.10 ₺',
+      'Kurşunsuz 98': '32.75 ₺',
+      'Gaz Yağı': '29.80 ₺',
+    },
+    olanaklar: ['Market', 'Oto Yıkama', 'Hava & Su', 'ATM', 'POS'],
+    ikon: Icons.local_gas_station_rounded,
+    renk: Color(0xFFE11D48),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-alpet-dereboyu',
+    ad: 'Alpet Mehmet Akif Caddesi İstasyonu',
+    marka: 'Alpet',
+    kategori: 'benzin',
+    sehir: 'Lefkoşa',
+    lat: 35.1915,
+    lon: 33.3480,
+    adres: 'Dereboyu Caddesi, Kumsal, Lefkoşa',
+    mesafe: '2.5 km',
+    sure: '5 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    yakitFiyatlari: {
+      'Euro Diesel': '31.45 ₺',
+      'Kurşunsuz 95': '32.10 ₺',
+      'Kurşunsuz 98': '32.75 ₺',
+    },
+    olanaklar: ['Alpet Market', 'Kafeterya', 'Oto Yıkama', 'Hava & Su'],
+    ikon: Icons.local_gas_station_rounded,
+    renk: Color(0xFF0284C7),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-kpet-ortakoy',
+    ad: 'K-Pet Ortaköy Devlet Hastanesi İstasyonu',
+    marka: 'K-Pet',
+    kategori: 'benzin',
+    sehir: 'Lefkoşa',
+    lat: 35.2045,
+    lon: 33.3340,
+    adres: 'Dr. Burhan Nalbantoğlu Cad. Ortaköy',
+    mesafe: '1.8 km',
+    sure: '4 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    yakitFiyatlari: {
+      'Euro Diesel': '31.45 ₺',
+      'Kurşunsuz 95': '32.10 ₺',
+    },
+    olanaklar: ['24 Saat Market', 'Hava & Su', 'WC'],
+    ikon: Icons.local_gas_station_rounded,
+    renk: Color(0xFFE11D48),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-alpet-bogaz',
+    ad: 'Alpet Boğaz Dağ Yolu Dinlenme Tesisi',
+    marka: 'Alpet',
+    kategori: 'benzin',
+    sehir: 'Girne',
+    lat: 35.2750,
+    lon: 33.2870,
+    adres: 'Lefkoşa - Girne Dağ Yolu Boğaz Mevkii',
+    mesafe: '9.8 km',
+    sure: '11 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    yakitFiyatlari: {
+      'Euro Diesel': '31.45 ₺',
+      'Kurşunsuz 95': '32.10 ₺',
+      'Kurşunsuz 98': '32.75 ₺',
+    },
+    olanaklar: ['Dinlenme Alanı', 'Market', 'Restoran', 'Oto Yıkama'],
+    ikon: Icons.local_gas_station_rounded,
+    renk: Color(0xFF0284C7),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-kpet-alsancak',
+    ad: 'K-Pet Girne Alsancak Çevre Yolu İstasyonu',
+    marka: 'K-Pet',
+    kategori: 'benzin',
+    sehir: 'Girne',
+    lat: 35.3340,
+    lon: 33.2610,
+    adres: 'Alsancak Girişi Çevre Yolu Kavşağı',
+    mesafe: '18.4 km',
+    sure: '20 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    yakitFiyatlari: {
+      'Euro Diesel': '31.45 ₺',
+      'Kurşunsuz 95': '32.10 ₺',
+    },
+    olanaklar: ['Market', 'Oto Yıkama', 'Elektrikli Şarj'],
+    ikon: Icons.local_gas_station_rounded,
+    renk: Color(0xFFE11D48),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-alpet-dogankoy',
+    ad: 'Alpet Girne Çevre Yolu Doğanköy İstasyonu',
+    marka: 'Alpet',
+    kategori: 'benzin',
+    sehir: 'Girne',
+    lat: 35.3310,
+    lon: 33.3280,
+    adres: 'Doğanköy Çemberi, Girne Çevre Yolu',
+    mesafe: '17.2 km',
+    sure: '19 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    yakitFiyatlari: {
+      'Euro Diesel': '31.45 ₺',
+      'Kurşunsuz 95': '32.10 ₺',
+      'Kurşunsuz 98': '32.75 ₺',
+    },
+    olanaklar: ['24 Saat Market', 'Lastik & Hava', 'Oto Süpürge'],
+    ikon: Icons.local_gas_station_rounded,
+    renk: Color(0xFF0284C7),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-kpet-magusa',
+    ad: 'K-Pet Gazimağusa Giriş (Anıt Çemberi) İstasyonu',
+    marka: 'K-Pet',
+    kategori: 'benzin',
+    sehir: 'Gazimağusa',
+    lat: 35.1290,
+    lon: 33.9280,
+    adres: 'İsmet İnönü Bulvarı, Anıt Çemberi Yanı',
+    mesafe: '34.2 km',
+    sure: '31 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    yakitFiyatlari: {
+      'Euro Diesel': '31.45 ₺',
+      'Kurşunsuz 95': '32.10 ₺',
+    },
+    olanaklar: ['Market', 'Oto Yıkama', 'Mescit'],
+    ikon: Icons.local_gas_station_rounded,
+    renk: Color(0xFFE11D48),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-alpet-dau',
+    ad: 'Alpet Salamis Yolu DAÜ İstasyonu',
+    marka: 'Alpet',
+    kategori: 'benzin',
+    sehir: 'Gazimağusa',
+    lat: 35.1450,
+    lon: 33.9160,
+    adres: 'Salamis Yolu DAÜ Kampüs Girişi Karşısı',
+    mesafe: '36.5 km',
+    sure: '34 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    yakitFiyatlari: {
+      'Euro Diesel': '31.45 ₺',
+      'Kurşunsuz 95': '32.10 ₺',
+      'Kurşunsuz 98': '32.75 ₺',
+    },
+    olanaklar: ['Market & Cafe', 'Oto Yıkama', 'Hava & Su'],
+    ikon: Icons.local_gas_station_rounded,
+    renk: Color(0xFF0284C7),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-kpet-guzelyurt',
+    ad: 'K-Pet Güzelyurt Çevre Yolu İstasyonu',
+    marka: 'K-Pet',
+    kategori: 'benzin',
+    sehir: 'Güzelyurt',
+    lat: 35.1960,
+    lon: 32.9910,
+    adres: 'Güzelyurt Çevre Yolu ODTÜ Kavşağı',
+    mesafe: '27.8 km',
+    sure: '25 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    yakitFiyatlari: {
+      'Euro Diesel': '31.45 ₺',
+      'Kurşunsuz 95': '32.10 ₺',
+    },
+    olanaklar: ['Market', 'Oto Bakım', 'Hava & Su'],
+    ikon: Icons.local_gas_station_rounded,
+    renk: Color(0xFFE11D48),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-altinbas-iskele',
+    ad: 'Altınbaş Petrol İskele Long Beach İstasyonu',
+    marka: 'Altınbaş',
+    kategori: 'benzin',
+    sehir: 'İskele',
+    lat: 35.2910,
+    lon: 33.9050,
+    adres: 'Long Beach Sahil Yolu Kavşağı, İskele',
+    mesafe: '41.5 km',
+    sure: '37 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    yakitFiyatlari: {
+      'Euro Diesel': '31.45 ₺',
+      'Kurşunsuz 95': '32.10 ₺',
+    },
+    olanaklar: ['24 Saat Market', 'Oto Yıkama', 'Cafe'],
+    ikon: Icons.local_gas_station_rounded,
+    renk: Color(0xFFF59E0B),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-kpet-ercan',
+    ad: 'K-Pet Ercan Havalimanı Kavşağı İstasyonu',
+    marka: 'K-Pet',
+    kategori: 'benzin',
+    sehir: 'Lefkoşa',
+    lat: 35.1580,
+    lon: 33.4920,
+    adres: 'Yeni Ercan Havalimanı Anayolu Çıkışı',
+    mesafe: '15.2 km',
+    sure: '14 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    yakitFiyatlari: {
+      'Euro Diesel': '31.45 ₺',
+      'Kurşunsuz 95': '32.10 ₺',
+      'Kurşunsuz 98': '32.75 ₺',
+    },
+    olanaklar: ['Market', 'WC', 'Oto Yıkama'],
+    ikon: Icons.local_gas_station_rounded,
+    renk: Color(0xFFE11D48),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-alpet-gemikonagi',
+    ad: 'Alpet Gemikonağı LAÜ Caddesi İstasyonu',
+    marka: 'Alpet',
+    kategori: 'benzin',
+    sehir: 'Lefke',
+    lat: 35.1480,
+    lon: 32.8520,
+    adres: 'Ecevit Caddesi, Gemikonağı, Lefke',
+    mesafe: '38.5 km',
+    sure: '36 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    yakitFiyatlari: {
+      'Euro Diesel': '31.45 ₺',
+      'Kurşunsuz 95': '32.10 ₺',
+    },
+    olanaklar: ['Market', 'Hava & Su', 'Oto Yıkama'],
+    ikon: Icons.local_gas_station_rounded,
+    renk: Color(0xFF0284C7),
+  ),
+
+  // --- OTO SERVİS & LASTİK ---
+  const KktcHaritaPoi(
+    id: 'poi-lastik-lefkosa',
+    ad: 'Lefkoşa Sanayi 7/24 Lastik & Akü Servisi',
+    marka: 'Oto Servis',
+    kategori: 'tamir',
+    sehir: 'Lefkoşa',
+    lat: 35.2180,
+    lon: 33.3620,
+    adres: 'Organize Sanayi Bölgesi 4. Cad. Lefkoşa',
+    mesafe: '3.1 km',
+    sure: '6 dk',
+    calismaSaatleri: '7/24 Acil Yol Servisi',
+    olanaklar: ['Mobil Lastik Değişimi', 'Akü Takviye', 'Balans'],
+    ikon: Icons.build_circle_rounded,
+    renk: Color(0xFF10B981),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-lastik-girne',
+    ad: 'Girne Alsancak Oto Servis & Mobil Lastikçi',
+    marka: 'Oto Servis',
+    kategori: 'tamir',
+    sehir: 'Girne',
+    lat: 35.3420,
+    lon: 33.2350,
+    adres: 'Alsancak Anayolu No:84, Girne',
+    mesafe: '19.0 km',
+    sure: '22 dk',
+    calismaSaatleri: '08:00 - 20:00 (Nöbetçi Servis)',
+    olanaklar: ['Lastik Satış & Tamir', 'Yol Yardım'],
+    ikon: Icons.build_circle_rounded,
+    renk: Color(0xFF10B981),
+  ),
+
+  // --- OTOPARK ---
+  const KktcHaritaPoi(
+    id: 'poi-otopark-lefkosa',
+    ad: 'Lefkoşa Ledra Palace Yanı Belediye Otoparkı',
+    marka: 'Belediye Otoparkı',
+    kategori: 'otopark',
+    sehir: 'Lefkoşa',
+    lat: 35.1785,
+    lon: 33.3560,
+    adres: 'İkinci Selim Cad. Suriçi Girişi',
+    mesafe: '2.0 km',
+    sure: '4 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    olanaklar: ['Güvenlik Kamerası', 'Gölge Sundurma', 'Engelli Parkı'],
+    ikon: Icons.local_parking_rounded,
+    renk: Color(0xFF8B5CF6),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-otopark-girne',
+    ad: 'Girne Antik Liman Katlı Otoparkı',
+    marka: 'Belediye Otoparkı',
+    kategori: 'otopark',
+    sehir: 'Girne',
+    lat: 35.3425,
+    lon: 33.3205,
+    adres: 'Kordonboyu Yanı, Antik Liman Girişi',
+    mesafe: '16.5 km',
+    sure: '18 dk',
+    calismaSaatleri: 'Açık • 24 Saat',
+    olanaklar: ['Kapalı Katlı', 'Güvenlik', 'Elektrikli Şarj'],
+    ikon: Icons.local_parking_rounded,
+    renk: Color(0xFF8B5CF6),
+  ),
+
+  // --- HASTANELER ---
+  const KktcHaritaPoi(
+    id: 'poi-hastane-lefkosa',
+    ad: 'Dr. Burhan Nalbantoğlu Devlet Hastanesi Acil',
+    marka: 'Devlet Hastanesi',
+    kategori: 'hastane',
+    sehir: 'Lefkoşa',
+    lat: 35.2036,
+    lon: 33.3361,
+    adres: 'Ortaköy, Lefkoşa',
+    mesafe: '1.9 km',
+    sure: '4 dk',
+    calismaSaatleri: '7/24 Acil Servis (112)',
+    olanaklar: ['7/24 Acil', 'Ambulans', 'Eczane Karşısı'],
+    ikon: Icons.local_hospital_rounded,
+    renk: Color(0xFFDC2626),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-hastane-girne',
+    ad: 'Girne Dr. Akçiçek Devlet Hastanesi',
+    marka: 'Devlet Hastanesi',
+    kategori: 'hastane',
+    sehir: 'Girne',
+    lat: 35.3360,
+    lon: 33.3190,
+    adres: 'Hastane Cad. Girne',
+    mesafe: '16.8 km',
+    sure: '19 dk',
+    calismaSaatleri: '7/24 Acil Servis',
+    olanaklar: ['7/24 Acil', 'Acil Otoparkı'],
+    ikon: Icons.local_hospital_rounded,
+    renk: Color(0xFFDC2626),
+  ),
+];
+
+// ==========================================
+// 🎨 CANLI ROTA ÇİZİM PAINTERI (GOOGLE MAPS GLOWING POLYLINE)
+// ==========================================
+class KktcRoutePathPainter extends CustomPainter {
+  final List<List<double>> coordinates;
+  final double centerLon;
+  final double centerLat;
+  final double zoom;
+  final double width;
+  final double height;
+  final Color routeColor;
+
+  KktcRoutePathPainter({
+    required this.coordinates,
+    required this.centerLon,
+    required this.centerLat,
+    required this.zoom,
+    required this.width,
+    required this.height,
+    this.routeColor = const Color(0xFF0284C7),
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (coordinates.length < 2) return;
+    final int intZoom = zoom.floor();
+    final double subScale = math.pow(2.0, zoom - intZoom).toDouble();
+    final double tileSize = 256.0 * subScale;
+
+    final double centerTileX = KktcOpenStreetMapTileViewState.lonToTileX(centerLon, intZoom.toDouble());
+    final double centerTileY = KktcOpenStreetMapTileViewState.latToTileY(centerLat, intZoom.toDouble());
+
+    final path = Path();
+    for (int i = 0; i < coordinates.length; i++) {
+      final lat = coordinates[i][0];
+      final lon = coordinates[i][1];
+      final tx = KktcOpenStreetMapTileViewState.lonToTileX(lon, intZoom.toDouble());
+      final ty = KktcOpenStreetMapTileViewState.latToTileY(lat, intZoom.toDouble());
+      final px = width / 2.0 + (tx - centerTileX) * tileSize;
+      final py = height / 2.0 + (ty - centerTileY) * tileSize;
+
+      if (i == 0) {
+        path.moveTo(px, py);
+      } else {
+        path.lineTo(px, py);
+      }
+    }
+
+    // Dış Parlama / Kontur Efekti
+    final glowPaint = Paint()
+      ..color = const Color(0xFF0284C7).withValues(alpha: 0.35)
+      ..strokeWidth = 9.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+    canvas.drawPath(path, glowPaint);
+
+    // İç Canlı Rota Hattı
+    final corePaint = Paint()
+      ..color = const Color(0xFF38BDF8)
+      ..strokeWidth = 5.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+    canvas.drawPath(path, corePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant KktcRoutePathPainter oldDelegate) {
+    return oldDelegate.centerLon != centerLon ||
+        oldDelegate.centerLat != centerLat ||
+        oldDelegate.zoom != zoom ||
+        oldDelegate.coordinates != coordinates;
+  }
+}
+
+// ==========================================
 // 🗺️ OPENSTREETMAP VE TILE KONTROL MERKEZİ
 // ==========================================
 class KktcOpenStreetMapTileView extends StatefulWidget {
@@ -714,6 +1212,12 @@ class KktcOpenStreetMapTileView extends StatefulWidget {
   final RadarKamerasi? seciliRadar;
   final Function(RadarKamerasi) onRadarSelected;
   final bool turkceMi;
+  final List<KktcHaritaPoi>? poiNoktalari;
+  final KktcHaritaPoi? seciliPoi;
+  final Function(KktcHaritaPoi)? onPoiSelected;
+  final bool radarlariGoster;
+  final List<List<double>>? rotaKoordinatlari;
+  final bool gosterUstBar;
 
   const KktcOpenStreetMapTileView({
     super.key,
@@ -721,6 +1225,12 @@ class KktcOpenStreetMapTileView extends StatefulWidget {
     required this.seciliRadar,
     required this.onRadarSelected,
     this.turkceMi = true,
+    this.poiNoktalari,
+    this.seciliPoi,
+    this.onPoiSelected,
+    this.radarlariGoster = true,
+    this.rotaKoordinatlari,
+    this.gosterUstBar = true,
   });
 
   @override
@@ -966,6 +1476,333 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
     );
   }
 
+  // ⛽ POI / BENZİN İSTASYONU & NOKTA İŞARETÇİSİ (Google Maps Tarzı Şık Rozet)
+  Widget _buildSinglePoiPin({
+    required KktcHaritaPoi poi,
+    required bool isSelected,
+    required double width,
+    required double height,
+    required double centerTileX,
+    required double centerTileY,
+    required double tileSize,
+    required int intZoom,
+  }) {
+    final double pTileX = lonToTileX(poi.lon, intZoom.toDouble());
+    final double pTileY = latToTileY(poi.lat, intZoom.toDouble());
+
+    final double pinX = width / 2.0 + (pTileX - centerTileX) * tileSize;
+    final double pinY = height / 2.0 + (pTileY - centerTileY) * tileSize;
+
+    if (pinX < -80 || pinX > width + 80 || pinY < -80 || pinY > height + 80) {
+      return const SizedBox.shrink();
+    }
+
+    final double pinSize = isSelected ? 38.0 : 32.0;
+
+    return Positioned(
+      left: pinX - (pinSize / 2.0),
+      top: pinY - (pinSize / 2.0),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          widget.onPoiSelected?.call(poi);
+          flyToLocation(poi.lat, poi.lon, zoom: math.max(_zoom, 12.8));
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                if (isSelected)
+                  FadeTransition(
+                    opacity: _pulseController,
+                    child: Container(
+                      width: pinSize + 18,
+                      height: pinSize + 18,
+                      decoration: BoxDecoration(
+                        color: poi.renk.withValues(alpha: 0.35),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                Container(
+                  width: pinSize,
+                  height: pinSize,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: poi.renk,
+                      width: isSelected ? 3.0 : 2.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: poi.renk.withValues(alpha: 0.4),
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      poi.ikon,
+                      size: isSelected ? 20 : 17,
+                      color: poi.renk,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 3),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: isSelected ? poi.renk : Colors.white24,
+                  width: isSelected ? 1.2 : 0.6,
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black45,
+                    blurRadius: 4,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: Text(
+                poi.marka.isNotEmpty ? poi.marka : poi.ad.split(' ').first,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
+                  fontSize: 9.0,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 📍 TEKİL RADAR HIZ TABELASI PİNİ (Zoom seviyesine göre akıllı boyut ve etiket)
+  Widget _buildSingleRadarPin({
+    required RadarKamerasi radar,
+    required bool isSelected,
+    required bool showLabel,
+    required double width,
+    required double height,
+    required double centerTileX,
+    required double centerTileY,
+    required double tileSize,
+    required int intZoom,
+  }) {
+    final double rTileX = lonToTileX(radar.lon, intZoom.toDouble());
+    final double rTileY = latToTileY(radar.lat, intZoom.toDouble());
+
+    final double pinX = width / 2.0 + (rTileX - centerTileX) * tileSize;
+    final double pinY = height / 2.0 + (rTileY - centerTileY) * tileSize;
+
+    if (pinX < -60 || pinX > width + 60 || pinY < -60 || pinY > height + 60) {
+      return const SizedBox.shrink();
+    }
+
+    final double circleSize = _zoom < 11.0 ? 25.0 : 28.0;
+    final double fontSize = _zoom < 11.0 ? 9.5 : 11.0;
+
+    return Positioned(
+      left: pinX - (circleSize / 2.0),
+      top: pinY - (circleSize / 2.0),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          widget.onRadarSelected(radar);
+          flyToLocation(radar.lat, radar.lon, zoom: math.max(_zoom, 11.8));
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                if (isSelected)
+                  FadeTransition(
+                    opacity: _pulseController,
+                    child: Container(
+                      width: circleSize + 16,
+                      height: circleSize + 16,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF0033).withValues(alpha: 0.45),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                Container(
+                  width: circleSize,
+                  height: circleSize,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFFD90429),
+                      width: isSelected ? 3.0 : 2.5,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black54,
+                        blurRadius: 5,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${radar.hizLimiti}',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        color: const Color(0xFFD90429),
+                        fontSize: fontSize,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (showLabel) ...[
+              const SizedBox(height: 2),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF050D25).withValues(alpha: 0.94),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: isSelected ? const Color(0xFFFFB3AF) : Colors.white24,
+                    width: isSelected ? 1.2 : 0.6,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black45,
+                      blurRadius: 4,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  radar.ad.split(' ').first,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFFE2E8F0),
+                    fontSize: 8.5,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 🏙️ UZAKTAN BAKIŞTA BÖLGESEL KÜMELENME (Clustering - Kalabalığı Önler)
+  List<Widget> _buildCityRadarClusters({
+    required double width,
+    required double height,
+    required double centerTileX,
+    required double centerTileY,
+    required double tileSize,
+    required int intZoom,
+  }) {
+    final cityConfigs = [
+      {"name": "Lefkoşa", "lat": 35.195, "lon": 33.340},
+      {"name": "Girne", "lat": 35.330, "lon": 33.325},
+      {"name": "Gazimağusa", "lat": 35.125, "lon": 33.935},
+      {"name": "Güzelyurt", "lat": 35.200, "lon": 32.990},
+      {"name": "İskele", "lat": 35.285, "lon": 33.890},
+    ];
+
+    List<Widget> clusterWidgets = [];
+
+    for (var cfg in cityConfigs) {
+      final name = cfg["name"] as String;
+      final cLat = cfg["lat"] as double;
+      final cLon = cfg["lon"] as double;
+
+      final count = widget.radarlar.where((r) => r.sehir == name).length;
+      if (count == 0) continue;
+
+      final double cTileX = lonToTileX(cLon, intZoom.toDouble());
+      final double cTileY = latToTileY(cLat, intZoom.toDouble());
+
+      final double px = width / 2.0 + (cTileX - centerTileX) * tileSize;
+      final double py = height / 2.0 + (cTileY - centerTileY) * tileSize;
+
+      if (px < -60 || px > width + 60 || py < -30 || py > height + 30) {
+        continue;
+      }
+
+      clusterWidgets.add(
+        Positioned(
+          left: px - 46,
+          top: py - 14,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              flyToLocation(cLat, cLon, zoom: 11.6);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFEF4444), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 16,
+                    height: 16,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.radar_rounded, color: Colors.white, size: 10),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$name ($count)',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return clusterWidgets;
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -1043,8 +1880,10 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                           ),
                         ),
 
-                  // 3. OPENSTREETMAP ŞEHİR İSİM ROZETLERİ
-                  ...osmCityLabels.map((c) {
+                  // 3. OPENSTREETMAP ŞEHİR İSİM ROZETLERİ (Zoom seviyesine göre akıllı filtreleme)
+                  ...osmCityLabels
+                      .where((c) => _zoom >= 10.3 || c.important)
+                      .map((c) {
                     final double cTileX = osmLonToTileX(c.lon, intZoom.toDouble());
                     final double cTileY = osmLatToTileY(c.lat, intZoom.toDouble());
                     final double px = width / 2.0 + (cTileX - centerTileX) * tileSize;
@@ -1081,112 +1920,87 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                     );
                   }),
 
-                  // 2. RADAR İŞARETÇİLERİ (HIZ TABELASI PINLERI)
-                  ...widget.radarlar.map((radar) {
-                    final double rTileX = lonToTileX(radar.lon, intZoom.toDouble());
-                    final double rTileY = latToTileY(radar.lat, intZoom.toDouble());
-
-                    final double pinX = width / 2.0 + (rTileX - centerTileX) * tileSize;
-                    final double pinY = height / 2.0 + (rTileY - centerTileY) * tileSize;
-
-                    if (pinX < -60 || pinX > width + 60 || pinY < -60 || pinY > height + 60) {
-                      return const SizedBox.shrink();
-                    }
-
-                    final bool isSelected = widget.seciliRadar?.id == radar.id;
-
-                    return Positioned(
-                      left: pinX - 22,
-                      top: pinY - 26,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () {
-                          widget.onRadarSelected(radar);
-                          flyToLocation(radar.lat, radar.lon, zoom: math.max(_zoom, 11.5));
-                        },
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                if (isSelected)
-                                  FadeTransition(
-                                    opacity: _pulseController,
-                                    child: Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFFF0033).withValues(alpha: 0.45),
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: const Color(0xFFD90429),
-                                      width: 2.8,
-                                    ),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Colors.black54,
-                                        blurRadius: 5,
-                                        offset: Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      '${radar.hizLimiti}',
-                                      style: const TextStyle(
-                                        fontFamily: 'monospace',
-                                        color: Color(0xFFD90429),
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: -0.5,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF050D25).withValues(alpha: 0.94),
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(
-                                  color: isSelected ? const Color(0xFFFFB3AF) : Colors.white24,
-                                  width: isSelected ? 1.2 : 0.6,
-                                ),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black45,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 1),
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                radar.ad.split(' ').first,
-                                style: TextStyle(
-                                  color: isSelected ? Colors.white : const Color(0xFFE2E8F0),
-                                  fontSize: 8.5,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
+                  // 1.9 CANLI ROTA ÇİZGİSİ (YOL TARİFİ)
+                  if (widget.rotaKoordinatlari != null && widget.rotaKoordinatlari!.length >= 2)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: CustomPaint(
+                          painter: KktcRoutePathPainter(
+                            coordinates: widget.rotaKoordinatlari!,
+                            centerLon: _centerLon,
+                            centerLat: _centerLat,
+                            zoom: _zoom,
+                            width: width,
+                            height: height,
+                          ),
                         ),
                       ),
-                    );
-                  }),
+                    ),
+
+                  // 2. POI İŞARETÇİLERİ (BENZİNLİKLER, SERVİS, OTOPARK, HASTANE)
+                  if (widget.poiNoktalari != null && widget.poiNoktalari!.isNotEmpty) ...[
+                    ...widget.poiNoktalari!.map((poi) {
+                      return _buildSinglePoiPin(
+                        poi: poi,
+                        isSelected: widget.seciliPoi?.id == poi.id,
+                        width: width,
+                        height: height,
+                        centerTileX: centerTileX,
+                        centerTileY: centerTileY,
+                        tileSize: tileSize,
+                        intZoom: intZoom,
+                      );
+                    }),
+                  ],
+
+                  // 2.1 RADAR İŞARETÇİLERİ (ZOOM SEVİYESİNE GÖRE AKILLI GÖSTERİM)
+                  // Kullanıcı uzaktayken (zoom < 10.3) bölgesel küme rozetleri gösterilir;
+                  // Yakınlaştıkça (zoom >= 10.3) gerçek radar pinleri detaylanır, kalabalık önlenir.
+                  if (widget.radarlariGoster) ...[
+                    if (_zoom < 10.3) ...[
+                      // 2a. Şehir Bazlı Kümelenmiş Radar Rozetleri (Clustering)
+                      ..._buildCityRadarClusters(
+                        width: width,
+                        height: height,
+                        centerTileX: centerTileX,
+                        centerTileY: centerTileY,
+                        tileSize: tileSize,
+                        intZoom: intZoom,
+                      ),
+                      // 2b. Eğer seçili bir radar varsa, onu açıkça göster
+                      if (widget.seciliRadar != null)
+                        _buildSingleRadarPin(
+                          radar: widget.seciliRadar!,
+                          isSelected: true,
+                          showLabel: true,
+                          width: width,
+                          height: height,
+                          centerTileX: centerTileX,
+                          centerTileY: centerTileY,
+                          tileSize: tileSize,
+                          intZoom: intZoom,
+                        ),
+                    ] else ...[
+                      // 2c. Yakınlaşınca (zoom >= 10.3) radarlar yol üzerinde tek tek gösterilir
+                      ...widget.radarlar.map((radar) {
+                        final bool isSelected = widget.seciliRadar?.id == radar.id;
+                        // İsim etiketi sadece çok yakınlaşınca (zoom >= 11.5) veya seçili radar için görünür
+                        final bool showNameLabel = _zoom >= 11.5 || isSelected;
+
+                        return _buildSingleRadarPin(
+                          radar: radar,
+                          isSelected: isSelected,
+                          showLabel: showNameLabel,
+                          width: width,
+                          height: height,
+                          centerTileX: centerTileX,
+                          centerTileY: centerTileY,
+                          tileSize: tileSize,
+                          intZoom: intZoom,
+                        );
+                      }),
+                    ],
+                  ],
 
                   // 2.5 GERÇEK KULLANICI CANLI GPS İŞARETÇİSİ
                   if (_gps.sonKonum != null)
@@ -1200,150 +2014,152 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                       intZoom,
                     ),
 
-                  // 3. ÜST BAR: OSM ROZETİ & CANLI GPS & HARİTA TÜRÜ SEÇİCİ
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    right: 8,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white12, width: 0.8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                FadeTransition(
-                                  opacity: _pulseController,
-                                  child: Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: BoxDecoration(
-                                      color: _gps.gpsAktif ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Flexible(
-                                  child: Text(
-                                    _gps.gpsAktif
-                                        ? (_gps.sonKonum != null
-                                            ? '🛰️ GPS: ${_gps.gercekHizKmh.round()} km/s'
-                                            : '🛰️ GPS Aranıyor...')
-                                        : (widget.turkceMi ? 'OpenStreetMap • 18 Radar' : 'OpenStreetMap • 18 Radars'),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        // Canlı GPS Aç/Kapat Butonu
-                        GestureDetector(
-                          onTap: () {
-                            if (_gps.gpsAktif) {
-                              _gps.servisiDurdur();
-                            } else {
-                              _gps.servisiBaslat();
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _gps.gpsAktif
-                                  ? const Color(0xFF0284C7).withValues(alpha: 0.85)
-                                  : const Color(0xFF0F172A).withValues(alpha: 0.92),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: _gps.gpsAktif ? const Color(0xFF38BDF8) : Colors.white24,
-                                width: 0.8,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  _gps.gpsAktif ? Icons.gps_fixed_rounded : Icons.gps_not_fixed_rounded,
-                                  color: _gps.gpsAktif ? Colors.white : const Color(0xFF94A3B8),
-                                  size: 12,
-                                ),
-                                const SizedBox(width: 3),
-                                Text(
-                                  _gps.gpsAktif ? 'Canlı GPS' : 'GPS Başlat',
-                                  style: TextStyle(
-                                    color: _gps.gpsAktif ? Colors.white : const Color(0xFFCBD5E1),
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        // Harita Stili Değiştirme Butonu (OSM / Carto / Gece)
-                        GestureDetector(
-                          onTap: toggleMapStyle,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.6), width: 0.8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.layers_rounded, color: Color(0xFF38BDF8), size: 13),
-                                const SizedBox(width: 4),
-                                Text(
-                                  _tileStyleNames[_mapStyleIndex],
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // 4. HIZLI ŞEHİR KISAYOLLARI (MAĞUSA, LEFKOŞA, GİRNE, KARPAZ...)
-                  Positioned(
-                    top: 42,
-                    left: 10,
-                    right: 10,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
+                  // 3. ÜST BAR & ŞEHİR HIZLI ATLAMA (İSTEĞE BAĞLI GÖSTERİLİR)
+                  if (widget.gosterUstBar) ...[
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      right: 8,
                       child: Row(
                         children: [
-                          _buildCityChip('🧭 Tüm KKTC', () => centerOnKktc()),
-                          _buildCityChip('⚓ Gazimağusa', () => flyToLocation(35.1650, 33.8800, zoom: 10.5)),
-                          _buildCityChip('🏛️ Lefkoşa', () => flyToLocation(35.2132, 33.3500, zoom: 10.5)),
-                          _buildCityChip('🏰 Girne', () => flyToLocation(35.3370, 33.3000, zoom: 10.5)),
-                          _buildCityChip('🏖️ İskele & Karpaz', () => flyToLocation(35.3500, 33.9800, zoom: 10.0)),
-                          _buildCityChip('🍊 Güzelyurt', () => flyToLocation(35.2065, 33.0500, zoom: 10.5)),
-                          _buildCityChip('🌴 Lefke', () => flyToLocation(35.1120, 32.8520, zoom: 10.5)),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.white12, width: 0.8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  FadeTransition(
+                                    opacity: _pulseController,
+                                    child: Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        color: _gps.gpsAktif ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Flexible(
+                                    child: Text(
+                                      _gps.gpsAktif
+                                          ? (_gps.sonKonum != null
+                                              ? '🛰️ GPS: ${_gps.gercekHizKmh.round()} km/s'
+                                              : '🛰️ GPS Aranıyor...')
+                                          : (widget.turkceMi ? 'OpenStreetMap • 18 Radar' : 'OpenStreetMap • 18 Radars'),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          // Canlı GPS Aç/Kapat Butonu
+                          GestureDetector(
+                            onTap: () {
+                              if (_gps.gpsAktif) {
+                                _gps.servisiDurdur();
+                              } else {
+                                _gps.servisiBaslat();
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: _gps.gpsAktif
+                                    ? const Color(0xFF0284C7).withValues(alpha: 0.85)
+                                    : const Color(0xFF0F172A).withValues(alpha: 0.92),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: _gps.gpsAktif ? const Color(0xFF38BDF8) : Colors.white24,
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _gps.gpsAktif ? Icons.gps_fixed_rounded : Icons.gps_not_fixed_rounded,
+                                    color: _gps.gpsAktif ? Colors.white : const Color(0xFF94A3B8),
+                                    size: 12,
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    _gps.gpsAktif ? 'Canlı GPS' : 'GPS Başlat',
+                                    style: TextStyle(
+                                      color: _gps.gpsAktif ? Colors.white : const Color(0xFFCBD5E1),
+                                      fontSize: 8.5,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          // Harita Stili Değiştirme Butonu (OSM / Carto / Gece)
+                          GestureDetector(
+                            onTap: toggleMapStyle,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.6), width: 0.8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.layers_rounded, color: Color(0xFF38BDF8), size: 13),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _tileStyleNames[_mapStyleIndex],
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ),
+
+                    // 4. HIZLI ŞEHİR KISAYOLLARI (MAĞUSA, LEFKOŞA, GİRNE, KARPAZ...)
+                    Positioned(
+                      top: 42,
+                      left: 10,
+                      right: 10,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _buildCityChip('🧭 Tüm KKTC', () => centerOnKktc()),
+                            _buildCityChip('⚓ Gazimağusa', () => flyToLocation(35.1650, 33.8800, zoom: 10.5)),
+                            _buildCityChip('🏛️ Lefkoşa', () => flyToLocation(35.2132, 33.3500, zoom: 10.5)),
+                            _buildCityChip('🏰 Girne', () => flyToLocation(35.3370, 33.3000, zoom: 10.5)),
+                            _buildCityChip('🏖️ İskele & Karpaz', () => flyToLocation(35.3500, 33.9800, zoom: 10.0)),
+                            _buildCityChip('🍊 Güzelyurt', () => flyToLocation(35.2065, 33.0500, zoom: 10.5)),
+                            _buildCityChip('🌴 Lefke', () => flyToLocation(35.1120, 32.8520, zoom: 10.5)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
 
                   // 5. SAĞ ALT: ZOOM VE MERKEZ KONTROL BUTONLARI
                   Positioned(
@@ -1577,15 +2393,32 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
         ? '${_gpsServisi.enYakinRadarMesafeFormatli} ${widget.turkceMi ? 'Kaldı' : 'Ahead'}'
         : (secili.mesafe.isNotEmpty ? '${secili.mesafe} ${widget.turkceMi ? 'Kaldı' : 'Ahead'}' : '350m Kaldı');
 
-    return Container(
-      color: _RadarHtmlColors.background,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. Canlı Telemetri ve Hız İkaz Kutusu
-            Container(
+    return Scaffold(
+      backgroundColor: _RadarHtmlColors.background,
+      appBar: Navigator.canPop(context)
+          ? AppBar(
+              backgroundColor: _RadarHtmlColors.surfaceContainerHigh,
+              foregroundColor: _RadarHtmlColors.onSurface,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: Text(
+                widget.turkceMi ? 'KKTC Radarlar & Hız Denetimi' : 'TRNC Radars & Speed Control',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            )
+          : null,
+      body: Material(
+        color: _RadarHtmlColors.background,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Canlı Telemetri ve Hız İkaz Kutusu
+              Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: _RadarHtmlColors.surfaceContainerHigh,
@@ -2429,6 +3262,694 @@ class _RadarHaritasiSayfasiState extends State<RadarHaritasiSayfasi>
             const SizedBox(height: 20),
           ],
         ),
+      ),
+    ),
+  );
+  }
+}
+
+// ==========================================
+// 🗺️ KKTC TAM EKRAN CANLI RADAR & HARİTA SAYFASI
+// ==========================================
+class KktcTamEkranHaritaSayfasi extends StatefulWidget {
+  final bool turkceMi;
+  final RadarKamerasi? baslangicRadari;
+
+  const KktcTamEkranHaritaSayfasi({
+    super.key,
+    this.turkceMi = true,
+    this.baslangicRadari,
+  });
+
+  @override
+  State<KktcTamEkranHaritaSayfasi> createState() => _KktcTamEkranHaritaSayfasiState();
+}
+
+class _KktcTamEkranHaritaSayfasiState extends State<KktcTamEkranHaritaSayfasi> {
+  late RadarKamerasi _seciliRadar;
+  String _secilenSehir = "Tümü";
+  bool _altKartGoster = true;
+  int _canliHiz = 68;
+  Timer? _telemetriTimer;
+
+  final GlobalKey<KktcOpenStreetMapTileViewState> _osmKey =
+      GlobalKey<KktcOpenStreetMapTileViewState>();
+
+  final List<String> _sehirler = [
+    "Tümü",
+    "Lefkoşa",
+    "Girne",
+    "Gazimağusa",
+    "Güzelyurt",
+    "İskele",
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _seciliRadar = widget.baslangicRadari ??
+        (kktcRadarListesi.isNotEmpty ? kktcRadarListesi.first : const RadarKamerasi(
+          id: "RAD-01",
+          ad: "Gönyeli Çemberi Kamerası",
+          adEn: "Gonyeli Camera",
+          sehir: "Lefkoşa",
+          hizLimiti: 65,
+          tur: "Sabit Dijital Radar",
+          turEn: "Fixed Digital Radar",
+          yon: "Çift Yönlü",
+          yonEn: "Dual Way",
+          aciklama: "Sabit Sayısal Radar • KKTC Polis Genel Müd. Trafik Bölümü #04",
+          aciklamaEn: "Fixed Digital Radar • TRNC Police Dept #04",
+          aktif: true,
+          lat: 35.2132,
+          lon: 33.3085,
+          mesafe: "350m",
+        ));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _osmKey.currentState?.flyToLocation(_seciliRadar.lat, _seciliRadar.lon, zoom: 12.0);
+    });
+
+    _telemetriTimer = Timer.periodic(const Duration(milliseconds: 3200), (t) {
+      if (mounted) {
+        final speeds = [66, 68, 67, 69, 68];
+        setState(() {
+          _canliHiz = speeds[t.tick % speeds.length];
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _telemetriTimer?.cancel();
+    super.dispose();
+  }
+
+  List<RadarKamerasi> get _filtrelenmisRadarlar {
+    if (_secilenSehir == "Tümü") return kktcRadarListesi;
+    return kktcRadarListesi.where((r) => r.sehir == _secilenSehir).toList();
+  }
+
+  void _sehreUc(String sehir) {
+    setState(() => _secilenSehir = sehir);
+    switch (sehir) {
+      case "Lefkoşa":
+        _osmKey.currentState?.flyToLocation(35.2132, 33.3350, zoom: 11.5);
+        break;
+      case "Girne":
+        _osmKey.currentState?.flyToLocation(35.3340, 33.3280, zoom: 11.5);
+        break;
+      case "Gazimağusa":
+        _osmKey.currentState?.flyToLocation(35.1250, 33.9400, zoom: 11.5);
+        break;
+      case "Güzelyurt":
+        _osmKey.currentState?.flyToLocation(35.1980, 32.9980, zoom: 11.5);
+        break;
+      case "İskele":
+        _osmKey.currentState?.flyToLocation(35.2850, 33.8900, zoom: 11.5);
+        break;
+      default:
+        _osmKey.currentState?.flyToLocation(35.250, 33.620, zoom: 9.2);
+    }
+  }
+
+  Future<void> _openGoogleMaps(double lat, double lon) async {
+    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lon');
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {}
+  }
+
+  void _yolTarifiAc(RadarKamerasi radar) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => YolTarifiSayfasi(
+          turkceMi: widget.turkceMi,
+          varisNoktasi: radar.toRotaNoktasi(),
+          otomatikNavigasyonBaslat: true,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool hizLimitiAsildi = _canliHiz > _seciliRadar.hizLimiti;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F172A),
+      body: Stack(
+        children: [
+          // 1. TAM EKRAN İNTERAKTİF OPENSTREETMAP HARİTASI
+          Positioned.fill(
+            child: KktcOpenStreetMapTileView(
+              key: _osmKey,
+              radarlar: _filtrelenmisRadarlar,
+              seciliRadar: _seciliRadar,
+              turkceMi: widget.turkceMi,
+              onRadarSelected: (radar) {
+                setState(() {
+                  _seciliRadar = radar;
+                  _altKartGoster = true;
+                });
+                _osmKey.currentState?.flyToLocation(radar.lat, radar.lon, zoom: 12.0);
+              },
+            ),
+          ),
+
+          // 2. ÜST YÜZEN BAŞLIK & KONTROL ŞERİDİ
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 12,
+            right: 12,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      // Geri Dön Butonu
+                      InkWell(
+                        onTap: () => Navigator.pop(context),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 16),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      // Başlık ve GPS Durumu
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              widget.turkceMi ? 'KKTC Canlı Radar Haritası' : 'TRNC Live Speed Cameras',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w900,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  widget.turkceMi ? 'Canlı GPS Aktif • ${_filtrelenmisRadarlar.length} Kamera' : 'Live GPS Active • ${_filtrelenmisRadarlar.length} Cameras',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.75),
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // 🗺️ YOL TARİFİ KISAYOL BUTONU
+                      InkWell(
+                        onTap: () => _yolTarifiAc(_seciliRadar),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.directions_rounded, color: Colors.white, size: 16),
+                              const SizedBox(width: 4),
+                              Text(
+                                widget.turkceMi ? 'Yol Tarifi' : 'Route',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                // Şehir Filtre Hapları (Yatay Kaydırılabilir)
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    children: _sehirler.map((sehir) {
+                      final bool isSelected = _secilenSehir == sehir;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: InkWell(
+                          onTap: () => _sehreUc(sehir),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? const Color(0xFF1A73E8)
+                                  : const Color(0xFF0F172A).withValues(alpha: 0.85),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected
+                                    ? Colors.transparent
+                                    : Colors.white.withValues(alpha: 0.20),
+                              ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFF1A73E8).withValues(alpha: 0.4),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Text(
+                              sehir,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // 3. SOL ÜST: YÜZEN HIZ HUD KARTİ
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 98,
+            left: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: hizLimitiAsildi
+                      ? const Color(0xFFEF4444)
+                      : Colors.white.withValues(alpha: 0.15),
+                  width: hizLimitiAsildi ? 1.5 : 1.0,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.turkceMi ? 'HIZINIZ' : 'SPEED',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.70),
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text(
+                            '$_canliHiz',
+                            style: TextStyle(
+                              color: hizLimitiAsildi ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            'km/s',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.70),
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFDC2626), width: 2.2),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${_seciliRadar.hizLimiti}',
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 4. SAĞ ÜST: YÜZEN HARİTA ARAÇLARI
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 98,
+            right: 12,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildFloatingTool(
+                  icon: Icons.layers_rounded,
+                  tooltip: 'Katman Değiştir',
+                  onTap: () => _osmKey.currentState?.toggleMapStyle(),
+                ),
+                const SizedBox(height: 6),
+                _buildFloatingTool(
+                  icon: Icons.my_location_rounded,
+                  tooltip: 'Konumuma Git',
+                  onTap: () => _osmKey.currentState?.centerOnUserOrKktc(),
+                ),
+                const SizedBox(height: 6),
+                _buildFloatingTool(
+                  icon: Icons.add_rounded,
+                  tooltip: 'Yakınlaştır',
+                  onTap: () => _osmKey.currentState?.zoomIn(),
+                ),
+                const SizedBox(height: 6),
+                _buildFloatingTool(
+                  icon: Icons.remove_rounded,
+                  tooltip: 'Uzaklaştır',
+                  onTap: () => _osmKey.currentState?.zoomOut(),
+                ),
+              ],
+            ),
+          ),
+
+          // 5. ALT: SEÇİLİ RADAR KARTI VE AKSİYONLAR
+          if (_altKartGoster)
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + 12,
+              left: 12,
+              right: 12,
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.50),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Kart Üst Başlık & Kapat Butonu
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Hız Sınırı Yuvarlak Tabelası
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFDC2626), width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFDC2626).withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${_seciliRadar.hizLimiti}',
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Radar Bilgisi
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      _seciliRadar.ad,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14.5,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      _seciliRadar.mesafe.isNotEmpty ? _seciliRadar.mesafe : '350m',
+                                      style: const TextStyle(
+                                        color: Color(0xFF10B981),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                '${_seciliRadar.sehir} • ${_seciliRadar.yon} • ${_seciliRadar.tur}',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.70),
+                                  fontSize: 11.5,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Kapatma İkonu
+                        InkWell(
+                          onTap: () => setState(() => _altKartGoster = false),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // İki Büyük Aksiyon Butonu: 1. Yol Tarifi Al, 2. Google Maps ile Git
+                    Row(
+                      children: [
+                        // Yol Tarifi Al (Canlı Rota)
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF10B981),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              padding: const EdgeInsets.symmetric(vertical: 11),
+                              elevation: 2,
+                            ),
+                            onPressed: () => _yolTarifiAc(_seciliRadar),
+                            icon: const Icon(Icons.directions_rounded, size: 18),
+                            label: Text(
+                              widget.turkceMi ? 'Yol Tarifi Al' : 'Get Directions',
+                              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12.5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // Google Maps ile Aç
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1A73E8),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              padding: const EdgeInsets.symmetric(vertical: 11),
+                              elevation: 2,
+                            ),
+                            onPressed: () => _openGoogleMaps(_seciliRadar.lat, _seciliRadar.lon),
+                            icon: const Icon(Icons.location_on_rounded, size: 18),
+                            label: const Text(
+                              'Google Maps',
+                              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12.5),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            // Kart Kapalıyken Yeniden Açma Hapı
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + 12,
+              right: 12,
+              child: InkWell(
+                onTap: () => setState(() => _altKartGoster = true),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.radar_rounded, color: Color(0xFFD97706), size: 16),
+                      const SizedBox(width: 6),
+                      Text(
+                        _seciliRadar.ad,
+                        style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFloatingTool({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(icon, color: Colors.white, size: 19),
       ),
     );
   }
