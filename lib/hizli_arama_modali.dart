@@ -562,8 +562,8 @@ class _HizliAramaModalSayfasiState extends State<HizliAramaModalSayfasi> {
                             Expanded(
                               child: Text(
                                 widget.turkceMi
-                                    ? '🛡️ Siber Güvenlik Duvarı: ${denetim.aciklama}'
-                                    : '🛡️ Cyber Firewall: ${denetim.aciklama}',
+                                    ? '⚠️ Güvenlik Uyarısı: Giriş alanındaki geçersiz ve şüpheli karakterler temizlendi.'
+                                    : '⚠️ Security Alert: Invalid and suspicious characters were sanitized.',
                                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                               ),
                             ),

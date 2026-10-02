@@ -170,6 +170,7 @@ enum KullaniciTuru {
   tcVatandas,
   ogrenci,
   uluslararasi,
+  admin, // 🛡️ PGM Bilgi İşlem / Siber Operasyon Merkezi Yöneticisi
 }
 
 class GirisSayfasi extends StatefulWidget {
@@ -289,6 +290,12 @@ class _GirisSayfasiState extends State<GirisSayfasi>
           rolAciklama = widget.turkceMi ? "Uluslararası Misafir (İkamet İzni)" : "International Guest (Residence Permit)";
           tanimliAraclar = ["GM 202", "ST 999"];
           break;
+
+        case KullaniciTuru.admin:
+          adSoyad = widget.turkceMi ? "Yönetici (PGM Siber Güvenlik)" : "Admin (Cyber Security HQ)";
+          rolAciklama = "PGM Siber Operasyon Merkezi (SOC / Admin)";
+          tanimliAraclar = ["PGM 001", "POLIS 155"];
+          break;
       }
 
       setState(() {
@@ -323,6 +330,10 @@ class _GirisSayfasiState extends State<GirisSayfasi>
         case KullaniciTuru.uluslararasi:
           _girisController.text = "U8819201";
           _sifreController.text = "alex123";
+          break;
+        case KullaniciTuru.admin:
+          _girisController.text = "admin.pgm";
+          _sifreController.text = "kktc.soc.2026";
           break;
       }
     });
@@ -412,6 +423,14 @@ class _GirisSayfasiState extends State<GirisSayfasi>
         idAciklama = widget.turkceMi
             ? 'Yabancı Uyruklular İkamet ve Geçici İthal / Z Plaka Kaydı'
             : 'Foreign Residents Permit & Temporary Import / Z Plate Registry';
+        break;
+      case KullaniciTuru.admin:
+        idEtiketi = widget.turkceMi ? 'PGM YÖNETİCİ KULLANICI ADI' : 'POLICE ADMIN USERNAME';
+        idHint = widget.turkceMi ? 'Örn: admin.pgm' : 'E.g.: admin.pgm';
+        idIkon = Icons.admin_panel_settings_rounded;
+        idAciklama = widget.turkceMi
+            ? 'KKTC PGM Bilgi İşlem ve Siber Operasyon Merkezi (SOC)'
+            : 'TRNC Police HQ Cyber Operations Center (SOC)';
         break;
     }
 
@@ -1089,6 +1108,22 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                     badgeColor: const Color(0xFFDDD6FE),
                     onTap: () => _hizliDemoGiris(KullaniciTuru.uluslararasi),
                   ),
+                  const SizedBox(height: 8),
+
+                  // Demo 5: PGM Bilgi İşlem / Siber Güvenlik Yöneticisi (Admin)
+                  _demoCard(
+                    icon: Icons.admin_panel_settings_rounded,
+                    name: widget.turkceMi ? 'PGM Siber Güvenlik Yöneticisi' : 'Police Cyber Security Admin',
+                    badge: widget.turkceMi ? 'YÖNETİCİ / SOC' : 'ADMIN / SOC',
+                    subtitle: widget.turkceMi
+                        ? 'Siber Güvenlik Duvarı (WAF), Loglar & Sistem Denetimi'
+                        : 'Cyber Firewall (WAF), Incident Logs & Audit',
+                    iconBg: const Color(0xFF10B981).withValues(alpha: 0.20),
+                    iconColor: const Color(0xFF10B981),
+                    badgeBg: const Color(0xFF10B981).withValues(alpha: 0.30),
+                    badgeColor: const Color(0xFF6EE7B7),
+                    onTap: () => _hizliDemoGiris(KullaniciTuru.admin),
+                  ),
                   const SizedBox(height: 24),
 
                   // ── Security Footer ──
@@ -1470,6 +1505,117 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
   bool _sigortaQrBuyuk = false;
   String _sigortaOtpKodu = "KKTC-TRF-9921-OK";
   String _cezaSigortaAltSekme = "ceza"; // 'ceza' or 'sigorta'
+  bool _gizliAdminModuAcik = false;
+  int _gizliTikSayisi = 0;
+
+  bool get _adminYetkisiVarMi {
+    final r = widget.kullaniciRolu.toLowerCase();
+    return r.contains('admin') ||
+           r.contains('yönetici') ||
+           r.contains('polis') ||
+           r.contains('bilgi işlem') ||
+           r.contains('pgm') ||
+           r.contains('soc') ||
+           _gizliAdminModuAcik;
+  }
+
+  void _adminPinDiyaloguAc() {
+    final pinController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF0F172A),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Icon(Icons.admin_panel_settings_rounded, color: Color(0xFF10B981)),
+              const SizedBox(width: 8),
+              Text(
+                widget.turkceMi ? 'Yönetici / SOC Girişi' : 'Admin / SOC Access',
+                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.turkceMi
+                    ? 'Siber Güvenlik Duvarı & Olay Günlüğünü açmak için 4 haneli yönetici PIN kodunu giriniz:'
+                    : 'Enter 4-digit admin PIN to access Cyber Firewall & SOC Logs:',
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: pinController,
+                obscureText: true,
+                keyboardType: TextInputType.number,
+                maxLength: 4,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white, fontSize: 18, letterSpacing: 8),
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(
+                  hintText: '••••',
+                  hintStyle: const TextStyle(color: Colors.white24),
+                  counterText: '',
+                  filled: true,
+                  fillColor: const Color(0xFF1E293B),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(widget.turkceMi ? 'İptal' : 'Cancel', style: const TextStyle(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
+              onPressed: () {
+                if (pinController.text == "1974" || pinController.text == "9999") {
+                  Navigator.pop(ctx);
+                  setState(() => _gizliAdminModuAcik = true);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          const Icon(Icons.verified_user_rounded, color: Color(0xFF10B981)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              widget.turkceMi
+                                  ? '✅ Yönetici & Siber Güvenlik Merkezi (SOC) yetkisi aktif!'
+                                  : '✅ Admin & Cyber Security SOC access unlocked!',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                      backgroundColor: const Color(0xFF0F172A),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  GuvenlikDuvari.guvenlikPaneliGoster(context, widget.turkceMi);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(widget.turkceMi ? '❌ Hatalı Yönetici PIN Kodu!' : '❌ Incorrect Admin PIN!'),
+                      backgroundColor: const Color(0xFFEF4444),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+              child: Text(widget.turkceMi ? 'Doğrula' : 'Verify', style: const TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   late final AnimationController _pingController;
 
@@ -1822,17 +1968,26 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                   Expanded(
                     child: Row(
                       children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: _HtmlColors.primaryContainer.withValues(alpha: 0.20),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.local_police_rounded,
-                            color: _HtmlColors.primaryContainer,
-                            size: 21,
+                        GestureDetector(
+                          onTap: () {
+                            _gizliTikSayisi++;
+                            if (_gizliTikSayisi >= 5) {
+                              _gizliTikSayisi = 0;
+                              _adminPinDiyaloguAc();
+                            }
+                          },
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: _HtmlColors.primaryContainer.withValues(alpha: 0.20),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.local_police_rounded,
+                              color: _HtmlColors.primaryContainer,
+                              size: 21,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -2009,21 +2164,23 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
                       ),
                       const SizedBox(width: 6),
 
-                      // 🛡️ Siber Güvenlik Duvarı (WAF) Durum Paneli
-                      GestureDetector(
-                        onTap: () => GuvenlikDuvari.guvenlikPaneliGoster(context, widget.turkceMi),
-                        child: Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+                      // 🛡️ Siber Güvenlik Duvarı (WAF) Durum Paneli (SADECE ADMİN VE YÖNETİCİLER GÖRÜR)
+                      if (_adminYetkisiVarMi) ...[
+                        GestureDetector(
+                          onTap: () => GuvenlikDuvari.guvenlikPaneliGoster(context, widget.turkceMi),
+                          child: Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+                            ),
+                            child: const Icon(Icons.security_rounded, color: Color(0xFF10B981), size: 18),
                           ),
-                          child: const Icon(Icons.security_rounded, color: Color(0xFF10B981), size: 18),
                         ),
-                      ),
-                      const SizedBox(width: 6),
+                        const SizedBox(width: 6),
+                      ],
 
                       // Avatar circle
                       GestureDetector(
