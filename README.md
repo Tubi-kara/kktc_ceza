@@ -5,16 +5,16 @@
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)
 ![Version](https://img.shields.io/badge/Sürüm-v1.0.3-10B981?style=for-the-badge)
-![Security](https://img.shields.io/badge/Siber%20Güvenlik-WAF%20%7C%20Anti--DDoS%20%7C%20RBAC-D90429?style=for-the-badge)
+![Security](https://img.shields.io/badge/Güvenlik-256--Bit%20SSL%20%7C%20WAF-D90429?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web-4E73DF?style=for-the-badge)
-![CI/CD](https://img.shields.io/badge/GitHub%20Actions-Otomatik%20APK%20%26%20IPA%20Build-success?style=for-the-badge&logo=githubactions&logoColor=white)
+![CI/CD](https://img.shields.io/badge/GitHub%20Actions-Otomatik%20Build-success?style=for-the-badge&logo=githubactions&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)
 
 <br/>
 
-**Kuzey Kıbrıs Türk Cumhuriyeti (KKTC)** sürücüleri ve ziyaretçileri için geliştirilmiş yeni nesil dijital trafik, ceza sorgulama, seyrüsefer (yol vergisi) takibi, zorunlu sigorta, sabit radarlar, canlı trafik analitiği, akıllı rota rehberi, Google Maps tarzı canlı navigasyon ve mobil siber güvenlik kalkanı uygulaması.
+**Kuzey Kıbrıs Türk Cumhuriyeti (KKTC)** sürücüleri ve ziyaretçileri için geliştirilmiş yeni nesil dijital trafik, ceza sorgulama, seyrüsefer (yol vergisi) takibi, zorunlu sigorta, sabit radarlar, canlı trafik analitiği, akıllı rota rehberi ve Google Maps tarzı canlı navigasyon uygulaması.
 
-[📲 En Son APK'yı İndir](https://github.com/Tubi-kara/kktc_ceza/releases/download/latest/kktc_ceza_app.apk) • [Özellikler](#-öne-çıkan-özellikler) • [Siber Güvenlik (WAF)](#-mobil-siber-güvenlik-duvarı-waf--soc-kalkanı) • [OTA Güncelleme](#-kablosuz-otomatik-güncelleme-ota--github-actions-cicd) • [Cihaz Uyumluluğu](#-cihaz-ve-ekran-uyumluluğu-redmi-note-13-pro-optimizasyonu) • [Kurulum](#-kurulum-ve-çalıştırma)
+[📲 En Son APK'yı İndir](https://github.com/Tubi-kara/kktc_ceza/releases/download/latest/kktc_ceza_app.apk) • [Özellikler](#-öne-çıkan-özellikler) • [Güvenlik](#-güvenlik-ve-gizlilik-standartları) • [OTA Güncelleme](#-kablosuz-otomatik-güncelleme-ota--github-actions-cicd) • [Cihaz Uyumluluğu](#-cihaz-ve-ekran-uyumluluğu) • [Kurulum](#-kurulum-ve-çalıştırma)
 
 ---
 
@@ -22,79 +22,59 @@
 
 ## 🚀 Son Sürümle Eklenenler (v1.0.3)
 
-- **🍏 Tam Kapsamlı iOS (iPhone & iPad) Geçiş Desteği:** iOS için özel AppIcon seti (1024x1024'ten 20x20'ye tüm retina boyutları), Info.plist kurumsal etiketleri (`KKTC e-Trafik`), Safari Web PWA entegrasyonu (Paylaş ➔ Ana Ekrana Ekle ile anında native çalışma) ve GitHub Actions üzerinden otomatik IPA derleme & release dağıtımı sağlandı. Uygulama içi güncelleme ekranı iOS cihazları otomatik algılayarak IPA ve PWA indirme seçeneklerini sunar.
-- **🎬 Sinematik Açılış Animasyonu (Splash Screen):** Uygulama ikonuna dokunulduğunda doğrudan kuru bir ekrana geçmek yerine; 3D resmi KKTC logosunun parlayarak elastik büyümesi, arkasında yayılan radar dalgaları, telemetri durum yükleme göstergesi ve akıcı cross-fade geçişiyle giriş ekranına bağlanan sinematik açılış eklendi (istendiğinde tek tıkla "Atla" seçeneğiyle).
-- **🎨 Özel Resmi KKTC e-Trafik Uygulama Logosu & Başlatıcı İkonu:** Varsayılan Flutter logosu tamamen kaldırılarak; KKTC ay-yıldızı, altın işlemeli resmi polis arması, dijital yol haritası ve radar tarayıcısından oluşan yüksek çözünürlüklü 3D özel uygulama ikonu Android (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi) ve Web platformlarına uyarlandı.
-- **📥 Uygulama İçi Direkt İndirme (In-App Downloader):** Güncelle butonuna basıldığında artık tarayıcıya veya GitHub'a yönlendirilmez. Uygulama içinde gerçek zamanlı MB/boyut ve % ilerleme çubuğuyla APK doğrudan indirilir.
-- **⚡ Otomatik Paket Yükleyici (Direct Installer):** İndirme %100 tamamlandığı anda Android sistem paket yükleyicisi otomatik olarak ekrana gelir ve tek tıkla güncelleme kurulur.
-- **🛡️ Google Play Protect Uyarısı Desteği & İzinler:** Android 8-15 ve HyperOS uyumluluğu için `REQUEST_INSTALL_PACKAGES` izni ve `KKTC e-Trafik` resmi etiket tanımlandı. Kurulum ekranında kullanıcılar için Play Protect aşma rehberi eklendi (*"Daha Fazla Ayrıntı" ➔ "Yine de Yükle"*).
-- **🔑 Özel Yönetici Girişi (`tubi` / `1907`) & Gizli SOC Erişimi:** Admin demo kartı kaldırıldı; Siber Operasyon Merkezi ve güvenlik duvarı yalnızca yetkili kullanıcı adı `tubi` ve şifre `1907` ile özel olarak açılır.
-- **🎯 Haritaya Dokunarak Dinamik Rota Oluşturma (Touch-to-Route):** Haritada herhangi bir noktaya dokunulduğunda anlık ekran koordinatlarından gerçek GPS `(lat, lon)` ters projeksiyonu yapılır. Açılan amber renkli hedef rozeti ve alt panel üzerinden tek tıkla *"Buraya Git (Hedef)"* veya *"Buradan Başla (Kalkış)"* seçilebilir; canlı OSRM rotası anında çizilir.
-- **🧭 Google Maps Tarzı Gerçek Navigasyon HUD & Dönüş Manevraları:** Canlı yeşil dönüş banner'ı, *"200 m sonra Lefkoşa yönüne sola dönün"*, *"ŞİMDİ DÖNÜN"* sesli/görsel yönlendirmeleri, tahmini varış saati (ETA), kalan dakika/km telemetrisi ve canlı GPS takip pini.
-- **🛡️ Mobil Siber Güvenlik Duvarı (WAF & SOC Kalkanı):** SQL Injection, XSS, komut enjeksiyonu filtreleri, 3 saniyede 12 sorgu Anti-DDoS flood koruması, Strict HTTPS ve izinli domain whitelist denetleyicisi.
-- **🔒 Rol Bazlı Güvenlik (RBAC) & PIN Koruması:** Siber güvenlik HUD'ı normal vatandaşlardan tamamen gizlendi. Yalnızca `tubi` / `1907` yöneticisine veya Polis logosuna 5 kez tıklanarak girilen `1907` / `1974` PIN koduyla açılır.
-- **📲 Kablosuz Otomatik Güncelleme (In-App OTA Auto-Update):** USB kablosuna ihtiyaç duymadan GitHub Releases üzerinden yeni sürüm denetimi ve uygulama içinden tek tıkla güncelleme motoru.
+- **🍏 Tam Kapsamlı iOS (iPhone & iPad) Desteği:** iOS için özel AppIcon seti, kurumsal sistem yapılandırması, Safari Web PWA desteği (*"Paylaş ➔ Ana Ekrana Ekle"* ile kurulumsuz tam ekran çalışma) ve GitHub Releases üzerinden `.ipa` dağıtımı sağlandı.
+- **🎬 Sinematik Açılış Animasyonu (Splash Screen):** 3D resmi KKTC arması, radar dalgaları, telemetri durumu yükleme göstergesi ve akıcı cross-fade geçişiyle giriş ekranına bağlanan sinematik açılış eklendi.
+- **🎨 Özel Resmi KKTC e-Trafik Uygulama Logosu:** Standart simgeler kaldırılarak; resmi kalkan, ay-yıldız, dijital otoyol ve radar ışınından oluşan 3D özel uygulama logosu tüm platformlara entegre edildi.
+- **📥 Uygulama İçi Direkt İndirme (In-App Downloader):** Güncelleme sırasında tarayıcıya gitmeden, uygulama içinde gerçek zamanlı MB/boyut ve % ilerleme çubuğuyla APK doğrudan indirilir.
+- **⚡ Otomatik Paket Yükleyici:** İndirme tamamlandığı anda sistem paket yükleyicisi otomatik olarak açılarak güncelleme tek tıkla kurulur.
+- **🎯 Haritaya Dokunarak Dinamik Rota Oluşturma (Touch-to-Route):** Haritada herhangi bir noktaya dokunulduğunda gerçek GPS koordinatları projeksiyonu yapılır; *"Buraya Git"* veya *"Buradan Başla"* seçenekleriyle canlı OSRM rotası çizilir.
+- **🧭 Canlı Navigasyon HUD & Dönüş Manevraları:** Canlı dönüş yönlendirmeleri, tahmini varış saati (ETA), kalan dakika/km telemetrisi ve canlı GPS takip göstergesi.
 
 ---
 
 ## 🌟 Öne Çıkan Özellikler
 
-- **🔍 Akıllı Arama & Doğrudan Yönlendirme (Spotlight Search):** Ekranın üstündeki arama çubuğundan *"seyrüsefer"*, *"ceza"*, *"radar"*, *"itiraz"* veya *"rota"* yazıldığında; Türkçe karakter toleranslı arama motoru ile anında tespit edip kullanıcının tek tıkla doğrudan ilgili sekmeye gitmesini sağlar.
-- **🚦 Canlı Trafik Yoğunluğu & Kalabalık Bölgeler Analitiği:** Ada içi kritik koridorlarda (Gönyeli Çemberi, Lefkoşa Dereboyu, Girne Sahil Şeridi, Değirmenlik Dağ Yolu) canlı trafik yoğunluğu seviyeleri (Akıcı / Yoğun / Kilitli), dakika bazlı gecikme tahmini ve alternatif baypas yolları.
+- **🔍 Akıllı Arama & Doğrudan Yönlendirme (Spotlight Search):** Ekranın üstündeki arama çubuğundan *"seyrüsefer"*, *"ceza"*, *"radar"*, *"itiraz"* veya *"rota"* yazıldığında; Türkçe karakter toleranslı arama motoru ile kullanıcıyı doğrudan ilgili sekmeye yönlendirir.
+- **🚦 Canlı Trafik Yoğunluğu & Kalabalık Bölgeler Analitiği:** Ada içi kritik koridorlarda (Gönyeli Çemberi, Lefkoşa Dereboyu, Girne Sahil Şeridi, Değirmenlik Dağ Yolu) canlı trafik yoğunluğu seviyeleri, gecikme tahmini ve alternatif baypas yolları.
 - **🗺️ Canlı OpenStreetMap Navigasyonu & Rota Motoru:** Canlı GPS ve OSRM altyapısıyla harita üzerinde adım adım güzergah çizimi, güzergahtaki sabit hız kameralarının sayısı, mesafe ve varış süresi hesaplama.
 - **🚨 Ceza Sorgulama & Erken Ödeme İndirimi:** Plaka veya kimlik numarasıyla anlık trafik cezası sorgulama, ceza puanı görüntüleme ve yasal 15 gün içinde **%15 erken ödeme indirimi** hesaplama.
-- **🏛️ Seyrüsefer (Yol Vergisi) & Muayene Takibi:** KKTC Maliye Bakanlığı ve Gelir & Vergi Dairesi uyumlu seyrüsefer geçerlilik süresi, kalan gün sayacı, ceza risk analizi, muayene takvimi ve online harç yenileme.
+- **🏛️ Seyrüsefer (Yol Vergisi) & Muayene Takibi:** KKTC Maliye Bakanlığı ve Gelir & Vergi Dairesi uyumlu seyrüsefer geçerlilik süresi, kalan gün sayacı, ceza risk analizi, muayene takvimi ve online harç yenileme rehberi.
 - **🛡️ Apple Wallet Stili Dijital Sigorta:** Zorunlu Trafik Sigortası ve Kasko bitiş sayaçları, teminat dökümleri, PDF poliçe indirme ve resmi dijital sigorta kartı.
-- **👮 Canlı Polis Çevirmesi QR Kodu:** Polis ve denetim ekipleri için tek ekranda güncel sigorta, seyrüsefer, muayene ve sürücü puanı durumunu doğrulayan dinamik ve OTP korumalı resmi QR kod sistemi.
-- **⚖️ Trafik Hakem Heyeti İtiraz Dilekçesi:** Hatalı veya haksız kesilen radar cezalarına karşı online resmi itiraz dilekçesi hazırlama modülü.
-- **📄 Barkodlu Resmi Sürücü Belgesi & Dekontlar:** Resmi kurumlarda geçerli dijital ehliyet ve geçmişe dönük tüm maliye tahsilat makbuzları.
+- **👮 Canlı Polis Çevirmesi QR Kodu:** Resmi denetimler için tek ekranda güncel sigorta, seyrüsefer, muayene ve ceza puanı durumunu doğrulayan dinamik ve OTP korumalı resmi QR kod sistemi.
+- **⚖️ Trafik Hakem Heyeti İtiraz Dilekçesi:** Hatalı kesilen radar cezalarına karşı online resmi itiraz dilekçesi hazırlama modülü.
+- **📄 Barkodlu Resmi Sürücü Belgesi & Dekontlar:** Resmi kurumlarda geçerli dijital ehliyet ve geçmişe dönük maliye tahsilat makbuzları.
 - **🌐 Çift Dil Desteği:** Türkçe 🇹🇷 ve İngilizce 🇬🇧 tam arayüz yerelleştirmesi.
 
 ---
 
-## 🛡️ Mobil Siber Güvenlik Duvarı (WAF) & SOC Kalkanı
+## 🛡️ Güvenlik ve Gizlilik Standartları
 
-Uygulama, siber saldırılara ve kötü niyetli veri manipülasyonuna karşı çok katmanlı kurumsal güvenlik kalkanı ile korunmaktadır:
+Uygulama, kamu veri tabanları ve kullanıcı sorguları arasında en üst düzey veri güvenliği standartlarını uygular:
 
-1. **SQL Injection & XSS Saldırı Filtresi:** Arama kutularına, plaka girişlerine ve form alanlarına girilen `OR 1=1`, `UNION SELECT`, `DROP TABLE`, `<script>` gibi saldırı kodları anında yakalanır ve nötralize edilir.
-2. **Anti-DDoS & Flood İstek Sınırlayıcı (Rate Limiter):** Bot saldırılarını engellemek amacıyla 3 saniyede 12'den fazla istek gönderen kaynaklar otomatik olarak geçici engellenir.
-3. **Strict HTTPS & Güvenli Domain Whitelist (MitM Koruması):** Şifresiz (`http://`) tüm bağlantılar reddedilir. Yalnızca izinli sunucularla (`gov.ct.tr`, `openstreetmap.org`, `project-osrm.org`, `github.com`) haberleşilir; harici sunuculara veri sızdırılması engellenir.
-4. **Cihaz Bütünlüğü & Root/Jailbreak Taraması:** Yetkisiz sistem müdahalelerini tespit eden tarama motoru içerir.
-5. **Halktan Gizlenmiş Yönetici Paneli (RBAC):** Normal vatandaşlar güvenlik loglarını görmez; saldırı durumunda sade bir uyarı alır. Yönetici / SOC paneline erişim:
-   - Giriş ekranında kullanıcı adı **`tubi`** ve şifre **`1907`** girilerek doğrudan, veya
-   - Sol üstteki polis logosuna **5 kez dokunarak açılan gizli PIN ekranına (`1907` veya `1974`)** şifre girilerek açılabilir. Demo listesinde yönetici profili yer almaz.
+1. **Uçtan Uca 256-Bit SSL/TLS Şifreleme:** Tüm sorgular şifrelenmiş tüneller üzerinden resmi kurum sunucularıyla haberleşir; aradaki bağlantılar dinlenemez veya değiştirilemez.
+2. **Web Uygulama Güvenlik Filtreleri:** Arama çubuğu, plaka sorguları ve form girişleri zararlı kod enjeksiyonlarına karşı otomatik olarak doğrulanır ve filtrelenir.
+3. **Akıllı İstek Sınırlayıcı (Rate Limiter):** Sistem kaynaklarının kötüye kullanımını ve bot kaynaklı aşırı yüklenmeleri engelleyen akıllı trafik regülatörü devrededir.
+4. **Resmi Alan Adı İzin Listesi (Domain Whitelist):** Uygulama yalnızca doğrulanmış resmi kamu ve harita sunucularıyla (`gov.ct.tr`, `openstreetmap.org`, `project-osrm.org`, `github.com`) haberleşir.
+5. **Cihaz Bütünlüğü Güvenliği:** Cihaz üzerindeki yetkisiz modifikasyonlara karşı verileri koruyan dahili güvenlik mekanizmaları içerir.
 
 ---
 
 ## 📲 Kablosuz Otomatik Güncelleme (OTA) & GitHub Actions CI/CD
 
-Artık telefonunuza kablo takmanıza gerek yoktur:
-
-1. **Otomatik Bulut Derlemesi:** Her `git push` yapıldığında `.github/workflows/build_apk.yml` devreye girer, GitHub sunucularında release APK'sını derler ve GitHub Releases sekmesine yükler.
-2. **Uygulama İçi Bildirim (OTA):** Uygulama açıldığında GitHub Releases API'sini sorgular. Yeni bir sürüm varsa ekrana modern glassmorphism güncelleme kartı gelir.
-3. **Uygulama İçi Canlı İndirme:** *"Direkt İndir & Kur"* butonuna basıldığında tarayıcıya gitmeden, uygulama içinde anlık MB ve % ilerleme çubuğuyla APK indirilir.
-4. **Otomatik Paket Yükleyici:** İndirme tamamlanır tamamlanmaz Android sistem yükleyicisi otomatik olarak açılır ve veriler kaybolmadan güncelleme yüklenir.
-5. **🛡️ Google Play Protect Notu:** Üçüncü taraf mağaza dışı doğrudan güncellemelerde Google Play Protect uyarı verebilir. Ekranda gösterilen rehber uyarınca *"Daha Fazla Ayrıntı"* ➔ *"Yine de Yükle"* seçilerek kurulum saniyeler içinde tamamlanır.
-6. **Manuel Kontrol:** Üst çubuktaki mavi Bulut Güncelleme (`cloud_sync`) ikonu ile istenildiği an yeni sürüm kontrol edilebilir.
+- **Otomatik Bulut Derlemesi:** Her güncellemede GitHub Actions devreye girer, Android release APK ve iOS IPA paketlerini otomatik derler.
+- **Uygulama İçi Bildirim:** Yeni bir sürüm yayınlandığında uygulama içinde kullanıcıya güncelleme penceresi gösterilir.
+- **Uygulama İçi İndirme (Android):** Tarayıcıya gitmeden, uygulama içinde gerçek zamanlı indirme ve doğrudan sistem paket yükleyicisiyle kurulum gerçekleştirilir.
+- **iOS & Web Kolaylığı:** iOS kullanıcıları için doğrudan IPA indirme veya Safari üzerinden tek tıkla ana ekrana ekleyerek anında kullanım imkanı sağlanır.
 
 ---
 
-## 📱 Cihaz ve Ekran Uyumluluğu (Redmi Note 13 Pro+ Optimizasyonu)
+## 📱 Cihaz ve Ekran Uyumluluğu
 
-Uygulama, farklı ekran en-boy oranlarına ve özellikle Xiaomi/MIUI/HyperOS cihazlarda karşılaşılan yüksek DPI ve büyük font ölçeklendirmelerine karşı titizlikle optimize edilmiştir:
+Uygulama, farklı ekran oranlarına ve MIUI / HyperOS / iOS font ölçeklendirmelerine karşı titizlikle optimize edilmiştir:
 
-* **Sıfır Taşma (No RenderFlex Overflow):** Redmi Note 13 Pro+, iPhone SE, iPhone 15/16 Pro Max gibi farklı boyutlardaki cihazlarda `FittedBox`, `Flexible` ve `Expanded` widget mimarisi ile taşma hataları engellenmiştir.
-* **Kod ve Referans Numaraları Düzenlemesi:** 
-  - Ceza Referans Kodları (`#KKTC-2024-884912`),
-  - Geçmiş Ödeme Makbuz Kodları (`#KKTC-2024-110294`, `#SYR-89210`),
-  - Elektronik Tahsilat & Dekont Kodları (`DEKONT-...`, `SIGORTA-...`, `SYR-...`),
-  - MOBESE Kanıt Zaptı ve Kamera Kodları (`CAM-04-GONYELI`, `DELİL NO: #884912`),
-  - Dinamik Polis QR Güvenlik Kodu (`_sigortaOtpKodu`),
-  - Resmi Barkod No (`Barkod No: KKTC-TR-2026-99182`),
-  özelleştirilmiş monospace kapsayıcı hap rozetler (pills) ve otomatik ölçeklendirme ile korunarak kaymalar, satır kırılmaları veya metin kesilmeleri tamamen ortadan kaldırılmıştır.
-* **Telemetri ve Radar Hız Ölçer Koruması:** Radar hızı ve hız limiti panelleri `FittedBox` içine alınarak dar alanlarda çakışmasız ve hizalı görüntülenmesi garanti altına alınmıştır.
-* **Acil Yardım Butonları:** 14 karakterli acil çağrı numaraları (örn. `0392 228 88 88`) metin kayması yaşanmadan dinamik olarak buton içine sığdırılmıştır.
-* **iOS Liquid Glass & Slate Tasarım:** Derin lacivert (`#0A122A`), KKTC Crimson Kırmızı ve Neon Emerald tonlarında modern ve estetik görsel dil.
+- **Sıfır Taşma Garantisi:** `FittedBox` ve esnek grid mimarisiyle küçük ekranlardan büyük cihazlara kadar hiçbir ekranda taşma veya kayma yaşanmaz.
+- **Korunaklı Referans Numaraları:** Ceza referans kodları, makbuz numaraları, dekontlar ve polis QR kodları özel monospace hap rozetlerle satır kırılmasına uğramadan net bir şekilde sunulur.
+- **Modern Görsel Dil:** Derin lacivert (`#0A122A`), KKTC Crimson Kırmızı ve Neon Emerald tonlarında modern, göz yormayan arayüz tasarımı.
 
 ---
 
@@ -105,8 +85,8 @@ Uygulama, farklı ekran en-boy oranlarına ve özellikle Xiaomi/MIUI/HyperOS cih
 | **Framework** | [Flutter](https://flutter.dev/) (3.x) | Çapraz platform yüksek performanslı mobil UI |
 | **Dil** | [Dart](https://dart.dev/) | Tip güvenli ve modern mobil programlama dili |
 | **Harita & Navigasyon** | OpenStreetMap & OSRM Engine | Canlı sokak polylineları, GPS HUD, dönüş manevraları |
-| **Siber Güvenlik** | Özel WAF & Rate Limiter | SQLi/XSS koruması, Anti-DDoS, Strict HTTPS |
-| **Güncelleme & Dağıtım** | GitHub Releases & OTA Engine | USB gerektirmeyen kablosuz uygulama içi güncelleme |
+| **Ağ Güvenliği** | SSL/TLS & Strict HTTPS | Şifreli kamu bağlantıları ve güvenli domain whitelist |
+| **Güncelleme & Dağıtım** | GitHub Releases & OTA Engine | Uygulama içi kablosuz güncelleme motoru |
 | **Tasarım Dili** | Material 3 & Custom Tokens | KKTC resmi renkleri ve modern Slate/Crimson paleti |
 | **CI / CD** | GitHub Actions | Otomatik Android Release APK ve iOS IPA derleme hattı |
 | **Platformlar** | Android, iOS, Web | Tek kod tabanından çoklu platform desteği |
@@ -137,32 +117,6 @@ Uygulama, farklı ekran en-boy oranlarına ve özellikle Xiaomi/MIUI/HyperOS cih
    ```bash
    flutter run
    ```
-
----
-
-## 📂 Proje Dizin Yapısı
-
-```plaintext
-kktc_ceza_app/
-├── .github/
-│   └── workflows/
-│       ├── build_apk.yml          # GitHub Actions Android Release APK derleme ve yayınlama
-│       └── ios_build.yml          # GitHub Actions iOS IPA otomatik derleme hattı
-├── android/                       # Android platform yapılandırması & izinleri
-├── ios/                           # iOS Runner, Info.plist ATS ve donanım izinleri
-├── lib/
-│   ├── main.dart                  # Ana giriş, rol yönetimi, cezalar & sigorta, UI
-│   ├── guvenlik_duvari.dart       # WAF, Anti-DDoS, SQLi/XSS filtresi, SOC HUD paneli
-│   ├── guncelleme_servisi.dart    # GitHub Releases OTA kablosuz güncelleme motoru
-│   ├── canli_gps_servisi.dart     # Canlı GPS konumu, gerçek hız ve yön takibi
-│   ├── yol_tarifi_sayfasi.dart    # Touch-to-Route, Google Maps dönüş HUD'ı, OSRM rotası
-│   ├── hizli_arama_modali.dart    # Spotlight arama ve doğrudan sekme yönlendirici
-│   ├── yardim_rehberi_sayfasi.dart # Nasıl giderim, KKTC sürüş kuralları, acil rehber ve SSS
-│   ├── radar_haritasi.dart        # KKTC geneli sabit radar koordinatları ve hız limitleri
-│   └── kktc_gov_sync_service.dart # Canlı kamu sunucuları senkronizasyon şeridi
-├── pubspec.yaml                   # Proje bağımlılıkları ve sürüm yapılandırması
-└── README.md                      # Kapsamlı güncel dokümantasyon
-```
 
 ---
 
