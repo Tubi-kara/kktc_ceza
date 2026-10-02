@@ -22,6 +22,7 @@
 
 ## 🚀 Son Sürümle Eklenenler (v1.0.3)
 
+- **🍏 Tam Kapsamlı iOS (iPhone & iPad) Geçiş Desteği:** iOS için özel AppIcon seti (1024x1024'ten 20x20'ye tüm retina boyutları), Info.plist kurumsal etiketleri (`KKTC e-Trafik`), Safari Web PWA entegrasyonu (Paylaş ➔ Ana Ekrana Ekle ile anında native çalışma) ve GitHub Actions üzerinden otomatik IPA derleme & release dağıtımı sağlandı. Uygulama içi güncelleme ekranı iOS cihazları otomatik algılayarak IPA ve PWA indirme seçeneklerini sunar.
 - **🎬 Sinematik Açılış Animasyonu (Splash Screen):** Uygulama ikonuna dokunulduğunda doğrudan kuru bir ekrana geçmek yerine; 3D resmi KKTC logosunun parlayarak elastik büyümesi, arkasında yayılan radar dalgaları, telemetri durum yükleme göstergesi ve akıcı cross-fade geçişiyle giriş ekranına bağlanan sinematik açılış eklendi (istendiğinde tek tıkla "Atla" seçeneğiyle).
 - **🎨 Özel Resmi KKTC e-Trafik Uygulama Logosu & Başlatıcı İkonu:** Varsayılan Flutter logosu tamamen kaldırılarak; KKTC ay-yıldızı, altın işlemeli resmi polis arması, dijital yol haritası ve radar tarayıcısından oluşan yüksek çözünürlüklü 3D özel uygulama ikonu Android (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi) ve Web platformlarına uyarlandı.
 - **📥 Uygulama İçi Direkt İndirme (In-App Downloader):** Güncelle butonuna basıldığında artık tarayıcıya veya GitHub'a yönlendirilmez. Uygulama içinde gerçek zamanlı MB/boyut ve % ilerleme çubuğuyla APK doğrudan indirilir.

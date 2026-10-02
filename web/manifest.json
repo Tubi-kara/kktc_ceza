@@ -1,11 +1,11 @@
 {
-    "name": "kktc_ceza_app",
-    "short_name": "kktc_ceza_app",
+    "name": "KKTC e-Trafik Portalı",
+    "short_name": "KKTC e-Trafik",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#060B19",
+    "theme_color": "#0A122A",
+    "description": "Kuzey Kıbrıs Türk Cumhuriyeti Akıllı Trafik, Ceza, Seyrüsefer ve Navigasyon Sistemi",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

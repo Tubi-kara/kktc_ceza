@@ -404,8 +404,11 @@ class GuncellemeServisi {
                             child: ElevatedButton.icon(
                               onPressed: () {
                                 Navigator.of(ctx).pop();
-                                // Doğrudan uygulama içi indirme ve yükleme modalını aç
-                                indirmeDiyaloguGoster(context, bilgi, turkceMi);
+                                if (Platform.isIOS) {
+                                  iosGuncellemeDiyaloguGoster(context, bilgi, turkceMi);
+                                } else {
+                                  indirmeDiyaloguGoster(context, bilgi, turkceMi);
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF10B981),
@@ -415,9 +418,14 @@ class GuncellemeServisi {
                                 elevation: 6,
                                 shadowColor: const Color(0xFF10B981).withValues(alpha: 0.5),
                               ),
-                              icon: const Icon(Icons.download_rounded, size: 18),
+                              icon: Icon(
+                                Platform.isIOS ? Icons.apple_rounded : Icons.download_rounded,
+                                size: 18,
+                              ),
                               label: Text(
-                                turkceMi ? 'Direkt İndir & Kur' : 'Download & Install',
+                                Platform.isIOS
+                                    ? (turkceMi ? 'iOS Güncellemesi' : 'iOS Update')
+                                    : (turkceMi ? 'Direkt İndir & Kur' : 'Download & Install'),
                                 style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
                               ),
                             ),
@@ -435,7 +443,7 @@ class GuncellemeServisi {
     );
   }
 
-  /// 📲 Uygulama İçi Canlı İndirme & Otomatik Paket Yükleyici Modalı
+  /// 📲 Uygulama İçi Canlı İndirme & Otomatik Paket Yükleyici Modalı (Android)
   static void indirmeDiyaloguGoster(
     BuildContext context,
     GuncellemeBilgisi bilgi,
@@ -445,6 +453,210 @@ class GuncellemeServisi {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => GuncellemeIndirmeDiyalogu(bilgi: bilgi, turkceMi: turkceMi),
+    );
+  }
+
+  /// 🍏 iOS (iPhone & iPad) Özel Güncelleme & Yükleme Modalı
+  static void iosGuncellemeDiyaloguGoster(
+    BuildContext context,
+    GuncellemeBilgisi bilgi,
+    bool turkceMi,
+  ) {
+    const String ipaUrl =
+        "https://github.com/Tubi-kara/kktc_ceza/releases/latest/download/KKTC_Ceza_iOS.ipa";
+    const String releasePageUrl =
+        "https://github.com/Tubi-kara/kktc_ceza/releases/latest";
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 420),
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white24, width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Apple İkonu
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.apple_rounded, color: Colors.white, size: 36),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                Text(
+                  turkceMi ? 'iOS (iPhone) Güncellemesi' : 'iOS (iPhone) Update',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'v${bilgi.yeniSurum}',
+                  style: const TextStyle(
+                    color: Color(0xFF10B981),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Seçenek 1: IPA İndir
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.download_rounded, color: Color(0xFF38BDF8), size: 22),
+                    ),
+                    title: Text(
+                      turkceMi ? 'iOS IPA Paketini İndir' : 'Download iOS IPA',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    subtitle: Text(
+                      turkceMi
+                          ? 'Sideloadly, AltStore, Scarlet veya TrollStore ile kurun'
+                          : 'Install via Sideloadly, AltStore, Scarlet or TrollStore',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10.5),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white38, size: 12),
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      await launchUrl(Uri.parse(ipaUrl), mode: LaunchMode.externalApplication);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Seçenek 2: Safari Web PWA
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.language_rounded, color: Color(0xFF10B981), size: 22),
+                    ),
+                    title: Text(
+                      turkceMi ? 'Safari Web Uygulaması (PWA)' : 'Safari Web App (PWA)',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    subtitle: Text(
+                      turkceMi
+                          ? "Safari'de açıp 'Paylaş ➔ Ana Ekrana Ekle' diyerek kurun"
+                          : "Open in Safari & tap 'Share ➔ Add to Home Screen'",
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10.5),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white38, size: 12),
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      await launchUrl(
+                        Uri.parse("https://tubi-kara.github.io/kktc_ceza/"),
+                        mode: LaunchMode.externalApplication,
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Seçenek 3: GitHub Releases
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.code_rounded, color: Colors.white70, size: 22),
+                    ),
+                    title: Text(
+                      turkceMi ? 'GitHub Sürüm Sayfası' : 'GitHub Releases Page',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    subtitle: Text(
+                      turkceMi ? 'Tüm kaynak kodlar ve paketler' : 'All source code & binaries',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10.5),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white38, size: 12),
+                    onTap: () async {
+                      Navigator.pop(ctx);
+                      await launchUrl(Uri.parse(releasePageUrl), mode: LaunchMode.externalApplication);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white70,
+                      side: const BorderSide(color: Colors.white24),
+                      padding: const EdgeInsets.symmetric(vertical: 11),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(turkceMi ? 'Kapat' : 'Close'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

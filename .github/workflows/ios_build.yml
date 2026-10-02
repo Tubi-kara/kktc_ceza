@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-ios:
     name: Build iOS App (.ipa)
@@ -38,3 +41,19 @@ jobs:
           name: KKTC_Ceza_iOS_App
           path: KKTC_Ceza_iOS.ipa
           retention-days: 30
+
+      - name: Extract Version from pubspec.yaml
+        id: get_version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | cut -d ' ' -f 2 | cut -d '+' -f 1)
+          echo "APP_VERSION=v$VERSION" >> $GITHUB_ENV
+
+      - name: Publish or Update GitHub Release with iOS IPA
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: ${{ env.APP_VERSION }}
+          name: "KKTC Trafik & Ceza Radar ${{ env.APP_VERSION }}"
+          files: KKTC_Ceza_iOS.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
