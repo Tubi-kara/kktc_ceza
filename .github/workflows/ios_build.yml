@@ -57,3 +57,13 @@ jobs:
           files: KKTC_Ceza_iOS.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Flutter Web (PWA for iOS)
+        run: flutter build web --release --base-href /kktc_ceza/
+
+      - name: Deploy Web App to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
