@@ -22,6 +22,7 @@
 
 ## 🚀 Son Sürümle Eklenenler (v1.0.3)
 
+- **🎬 Sinematik Açılış Animasyonu (Splash Screen):** Uygulama ikonuna dokunulduğunda doğrudan kuru bir ekrana geçmek yerine; 3D resmi KKTC logosunun parlayarak elastik büyümesi, arkasında yayılan radar dalgaları, telemetri durum yükleme göstergesi ve akıcı cross-fade geçişiyle giriş ekranına bağlanan sinematik açılış eklendi (istendiğinde tek tıkla "Atla" seçeneğiyle).
 - **🎨 Özel Resmi KKTC e-Trafik Uygulama Logosu & Başlatıcı İkonu:** Varsayılan Flutter logosu tamamen kaldırılarak; KKTC ay-yıldızı, altın işlemeli resmi polis arması, dijital yol haritası ve radar tarayıcısından oluşan yüksek çözünürlüklü 3D özel uygulama ikonu Android (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi) ve Web platformlarına uyarlandı.
 - **📥 Uygulama İçi Direkt İndirme (In-App Downloader):** Güncelle butonuna basıldığında artık tarayıcıya veya GitHub'a yönlendirilmez. Uygulama içinde gerçek zamanlı MB/boyut ve % ilerleme çubuğuyla APK doğrudan indirilir.
 - **⚡ Otomatik Paket Yükleyici (Direct Installer):** İndirme %100 tamamlandığı anda Android sistem paket yükleyicisi otomatik olarak ekrana gelir ve tek tıkla güncelleme kurulur.

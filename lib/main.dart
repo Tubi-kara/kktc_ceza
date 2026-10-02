@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
@@ -57,6 +58,7 @@ class KktcCezaApp extends StatefulWidget {
 }
 
 class _KktcCezaAppState extends State<KktcCezaApp> {
+  bool _splashGosteriliyor = true;
   bool _turkceMi = true;
   bool _girisYapildiMi = false;
   String _kullaniciAdi = "";
@@ -117,20 +119,475 @@ class _KktcCezaAppState extends State<KktcCezaApp> {
           ),
         ),
       ),
-      home: _girisYapildiMi
-          ? AnaSayfaTabs(
-              kullaniciAdi: _kullaniciAdi,
-              kullaniciRolu: _kullaniciRolu,
-              araclar: _araclar,
-              turkceMi: _turkceMi,
-              onDilDegistir: _dilDegistir,
-              onCikisYap: _cikisYap,
-            )
-          : GirisSayfasi(
-              turkceMi: _turkceMi,
-              onDilDegistir: _dilDegistir,
-              onGirisBasarili: _girisYapBasarili,
+      home: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 550),
+        switchInCurve: Curves.easeIn,
+        switchOutCurve: Curves.easeOut,
+        child: _splashGosteriliyor
+            ? AcilisAnimasyonuSayfasi(
+                key: const ValueKey('splash_screen'),
+                turkceMi: _turkceMi,
+                onTamamlandi: () {
+                  setState(() => _splashGosteriliyor = false);
+                },
+              )
+            : (_girisYapildiMi
+                ? AnaSayfaTabs(
+                    key: const ValueKey('ana_sayfa_tabs'),
+                    kullaniciAdi: _kullaniciAdi,
+                    kullaniciRolu: _kullaniciRolu,
+                    araclar: _araclar,
+                    turkceMi: _turkceMi,
+                    onDilDegistir: _dilDegistir,
+                    onCikisYap: _cikisYap,
+                  )
+                : GirisSayfasi(
+                    key: const ValueKey('giris_sayfasi'),
+                    turkceMi: _turkceMi,
+                    onDilDegistir: _dilDegistir,
+                    onGirisBasarili: _girisYapBasarili,
+                  )),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// 🌟 SİNEMATİK AÇILIŞ ANİMASYONU (SPLASH SCREEN)
+// ==========================================
+class AcilisAnimasyonuSayfasi extends StatefulWidget {
+  final bool turkceMi;
+  final VoidCallback onTamamlandi;
+
+  const AcilisAnimasyonuSayfasi({
+    super.key,
+    required this.turkceMi,
+    required this.onTamamlandi,
+  });
+
+  @override
+  State<AcilisAnimasyonuSayfasi> createState() => _AcilisAnimasyonuSayfasiState();
+}
+
+class _AcilisAnimasyonuSayfasiState extends State<AcilisAnimasyonuSayfasi>
+    with TickerProviderStateMixin {
+  late final AnimationController _logoController;
+  late final Animation<double> _logoScale;
+  late final Animation<double> _logoFade;
+
+  late final AnimationController _pulseController;
+  late final AnimationController _textController;
+  late final Animation<double> _textFade;
+  late final Animation<Offset> _textSlide;
+
+  late final AnimationController _progressController;
+  String _durumMetni = "";
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _durumMetni = widget.turkceMi
+        ? "Güvenli kamu ağına bağlanılıyor..."
+        : "Connecting to secure network...";
+
+    // Logo animasyonu (Büyüme & Parlama)
+    _logoController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _logoScale = CurvedAnimation(
+      parent: _logoController,
+      curve: Curves.easeOutBack,
+    );
+    _logoFade = CurvedAnimation(
+      parent: _logoController,
+      curve: Curves.easeIn,
+    );
+
+    // Radar dalgaları
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat();
+
+    // Metin animasyonu
+    _textController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _textFade = CurvedAnimation(
+      parent: _textController,
+      curve: Curves.easeIn,
+    );
+    _textSlide = Tween<Offset>(
+      begin: const Offset(0, 0.25),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _textController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    // Yükleme çubuğu
+    _progressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    );
+
+    // Animasyon zincirini başlat
+    _logoController.forward();
+    Future.delayed(const Duration(milliseconds: 350), () {
+      if (mounted) _textController.forward();
+    });
+    _progressController.forward();
+
+    // Telemetri durum güncellemeleri
+    Future.delayed(const Duration(milliseconds: 750), () {
+      if (mounted) {
+        setState(() {
+          _durumMetni = widget.turkceMi
+              ? "WAF Siber Güvenlik Duvarı devrede..."
+              : "WAF Cyber Security Shield active...";
+        });
+      }
+    });
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        setState(() {
+          _durumMetni = widget.turkceMi
+              ? "Trafik & radar verileri eşitlendi..."
+              : "Traffic & radar telemetry synced...";
+        });
+      }
+    });
+
+    // Açılış tamamlandığında giriş ekranına geçiş yap
+    _timer = Timer(const Duration(milliseconds: 2350), () {
+      if (mounted) widget.onTamamlandi();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _logoController.dispose();
+    _pulseController.dispose();
+    _textController.dispose();
+    _progressController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF060B19),
+      body: Stack(
+        children: [
+          // ── Arka Plan Siber Glow Işıkları ──
+          Positioned(
+            top: -60,
+            left: -60,
+            child: Container(
+              width: 260,
+              height: 260,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFDC2626).withValues(alpha: 0.18),
+              ),
             ),
+          ),
+          Positioned(
+            bottom: -80,
+            right: -60,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF0284C7).withValues(alpha: 0.16),
+              ),
+            ),
+          ),
+          Positioned(
+            top: size.height * 0.40,
+            left: size.width * 0.25,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF10B981).withValues(alpha: 0.10),
+              ),
+            ),
+          ),
+
+          // ── Hızlı Geçiş (Atla) Butonu ──
+          SafeArea(
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 8, right: 16),
+                child: TextButton(
+                  onPressed: widget.onTamamlandi,
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.white.withValues(alpha: 0.08),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.turkceMi ? 'Atla' : 'Skip',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 10),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // ── Ana İçerik (Logo, Başlık & Yükleme Göstergesi) ──
+          SafeArea(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(flex: 3),
+
+                  // 🛡️ Dönen / Parlayan Radar Halka & 3D Logo Arması
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // 1. Radar Dalga Halkası
+                      AnimatedBuilder(
+                        animation: _pulseController,
+                        builder: (context, child) {
+                          final v = _pulseController.value;
+                          return Container(
+                            width: 120 + 80 * v,
+                            height: 120 + 80 * v,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFF38BDF8).withValues(alpha: (1 - v) * 0.35),
+                                width: 1.5,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // 2. İkinci Dış Dalga Halkası
+                      AnimatedBuilder(
+                        animation: _pulseController,
+                        builder: (context, child) {
+                          final v = (_pulseController.value + 0.5) % 1.0;
+                          return Container(
+                            width: 120 + 80 * v,
+                            height: 120 + 80 * v,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFF10B981).withValues(alpha: (1 - v) * 0.30),
+                                width: 1.2,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // 3. Merkezdeki Resmi KKTC e-Trafik Logosu
+                      FadeTransition(
+                        opacity: _logoFade,
+                        child: ScaleTransition(
+                          scale: _logoScale,
+                          child: Container(
+                            width: 112,
+                            height: 112,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(28),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF0284C7).withValues(alpha: 0.45),
+                                  blurRadius: 32,
+                                  spreadRadius: 2,
+                                ),
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.70),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 12),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(28),
+                              child: Image.asset(
+                                'assets/app_logo.png',
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => Container(
+                                  color: const Color(0xFF1E293B),
+                                  child: const Icon(
+                                    Icons.shield_rounded,
+                                    color: Color(0xFF38BDF8),
+                                    size: 54,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // 📝 Kurumsal Başlık & Tipografi (Slide & Fade)
+                  FadeTransition(
+                    opacity: _textFade,
+                    child: SlideTransition(
+                      position: _textSlide,
+                      child: Column(
+                        children: [
+                          // Üst Resmi Kurum Etiketi
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.06),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                                width: 1,
+                              ),
+                            ),
+                            child: const Text(
+                              'KUZEY KIBRIS TÜRK CUMHURİYETİ',
+                              style: TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.8,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Uygulama Adı
+                          const Text(
+                            'KKTC e-Trafik',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 27,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+
+                          // Açıklama
+                          Text(
+                            widget.turkceMi
+                                ? 'Polis Genel Müdürlüğü • Trafik & Navigasyon'
+                                : 'Police HQ • Smart Traffic & Navigation',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.65),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const Spacer(flex: 3),
+
+                  // ⚡ Alt Telemetri & Canlı İlerleme Çubuğu
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 48),
+                    child: Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: AnimatedBuilder(
+                            animation: _progressController,
+                            builder: (context, child) {
+                              return LinearProgressIndicator(
+                                value: _progressController.value,
+                                minHeight: 4,
+                                backgroundColor: Colors.white.withValues(alpha: 0.08),
+                                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Durum Metni ve Yanıp Sönen Yeşil Nokta
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Color(0xFF10B981),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _durumMetni,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.55),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // 🔒 SSL Şifreleme Bilgisi
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.lock_rounded, color: Colors.white.withValues(alpha: 0.35), size: 12),
+                      const SizedBox(width: 5),
+                      Text(
+                        '256-Bit SSL • Resmi Kamu Ağı',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.35),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
