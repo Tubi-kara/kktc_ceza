@@ -22,10 +22,11 @@
 
 ## 🚀 Son Sürümle Eklenenler (v1.0.2)
 
+- **🔑 Özel Yönetici Girişi (`tubi` / `1907`) & Gizli SOC Erişimi:** Admin/SOC demo kartı genel giriş ekranından tamamen kaldırıldı. Halkın veya üçüncü şahısların güvenlik duvarı ayarlarına ve loglarına erişimi engellendi. Siber Operasyon Merkezi (SOC) ve yönetici paneline yalnızca yetkili kullanıcı adı `tubi` ve şifre `1907` ile özel olarak giriş yapılabilir.
 - **🎯 Haritaya Dokunarak Dinamik Rota Oluşturma (Touch-to-Route):** Haritada herhangi bir noktaya dokunulduğunda anlık ekran koordinatlarından gerçek GPS `(lat, lon)` ters projeksiyonu yapılır. Açılan amber renkli hedef rozeti ve alt panel üzerinden tek tıkla *"Buraya Git (Hedef)"* veya *"Buradan Başla (Kalkış)"* seçilebilir; canlı OSRM rotası anında çizilir.
 - **🧭 Google Maps Tarzı Gerçek Navigasyon HUD & Dönüş Manevraları:** Canlı yeşil dönüş banner'ı, *"200 m sonra Lefkoşa yönüne sola dönün"*, *"ŞİMDİ DÖNÜN"* sesli/görsel yönlendirmeleri, tahmini varış saati (ETA), kalan dakika/km telemetrisi ve canlı GPS takip pini.
 - **🛡️ Mobil Siber Güvenlik Duvarı (WAF & SOC Kalkanı):** SQL Injection, XSS, komut enjeksiyonu filtreleri, 3 saniyede 12 sorgu Anti-DDoS flood koruması, Strict HTTPS ve izinli domain whitelist denetleyicisi.
-- **🔒 Rol Bazlı Güvenlik (RBAC) & Gizli Admin Paneli:** Siber güvenlik HUD'ı normal vatandaşlardan tamamen gizlendi. Yalnızca yetkili Admin/PGM kullanıcılarına veya Polis logosuna 5 kez tıklanarak girilen `1974` PIN koduyla açılır.
+- **🔒 Rol Bazlı Güvenlik (RBAC) & PIN Koruması:** Siber güvenlik HUD'ı normal vatandaşlardan tamamen gizlendi. Yalnızca `tubi` / `1907` yöneticisine veya Polis logosuna 5 kez tıklanarak girilen `1907` / `1974` PIN koduyla açılır.
 - **📲 Kablosuz Otomatik Güncelleme (In-App OTA Auto-Update):** USB kablosuna ihtiyaç duymadan GitHub Releases üzerinden yeni sürüm denetimi ve uygulama içinden tek tıkla güncelleme motoru.
 
 ---
@@ -53,9 +54,9 @@ Uygulama, siber saldırılara ve kötü niyetli veri manipülasyonuna karşı ç
 2. **Anti-DDoS & Flood İstek Sınırlayıcı (Rate Limiter):** Bot saldırılarını engellemek amacıyla 3 saniyede 12'den fazla istek gönderen kaynaklar otomatik olarak geçici engellenir.
 3. **Strict HTTPS & Güvenli Domain Whitelist (MitM Koruması):** Şifresiz (`http://`) tüm bağlantılar reddedilir. Yalnızca izinli sunucularla (`gov.ct.tr`, `openstreetmap.org`, `project-osrm.org`, `github.com`) haberleşilir; harici sunuculara veri sızdırılması engellenir.
 4. **Cihaz Bütünlüğü & Root/Jailbreak Taraması:** Yetkisiz sistem müdahalelerini tespit eden tarama motoru içerir.
-5. **Halktan Gizlenmiş Yönetici Paneli (RBAC):** Normal vatandaşlar güvenlik loglarını görmez; saldırı durumunda sade bir uyarı alır. Yönetici / PGM yetkilileri ise:
-   - Giriş ekranındaki **"PGM Siber Güvenlik Yöneticisi (Admin)"** profiliyle, veya
-   - Sol üstteki polis logosuna **5 kez dokunarak açılan gizli PIN ekranına (`1974` veya `9999`)** şifre girerek canlı **Siber Operasyon Merkezi (SOC)** panelini açabilir.
+5. **Halktan Gizlenmiş Yönetici Paneli (RBAC):** Normal vatandaşlar güvenlik loglarını görmez; saldırı durumunda sade bir uyarı alır. Yönetici / SOC paneline erişim:
+   - Giriş ekranında kullanıcı adı **`tubi`** ve şifre **`1907`** girilerek doğrudan, veya
+   - Sol üstteki polis logosuna **5 kez dokunarak açılan gizli PIN ekranına (`1907` veya `1974`)** şifre girilerek açılabilir. Demo listesinde yönetici profili yer almaz.
 
 ---
 

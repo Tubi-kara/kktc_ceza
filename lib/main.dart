@@ -246,6 +246,26 @@ class _GirisSayfasiState extends State<GirisSayfasi>
       return;
     }
 
+    // 🛡️ ÖZEL SİSTEM YÖNETİCİSİ GİRİŞİ: Kullanıcı Adı: "tubi" • Şifre: "1907"
+    if (numara.toLowerCase() == 'tubi' && sifre == '1907') {
+      setState(() => _girisYukleniyor = true);
+      Future.delayed(const Duration(milliseconds: 650), () {
+        if (!mounted) return;
+        setState(() {
+          _girisYukleniyor = false;
+          _girisBasariliAnimasyon = true;
+        });
+        Future.delayed(const Duration(milliseconds: 400), () {
+          widget.onGirisBasarili(
+            widget.turkceMi ? "Tubi (Sistem Yöneticisi)" : "Tubi (System Admin)",
+            ["PGM 001", "POLIS 155", "ST 999"],
+            "PGM Siber Operasyon Merkezi (SOC / Admin)",
+          );
+        });
+      });
+      return;
+    }
+
     setState(() => _girisYukleniyor = true);
 
     Future.delayed(const Duration(milliseconds: 950), () {
@@ -274,7 +294,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
             orElse: () => _universiteler[0],
           );
           final uniKisa = uni["kisa"]!;
-          adSoyad = widget.turkceMi ? "Tubi ($uniKisa)" : "Tubi ($uniKisa Student)";
+          adSoyad = widget.turkceMi ? "Caner Yıldız ($uniKisa)" : "Caner Yildiz ($uniKisa Student)";
           rolAciklama = widget.turkceMi ? "$uniKisa Öğrenci (YÖBİS Aktif)" : "$uniKisa Student (YOBIS Active)";
           if (_secilenUniversite == "ODTU") {
             tanimliAraclar = ["ODTU 107", "ST 999"];
@@ -292,9 +312,9 @@ class _GirisSayfasiState extends State<GirisSayfasi>
           break;
 
         case KullaniciTuru.admin:
-          adSoyad = widget.turkceMi ? "Yönetici (PGM Siber Güvenlik)" : "Admin (Cyber Security HQ)";
+          adSoyad = widget.turkceMi ? "Tubi (Sistem Yöneticisi)" : "Tubi (System Admin)";
           rolAciklama = "PGM Siber Operasyon Merkezi (SOC / Admin)";
-          tanimliAraclar = ["PGM 001", "POLIS 155"];
+          tanimliAraclar = ["PGM 001", "POLIS 155", "ST 999"];
           break;
       }
 
@@ -324,20 +344,21 @@ class _GirisSayfasiState extends State<GirisSayfasi>
           _sifreController.text = "tc1234";
           break;
         case KullaniciTuru.ogrenci:
-          _girisController.text = uniKod == "ODTU" ? "21703517" : "tubi";
-          _sifreController.text = "tugkan3517";
+          _girisController.text = uniKod == "ODTU" ? "21703517" : "20210042";
+          _sifreController.text = "ogrenci123";
           break;
         case KullaniciTuru.uluslararasi:
           _girisController.text = "U8819201";
           _sifreController.text = "alex123";
           break;
         case KullaniciTuru.admin:
-          _girisController.text = "admin.pgm";
-          _sifreController.text = "kktc.soc.2026";
+          // Admin için demo butonu kaldırıldı. Yalnızca tubi / 1907 ile özel giriş yapılır.
           break;
       }
     });
-    _girisYap();
+    if (rol != KullaniciTuru.admin) {
+      _girisYap();
+    }
   }
 
   void _biyometrikGiris() async {
@@ -1085,7 +1106,7 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                   // Demo 3: Öğrenci (ODTÜ / DAÜ / YDÜ)
                   _demoCard(
                     icon: Icons.school_rounded,
-                    name: widget.turkceMi ? 'Tubi (ODTÜ / DAÜ Öğrencisi)' : 'Tubi (Student Profile)',
+                    name: widget.turkceMi ? 'Caner Yıldız (ODTÜ / DAÜ Öğrencisi)' : 'Caner Yildiz (Student Profile)',
                     badge: widget.turkceMi ? 'Kampüs Araç Pulu' : 'Campus Permit',
                     subtitle: 'Honda Civic & VW Polo (ODTÜ / DAÜ Pulu)',
                     iconBg: const Color(0xFF007C55).withValues(alpha: 0.20),
@@ -1107,22 +1128,6 @@ class _GirisSayfasiState extends State<GirisSayfasi>
                     badgeBg: const Color(0xFF6D28D9).withValues(alpha: 0.30),
                     badgeColor: const Color(0xFFDDD6FE),
                     onTap: () => _hizliDemoGiris(KullaniciTuru.uluslararasi),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Demo 5: PGM Bilgi İşlem / Siber Güvenlik Yöneticisi (Admin)
-                  _demoCard(
-                    icon: Icons.admin_panel_settings_rounded,
-                    name: widget.turkceMi ? 'PGM Siber Güvenlik Yöneticisi' : 'Police Cyber Security Admin',
-                    badge: widget.turkceMi ? 'YÖNETİCİ / SOC' : 'ADMIN / SOC',
-                    subtitle: widget.turkceMi
-                        ? 'Siber Güvenlik Duvarı (WAF), Loglar & Sistem Denetimi'
-                        : 'Cyber Firewall (WAF), Incident Logs & Audit',
-                    iconBg: const Color(0xFF10B981).withValues(alpha: 0.20),
-                    iconColor: const Color(0xFF10B981),
-                    badgeBg: const Color(0xFF10B981).withValues(alpha: 0.30),
-                    badgeColor: const Color(0xFF6EE7B7),
-                    onTap: () => _hizliDemoGiris(KullaniciTuru.admin),
                   ),
                   const SizedBox(height: 24),
 
@@ -1575,7 +1580,7 @@ class _AnaSayfaTabsState extends State<AnaSayfaTabs>
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
               onPressed: () {
-                if (pinController.text == "1974" || pinController.text == "9999") {
+                if (pinController.text == "1907" || pinController.text == "1974" || pinController.text == "9999") {
                   Navigator.pop(ctx);
                   setState(() => _gizliAdminModuAcik = true);
                   ScaffoldMessenger.of(context).showSnackBar(
