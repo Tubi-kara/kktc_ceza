@@ -308,11 +308,29 @@ class _KktcETrafikDashboardSayfasiState
                               ? KktcETrafikMenuSayfasi(
                                   onOpenPanel: () => setState(() => _selectedTabIndex = 0),
                                   onOpenRadars: () => setState(() => _selectedTabIndex = 1),
-                                  onOpenFines: () => setState(() {
-                                    _selectedTabIndex = 3;
-                                    _cezaSigortaSubTab = 0;
-                                  }),
-                                  onCikisYap: widget.onCikisYap,
+                                  onOpenFines: () {
+                                    _girisKontrolEt(
+                                      islemAdi: 'Cezalar ve harçlar sekmesini açmak',
+                                      onGirisSonrasi: () {
+                                        setState(() {
+                                          _selectedTabIndex = 3;
+                                          _cezaSigortaSubTab = 0;
+                                        });
+                                      },
+                                    );
+                                  },
+                                  onCikisYap: () {
+                                    setState(() {
+                                      _girisYapildiMi = false;
+                                      _kullaniciAdi = 'Misafir Kullanıcı';
+                                    });
+                                    if (widget.onCikisYap != null) {
+                                      widget.onCikisYap!();
+                                    }
+                                  },
+                                  girisYapildiMi: _girisYapildiMi,
+                                  kullaniciAdi: _kullaniciAdi,
+                                  onGirisYap: () => _girisEkraniniAc(),
                                 )
                               : _buildDashboardTab()),
                     ),
@@ -5793,7 +5811,7 @@ class _KktcETrafikDashboardSayfasiState
           mainAxisSpacing: 12,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          childAspectRatio: 1.15,
+          childAspectRatio: 1.10,
           children: [
             // 1. Cezalarım Kartı
             _buildGridActionCard(
@@ -5817,7 +5835,7 @@ class _KktcETrafikDashboardSayfasiState
                 ),
               ),
               title: 'Cezalarım',
-              bottomLabel: _girisYapildiMi ? 'Toplam Borç' : 'Ceza Durumu',
+              bottomLabel: _girisYapildiMi ? 'Toplam Borç' : 'Sorgula',
               bottomValue: _girisYapildiMi ? (_cezaOdendi ? '₺0' : '₺1.850') : 'Giriş Yap',
               onTap: () {
                 _girisKontrolEt(
@@ -6323,19 +6341,25 @@ class _KktcETrafikDashboardSayfasiState
                   else if (bottomLabel != null && bottomValue != null)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          bottomLabel,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: cSlate,
+                        Flexible(
+                          child: Text(
+                            bottomLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: cSlate,
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 4),
                         Text(
                           bottomValue,
                           style: const TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 13.5,
+                            fontSize: 12.5,
                             fontWeight: FontWeight.w800,
                             color: cNavy,
                           ),

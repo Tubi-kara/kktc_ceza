@@ -16,6 +16,9 @@ class KktcETrafikMenuSayfasi extends StatefulWidget {
   final VoidCallback? onOpenRadars;
   final VoidCallback? onOpenFines;
   final VoidCallback? onCikisYap;
+  final bool girisYapildiMi;
+  final String kullaniciAdi;
+  final VoidCallback? onGirisYap;
 
   const KktcETrafikMenuSayfasi({
     super.key,
@@ -23,6 +26,9 @@ class KktcETrafikMenuSayfasi extends StatefulWidget {
     this.onOpenRadars,
     this.onOpenFines,
     this.onCikisYap,
+    this.girisYapildiMi = false,
+    this.kullaniciAdi = 'Misafir Kullanıcı',
+    this.onGirisYap,
   });
 
   @override
@@ -37,6 +43,55 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
   static const Color cAccentLight = Color(0xFFFAF9E5);
   static const Color cSoftRed = Color(0xFFFFF1F2);
   static const Color cDanger = Color(0xFFE11D48);
+
+  bool _girisGerekliKontrol(String islemAdi) {
+    if (!widget.girisYapildiMi) {
+      HapticFeedback.mediumImpact();
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.lock_rounded, color: cNavy, size: 22),
+              SizedBox(width: 8),
+              Text(
+                'Giriş Yapmalısınız',
+                style: TextStyle(fontWeight: FontWeight.w800, color: cNavy, fontSize: 17),
+              ),
+            ],
+          ),
+          content: Text(
+            '$islemAdi için KKTC Kimlik veya Ehliyet numaranız ile sisteme giriş yapmalısınız.',
+            style: const TextStyle(fontSize: 13.5, color: cSlate, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Vazgeç', style: TextStyle(color: cSlate)),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(ctx);
+                if (widget.onGirisYap != null) {
+                  widget.onGirisYap!();
+                }
+              },
+              icon: const Icon(Icons.login_rounded, size: 16, color: Colors.white),
+              label: const Text('Giriş Yap'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: cNavy,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
 
   // Örnek Dekontlar Listesi
   final List<Map<String, String>> _dekontlar = [
@@ -176,6 +231,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
 
   // Araçlarım Detay Sayfası / Modalı
   void _openAraclarimSheet() {
+    if (!_girisGerekliKontrol('Kayıtlı araçlarınızı ve ruhsat bilgilerinizi görüntülemek')) return;
     _showInfoSheet(
       title: 'Kayıtlı Araçlarım',
       content: Column(
@@ -278,6 +334,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
   // Seyrüsefer Modalı
   // Seyrüsefer Modalı (İnteraktif & Yenileme Destekli)
   void _openSeyruseferSheet() {
+    if (!_girisGerekliKontrol('Seyrüsefer harcı ve ruhsat yenileme durumunu görüntülemek')) return;
     _showInfoSheet(
       title: 'Seyrüsefer & Ruhsat Durumu',
       content: Column(
@@ -438,6 +495,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
 
   // Muayene Takvimi Modalı
   void _openMuayeneSheet() {
+    if (!_girisGerekliKontrol('Araç fenni muayene takviminizi görüntülemek')) return;
     _showInfoSheet(
       title: 'Araç Fenni Muayene Takvimi',
       content: Column(
@@ -494,6 +552,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
 
   // Sigorta & Kasko Modalı
   void _openSigortaSheet() {
+    if (!_girisGerekliKontrol('Sigorta ve kasko poliçesi detaylarınızı görüntülemek')) return;
     _showInfoSheet(
       title: 'Zorunlu Sigorta & Kasko Poliçesi',
       content: Column(
@@ -568,6 +627,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
 
   // Radar Fotoğrafı ve Kanıt Modalı
   void _openRadarFotografKanitModal() {
+    if (!_girisGerekliKontrol('Radar ihlal fotoğrafı ve kamera kanıtlarını incelemek')) return;
     _showInfoSheet(
       title: 'Radar Fotoğrafı & Telemetri Kanıtı',
       content: Column(
@@ -853,7 +913,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               iconColor: const Color(0xFF0284C7),
               icon: Icons.directions_car_filled_rounded,
               title: 'Kayıtlı Araçlarım',
-              subtitle: 'BMW 3.20i & Mercedes C200',
+              subtitle: widget.girisYapildiMi ? 'BMW 3.20i & Mercedes C200' : 'Giriş yaparak sorgulayın',
               onTap: _openAraclarimSheet,
             ),
             _buildMenuItem(
@@ -861,8 +921,8 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               iconColor: const Color(0xFF4F46E5),
               icon: Icons.description_rounded,
               title: 'Seyrüsefer & Ruhsat Yenileme',
-              subtitle: 'Tüm belgeler güncel',
-              subtitleColor: const Color(0xFF059669),
+              subtitle: widget.girisYapildiMi ? 'Tüm belgeler güncel' : 'Giriş yaparak sorgulayın',
+              subtitleColor: widget.girisYapildiMi ? const Color(0xFF059669) : cSlate,
               onTap: _openSeyruseferSheet,
             ),
             _buildMenuItem(
@@ -870,7 +930,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               iconColor: const Color(0xFFD97706),
               icon: Icons.calendar_month_rounded,
               title: 'Araç Fenni Muayene Takvimi',
-              subtitle: 'Kalan süre: 48 gün (09.05.2026)',
+              subtitle: widget.girisYapildiMi ? 'Kalan süre: 48 gün (09.05.2026)' : 'Giriş yaparak sorgulayın',
               onTap: _openMuayeneSheet,
             ),
             _buildMenuItem(
@@ -878,7 +938,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               iconColor: const Color(0xFF059669),
               icon: Icons.verified_user_rounded,
               title: 'Sigorta & Kasko Poliçeleri',
-              subtitle: 'Kıbrıs Sigorta Kooperatifi • Aktif',
+              subtitle: widget.girisYapildiMi ? 'Kıbrıs Sigorta Kooperatifi • Aktif' : 'Giriş yaparak sorgulayın',
               onTap: _openSigortaSheet,
             ),
           ],
@@ -967,12 +1027,15 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               iconColor: const Color(0xFFE11D48),
               icon: Icons.receipt_long_rounded,
               title: 'Trafik Cezalarım & Ödeme',
-              subtitle: '1 Adet Bekleyen Ceza Bildirimi',
-              subtitleColor: const Color(0xFFE11D48),
-              trailingBadgeText: '1 Ödenmemiş',
-              trailingBadgeBg: const Color(0xFFFFE4E6),
-              trailingBadgeTextColor: const Color(0xFFBE123C),
-              onTap: widget.onOpenFines,
+              subtitle: widget.girisYapildiMi ? '1 Adet Bekleyen Ceza Bildirimi' : 'Giriş yaparak sorgulayın',
+              subtitleColor: widget.girisYapildiMi ? const Color(0xFFE11D48) : cSlate,
+              trailingBadgeText: widget.girisYapildiMi ? '1 Ödenmemiş' : 'Giriş Gerekli',
+              trailingBadgeBg: widget.girisYapildiMi ? const Color(0xFFFFE4E6) : Colors.grey.shade100,
+              trailingBadgeTextColor: widget.girisYapildiMi ? const Color(0xFFBE123C) : cSlate,
+              onTap: () {
+                if (!_girisGerekliKontrol('Trafik cezalarınızı ve ödeme kayıtlarınızı görüntülemek')) return;
+                if (widget.onOpenFines != null) widget.onOpenFines!();
+              },
             ),
             _buildMenuItem(
               iconBgColor: const Color(0xFFE0E7FF),
@@ -1080,6 +1143,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               title: 'Ödeme Dekontları & Makbuz Arşivi',
               subtitle: 'Geçmiş ödemelerin resmi makbuzları',
               onTap: () {
+                if (!_girisGerekliKontrol('Geçmiş ödeme dekontları ve makbuz arşivinizi görüntülemek')) return;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -1215,11 +1279,12 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
+              if (!_girisGerekliKontrol('Karekodlu resmi dijital sürücü belgesi oluşturmak')) return;
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const BarkodluBelgeSayfasi(
-                    kullanici: 'Ahmet Demir',
+                  builder: (context) => BarkodluBelgeSayfasi(
+                    kullanici: widget.kullaniciAdi,
                     puan: 85,
                     turkceMi: true,
                   ),
@@ -1255,6 +1320,148 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
 
   // Profil Kartı
   Widget _buildProfileCard() {
+    if (!widget.girisYapildiMi) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            if (widget.onGirisYap != null) {
+              widget.onGirisYap!();
+            }
+          },
+          borderRadius: BorderRadius.circular(22),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: Colors.grey.shade200),
+              boxShadow: [
+                BoxShadow(
+                  color: cNavy.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    // Misafir Avatarı
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: cNavy.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.person_outline_rounded,
+                          color: cNavy,
+                          size: 26,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text(
+                              'Misafir Kullanıcı',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: cNavy,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: const Text(
+                                'Giriş Yapılmadı',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: cSlate,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        const Text(
+                          'Cezalar ve araç dökümü için tıklayın',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: cSlate,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Row(
+                          children: [
+                            Icon(Icons.login_rounded, size: 13, color: Color(0xFF059669)),
+                            SizedBox(width: 4),
+                            Text(
+                              'Kimlik / Ehliyet ile Giriş Yap',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF059669),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: cNavy,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Giriş',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_rounded, size: 14, color: Colors.white),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final String initials = widget.kullaniciAdi.isNotEmpty
+        ? (widget.kullaniciAdi.length >= 2
+            ? widget.kullaniciAdi.substring(0, 2).toUpperCase()
+            : widget.kullaniciAdi.toUpperCase())
+        : 'AD';
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1262,8 +1469,8 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const BarkodluBelgeSayfasi(
-                kullanici: 'Ahmet Demir',
+              builder: (context) => BarkodluBelgeSayfasi(
+                kullanici: widget.kullaniciAdi,
                 puan: 85,
                 turkceMi: true,
               ),
@@ -1301,10 +1508,10 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                           color: const Color(0xFFFFE4E6),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            'AD',
-                            style: TextStyle(
+                            initials,
+                            style: const TextStyle(
                               color: Color(0xFFBE123C),
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
@@ -1333,9 +1540,9 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     children: [
                       Row(
                         children: [
-                          const Text(
-                            'Ahmet DEMİR',
-                            style: TextStyle(
+                          Text(
+                            widget.kullaniciAdi,
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
                               color: cNavy,
@@ -1652,38 +1859,54 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         ),
         const SizedBox(width: 12),
 
-        // Çıkış Yap Butonu
+        // Çıkış Yap / Giriş Yap Butonu
         Expanded(
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: _showLogoutDialog,
+              onTap: widget.girisYapildiMi
+                  ? _showLogoutDialog
+                  : () {
+                      if (widget.onGirisYap != null) {
+                        widget.onGirisYap!();
+                      }
+                    },
               borderRadius: BorderRadius.circular(18),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: cSoftRed,
+                  color: widget.girisYapildiMi ? cSoftRed : cNavy,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFFECDD3)),
+                  border: Border.all(
+                    color: widget.girisYapildiMi
+                        ? const Color(0xFFFECDD3)
+                        : Colors.transparent,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: cDanger.withOpacity(0.04),
+                      color: widget.girisYapildiMi
+                          ? cDanger.withOpacity(0.04)
+                          : cNavy.withOpacity(0.18),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.logout_rounded, size: 19, color: cDanger),
-                    SizedBox(width: 8),
+                    Icon(
+                      widget.girisYapildiMi ? Icons.logout_rounded : Icons.login_rounded,
+                      size: 19,
+                      color: widget.girisYapildiMi ? cDanger : const Color(0xFFD1C929),
+                    ),
+                    const SizedBox(width: 8),
                     Text(
-                      'Çıkış Yap',
+                      widget.girisYapildiMi ? 'Çıkış Yap' : 'Giriş Yap',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: cDanger,
+                        color: widget.girisYapildiMi ? cDanger : Colors.white,
                       ),
                     ),
                   ],
