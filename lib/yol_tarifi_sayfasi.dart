@@ -1054,6 +1054,67 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
     _canliRotayiTetikle();
   }
 
+  // 🎯 HARİTADAN DOKUNARAK HEDEF VEYA KALKIŞ AYARLAMA (TOUCH-TO-ROUTE)
+  void _hedefNoktasiAyarla(RotaNoktasi yeniHedef) {
+    setState(() {
+      _varisNoktasi = yeniHedef;
+      _secilenRotaModu = 0;
+      _durdurNavigasyon();
+      _durdurSimulasyon();
+    });
+    _canliRotayiTetikle();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.pin_drop_rounded, color: Color(0xFF10B981)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                widget.turkceMi
+                    ? '🎯 Haritada seçilen noktaya canlı rota çiziliyor...'
+                    : '🎯 Calculating live route to chosen map point...',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _baslangicNoktasiAyarla(RotaNoktasi yeniBaslangic) {
+    setState(() {
+      _baslangicNoktasi = yeniBaslangic;
+      _secilenRotaModu = 0;
+      _durdurNavigasyon();
+      _durdurSimulasyon();
+    });
+    _canliRotayiTetikle();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.trip_origin_rounded, color: Color(0xFF38BDF8)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                widget.turkceMi
+                    ? '📍 Başlangıç noktası güncellendi, canlı rota hesaplanıyor...'
+                    : '📍 Start point updated, calculating live route...',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   // 🧭 GERÇEK GOOGLE MAPS TARZI NAVİGASYON BAŞLATMA
   void _baslatNavigasyon() {
     CanliGpsServisi().servisiBaslat();
@@ -1529,8 +1590,8 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
     double dx = (_varisNoktasi.lon - _baslangicNoktasi.lon).abs();
     double dy = (_varisNoktasi.lat - _baslangicNoktasi.lat).abs();
     double rawDist = math.sqrt(dx * dx + dy * dy) * 111.0;
-    double distKm = (rawDist * 1.25).clamp(4.0, 110.0);
-    int durationMin = (distKm * 1.15).round();
+    double distKm = _canliOsrmSonucu?.mesafeKm ?? (rawDist * 1.25).clamp(4.0, 110.0);
+    int durationMin = _canliOsrmSonucu?.sureDakika ?? (distKm * 1.15).round();
 
     // Rota çevresindeki radarları filtrele
     double minLat = math.min(_baslangicNoktasi.lat, _varisNoktasi.lat) - 0.06;
@@ -1641,7 +1702,9 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
           ? "Localized density along the corridor adding approximately $delayTotal min delay."
           : "Traffic along the route is broadly clear and fluent.",
       toplamGecikmeDakika: delayTotal,
-      manevralar: dinamikManevralar,
+      manevralar: (_canliOsrmSonucu?.manevralar.isNotEmpty ?? false)
+          ? _canliOsrmSonucu!.manevralar
+          : dinamikManevralar,
       gpsNoktalari: pts,
     );
   }
@@ -2352,6 +2415,8 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
       onSonrakiManevra: _sonrakiManevra,
       onOncekiManevra: _oncekiManevra,
       aktifManevralar: manevralar,
+      onHedefNoktaSecildi: _hedefNoktasiAyarla,
+      onBaslangicNoktaSecildi: _baslangicNoktasiAyarla,
     );
   }
 
@@ -3225,6 +3290,9 @@ class KktcRealRouteMapView extends StatefulWidget {
   final VoidCallback onSonrakiManevra;
   final VoidCallback onOncekiManevra;
   final List<RotaManevraAdimi> aktifManevralar;
+  // Dokunarak Rota Seçimi (Touch-to-Route)
+  final ValueChanged<RotaNoktasi>? onHedefNoktaSecildi;
+  final ValueChanged<RotaNoktasi>? onBaslangicNoktaSecildi;
 
   const KktcRealRouteMapView({
     super.key,
@@ -3245,6 +3313,8 @@ class KktcRealRouteMapView extends StatefulWidget {
     required this.onSonrakiManevra,
     required this.onOncekiManevra,
     required this.aktifManevralar,
+    this.onHedefNoktaSecildi,
+    this.onBaslangicNoktaSecildi,
   });
 
   @override
@@ -3258,6 +3328,10 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
   double _zoom = 10.2;
   int _mapStyleIndex = 0; // 0 = OSM Standart, 1 = CartoDB Voyager, 2 = Uydu
   bool _trafikKatmaniAcik = true; // Canlı Trafik ve Kalabalık Yoğunluk Katmanı
+
+  // Dokunarak Seçilen Nokta (Touch-to-Route)
+  RotaNoktasi? _dokunulanNokta;
+  bool _isPanning = false;
 
   late final AnimationController _pulseController;
 
@@ -3430,12 +3504,44 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
               final template = _tileProviders[_mapStyleIndex];
 
               return GestureDetector(
+                onPanStart: (_) => _isPanning = true,
                 onPanUpdate: (details) {
+                  _isPanning = true;
                   setState(() {
                     final dxTiles = -details.delta.dx / tileSize;
                     final dyTiles = -details.delta.dy / tileSize;
                     _centerLon = tileXToLon(centerTileX + dxTiles, intZoom.toDouble()).clamp(32.2, 34.6);
                     _centerLat = tileYToLat(centerTileY + dyTiles, intZoom.toDouble()).clamp(34.8, 35.8);
+                  });
+                },
+                onPanEnd: (_) {
+                  Future.delayed(const Duration(milliseconds: 140), () {
+                    if (mounted) _isPanning = false;
+                  });
+                },
+                onTapUp: (details) {
+                  if (widget.navigasyonAktif) return;
+                  if (_isPanning) return;
+                  final dxPixels = details.localPosition.dx - width / 2.0;
+                  final dyPixels = details.localPosition.dy - height / 2.0;
+                  final tappedTileX = centerTileX + (dxPixels / tileSize);
+                  final tappedTileY = centerTileY + (dyPixels / tileSize);
+                  final tappedLon = tileXToLon(tappedTileX, intZoom.toDouble()).clamp(32.2, 34.6);
+                  final tappedLat = tileYToLat(tappedTileY, intZoom.toDouble()).clamp(34.8, 35.8);
+
+                  setState(() {
+                    _dokunulanNokta = RotaNoktasi(
+                      id: 'custom_pin_${DateTime.now().millisecondsSinceEpoch}',
+                      ad: widget.turkceMi
+                          ? 'Haritada Seçilen Nokta (${tappedLat.toStringAsFixed(3)}, ${tappedLon.toStringAsFixed(3)})'
+                          : 'Selected Map Location (${tappedLat.toStringAsFixed(3)}, ${tappedLon.toStringAsFixed(3)})',
+                      adEn: 'Selected Map Location (${tappedLat.toStringAsFixed(3)}, ${tappedLon.toStringAsFixed(3)})',
+                      kisaAd: '${tappedLat.toStringAsFixed(2)}, ${tappedLon.toStringAsFixed(2)}',
+                      bolge: widget.turkceMi ? 'Harita Seçimi' : 'Map Pin',
+                      lat: tappedLat,
+                      lon: tappedLon,
+                      ikon: Icons.place_rounded,
+                    );
                   });
                 },
                 child: Stack(
@@ -3622,6 +3728,22 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                         intZoom: intZoom,
                       ),
 
+                    // 5.7 HARİTADAN DOKUNULARAK SEÇİLEN HEDEF PİNİ (TOUCH-TO-ROUTE)
+                    if (_dokunulanNokta != null)
+                      _buildGpsPin(
+                        lat: _dokunulanNokta!.lat,
+                        lon: _dokunulanNokta!.lon,
+                        label: widget.turkceMi ? 'Seçilen Hedef' : 'Selected Pin',
+                        color: const Color(0xFFF59E0B),
+                        icon: Icons.add_location_alt_rounded,
+                        width: width,
+                        height: height,
+                        tileSize: tileSize,
+                        centerTileX: centerTileX,
+                        centerTileY: centerTileY,
+                        intZoom: intZoom,
+                      ),
+
                     // 6. ÜST NAVİGASYON BAŞLIĞI: GOOGLE MAPS DÖNÜŞ PANELİ VEYA HARİTA BİLGİ ROZETİ
                     if (widget.navigasyonAktif)
                       _buildGoogleMapsTurnBanner(width)
@@ -3766,10 +3888,37 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                       ),
                     ),
 
-                    // 8. ALT PANEL: NAVİGASYON AKTİF İSE GOOGLE MAPS ALT BARI, DEĞİLSE "YOLA ÇIK" VE SİMÜLASYON BUTONU
+                    // 8. ALT PANEL: NAVİGASYON AKTİF İSE GOOGLE MAPS ALT BARI, SEÇİLEN NOKTA VARSA TOUCH-TO-ROUTE KARTI, DEĞİLSE "YOLA ÇIK" VE SİMÜLASYON BUTONU
                     if (widget.navigasyonAktif)
                       _buildNavigasyonAktifAltBar(width)
-                    else
+                    else if (_dokunulanNokta != null)
+                      _buildDokunulanNoktaKarti(width)
+                    else ...[
+                      // Boştayken haritaya dokunarak rota belirleme rehber rozeti
+                      if (!widget.simulasyonAktif)
+                        Positioned(
+                          bottom: 12,
+                          left: 12,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5.5),
+                            decoration: BoxDecoration(
+                              color: NavHtmlColors.surfaceContainerLowest.withValues(alpha: 0.90),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.white12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.touch_app_rounded, size: 13, color: Color(0xFFF59E0B)),
+                                const SizedBox(width: 5),
+                                Text(
+                                  widget.turkceMi ? 'Haritaya dokunarak rota belirleyin' : 'Tap map to set route',
+                                  style: const TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       Positioned(
                         bottom: 12,
                         right: 12,
@@ -3812,9 +3961,10 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                           ],
                         ),
                       ),
+                    ],
 
                     // 9. SOL ALT: YAKLAŞAN RADAR BİLGİ HUD ŞERİDİ (Simülasyon Aktifken)
-                    if (widget.simulasyonAktif && widget.yaklasanRadar != null && !widget.navigasyonAktif)
+                    if (widget.simulasyonAktif && widget.yaklasanRadar != null && !widget.navigasyonAktif && _dokunulanNokta == null)
                       Positioned(
                         bottom: 12,
                         left: 12,
@@ -4219,6 +4369,136 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                 widget.turkceMi ? 'Durdur' : 'Stop',
                 style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 🎯 HARİTADAN DOKUNARAK SEÇİLEN NOKTA AKSİYON KARTI (TOUCH-TO-ROUTE)
+  Widget _buildDokunulanNoktaKarti(double width) {
+    if (_dokunulanNokta == null) return const SizedBox.shrink();
+
+    return Positioned(
+      bottom: 10,
+      left: 10,
+      right: 10,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.96),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.7), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 18,
+              offset: const Offset(0, 4),
+            ),
+            BoxShadow(
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
+              blurRadius: 12,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.pin_drop_rounded,
+                    color: Color(0xFFF59E0B),
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.turkceMi ? 'Haritada Seçilen Konum' : 'Selected Map Location',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        '${_dokunulanNokta!.lat.toStringAsFixed(4)}° K, ${_dokunulanNokta!.lon.toStringAsFixed(4)}° D',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+                  icon: const Icon(Icons.close_rounded, size: 18, color: Colors.white60),
+                  onPressed: () => setState(() => _dokunulanNokta = null),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      final n = _dokunulanNokta!;
+                      setState(() => _dokunulanNokta = null);
+                      widget.onHedefNoktaSecildi?.call(n);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 3,
+                    ),
+                    icon: const Icon(Icons.flag_rounded, size: 14),
+                    label: Text(
+                      widget.turkceMi ? 'Buraya Git (Hedef)' : 'Route Here (Destination)',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      final n = _dokunulanNokta!;
+                      setState(() => _dokunulanNokta = null);
+                      widget.onBaslangicNoktaSecildi?.call(n);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF38BDF8),
+                      side: const BorderSide(color: Color(0xFF38BDF8), width: 1.2),
+                      backgroundColor: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.trip_origin_rounded, size: 14),
+                    label: Text(
+                      widget.turkceMi ? 'Buradan Başla' : 'Start Here',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
