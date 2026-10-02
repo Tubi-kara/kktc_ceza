@@ -24,8 +24,8 @@ class GuncellemeBilgisi {
 
 /// 📲 KKTC Trafik & Ceza - Kablosuz OTA Güncelleme Servisi
 class GuncellemeServisi {
-  // Mevcut uygulama sürümü (Her büyük güncellemede burayı artırıyoruz)
-  static const String mevcutSurum = "1.0.1";
+  // Mevcut uygulama sürümü (Cihazdaki taban sürüm)
+  static const String mevcutSurum = "1.0.0";
   static const String _repoApiUrl =
       "https://api.github.com/repos/Tubi-kara/kktc_ceza/releases/latest";
   static const String _varsayilanApkUrl =
@@ -53,7 +53,18 @@ class GuncellemeServisi {
       final releaseBody = (data['body'] ?? '').toString();
 
       // Sürüm numarasını temizle (örn: 'v1.0.2' -> '1.0.2')
-      final temizYeniSurum = tagName.replaceAll(RegExp(r'[^0-9.]'), '');
+      String temizYeniSurum = tagName.replaceAll(RegExp(r'[^0-9.]'), '');
+      if (temizYeniSurum.isEmpty) {
+        // Tag "latest" ise, başlık veya açıklamadaki sürümü ara
+        final match = RegExp(r'v?(\d+\.\d+(\.\d+)?)').firstMatch('$releaseName $releaseBody');
+        if (match != null) {
+          temizYeniSurum = match.group(1) ?? '';
+        }
+      }
+      if (temizYeniSurum.isEmpty) {
+        temizYeniSurum = "1.0.2";
+      }
+
       final temizMevcutSurum = mevcutSurum.replaceAll(RegExp(r'[^0-9.]'), '');
 
       // APK İndirme URL'sini bul
@@ -69,7 +80,8 @@ class GuncellemeServisi {
         }
       }
 
-      final bool yeniVar = _surumBuyukMu(temizYeniSurum, temizMevcutSurum);
+      final bool yeniVar = _surumBuyukMu(temizYeniSurum, temizMevcutSurum) ||
+          (tagName.toLowerCase() == 'latest' && temizYeniSurum != temizMevcutSurum);
 
       return GuncellemeBilgisi(
         guncellemeVar: yeniVar,

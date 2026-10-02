@@ -47,14 +47,20 @@ jobs:
           path: kktc_ceza_app.apk
           retention-days: 30
 
+      - name: Extract Version from pubspec.yaml
+        id: get_version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | cut -d ' ' -f 2 | cut -d '+' -f 1)
+          echo "APP_VERSION=v$VERSION" >> $GITHUB_ENV
+
       - name: Publish or Update GitHub Release
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: latest
-          name: "KKTC Trafik & Ceza Radar (En Güncel Sürüm)"
+          tag_name: ${{ env.APP_VERSION }}
+          name: "KKTC Trafik & Ceza Radar ${{ env.APP_VERSION }}"
           body: |
-            ## 🚀 KKTC Trafik Ceza Radar - En Son Güncelleme
+            ## 🚀 KKTC Trafik Ceza Radar ${{ env.APP_VERSION }}
             Bu sürüm GitHub Actions tarafından otomatik olarak derlenmiştir.
             
             ### 📲 İndirme ve Kurulum
