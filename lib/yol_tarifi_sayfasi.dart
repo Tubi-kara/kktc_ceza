@@ -1,3 +1,4 @@
+import 'kktc_favori_noktalar_servisi.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -274,6 +275,7 @@ class RotaNoktasi {
   final double lat; // Gerçek GPS Enlem
   final double lon; // Gerçek GPS Boylam
   final IconData ikon;
+  final String kategori;
 
   const RotaNoktasi({
     required this.id,
@@ -284,271 +286,30 @@ class RotaNoktasi {
     required this.lat,
     required this.lon,
     required this.ikon,
+    this.kategori = 'genel',
   });
 }
 
 // KKTC Sürüş & Trafik Odaklı Noktalar Veritabanı (Gerçek GPS Koordinatlarıyla)
 // Yalnızca Benzinlik, Lastik & Tamir, Otopark, Hastane ve Ana Ulaşım Arterleri
-final List<RotaNoktasi> kktcNoktalari = [
-  // ==========================================
-  // ⛽ 1. BENZİN İSTASYONLARI (K-PET, ALPET, ALTINBAŞ)
-  // ==========================================
-  const RotaNoktasi(
-    id: "poi-kpet-gonyeli",
-    ad: "K-Pet Gönyeli Çemberi İstasyonu",
-    adEn: "K-Pet Gonyeli Roundabout Station",
-    kisaAd: "K-Pet Gönyeli",
-    bolge: "Lefkoşa",
-    lat: 35.2105,
-    lon: 33.3102,
-    ikon: Icons.local_gas_station_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-alpet-dereboyu",
-    ad: "Alpet Mehmet Akif Caddesi İstasyonu (Dereboyu)",
-    adEn: "Alpet Dereboyu Station",
-    kisaAd: "Alpet Dereboyu",
-    bolge: "Lefkoşa",
-    lat: 35.1950,
-    lon: 33.3520,
-    ikon: Icons.local_gas_station_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-kpet-ortakoy",
-    ad: "K-Pet Ortaköy Devlet Hastanesi İstasyonu",
-    adEn: "K-Pet Ortakoy State Hospital Station",
-    kisaAd: "K-Pet Ortaköy",
-    bolge: "Lefkoşa",
-    lat: 35.2010,
-    lon: 33.3320,
-    ikon: Icons.local_gas_station_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-kpet-alsancak",
-    ad: "K-Pet Girne Alsancak Çevre Yolu İstasyonu",
-    adEn: "K-Pet Kyrenia Alsancak Station",
-    kisaAd: "K-Pet Alsancak",
-    bolge: "Girne",
-    lat: 35.3480,
-    lon: 33.2450,
-    ikon: Icons.local_gas_station_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-alpet-bogaz",
-    ad: "Alpet Boğaz Dağ Yolu Dinlenme Tesisi",
-    adEn: "Alpet Bogaz Mountain Pass Station",
-    kisaAd: "Alpet Boğaz",
-    bolge: "Girne",
-    lat: 35.2950,
-    lon: 33.3120,
-    ikon: Icons.local_gas_station_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-alpet-dogankoy",
-    ad: "Alpet Girne Çevre Yolu Doğanköy İstasyonu",
-    adEn: "Alpet Kyrenia Bypass Dogankoy Station",
-    kisaAd: "Alpet Doğanköy",
-    bolge: "Girne",
-    lat: 35.3310,
-    lon: 33.3280,
-    ikon: Icons.local_gas_station_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-altinbas-magusa",
-    ad: "Altınbaş Petrol Gazimağusa Girişi",
-    adEn: "Altinbas Petrol Famagusta Entry",
-    kisaAd: "Altınbaş Mağusa",
-    bolge: "Gazimağusa",
-    lat: 35.1380,
-    lon: 33.9180,
-    ikon: Icons.local_gas_station_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-kpet-magusa",
-    ad: "K-Pet Gazimağusa Giriş (Anıt Çemberi) İstasyonu",
-    adEn: "K-Pet Famagusta Monument Roundabout Station",
-    kisaAd: "K-Pet Mağusa Anıt",
-    bolge: "Gazimağusa",
-    lat: 35.1290,
-    lon: 33.9280,
-    ikon: Icons.local_gas_station_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-kpet-guzelyurt",
-    ad: "K-Pet Güzelyurt Çevre Yolu İstasyonu",
-    adEn: "K-Pet Guzelyurt Bypass Station",
-    kisaAd: "K-Pet Güzelyurt",
-    bolge: "Güzelyurt",
-    lat: 35.1960,
-    lon: 32.9910,
-    ikon: Icons.local_gas_station_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-kpet-ercan",
-    ad: "K-Pet Ercan Havalimanı Kavşağı İstasyonu",
-    adEn: "K-Pet Ercan Airport Junction",
-    kisaAd: "K-Pet Ercan",
-    bolge: "Lefkoşa",
-    lat: 35.1620,
-    lon: 33.5020,
-    ikon: Icons.local_gas_station_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-altinbas-iskele",
-    ad: "Altınbaş Petrol İskele İstasyonu",
-    adEn: "Altinbas Petrol Iskele Station",
-    kisaAd: "Altınbaş İskele",
-    bolge: "İskele",
-    lat: 35.2910,
-    lon: 33.9050,
-    ikon: Icons.local_gas_station_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-alpet-gemikonagi",
-    ad: "Alpet Lefke Gemikonağı İstasyonu",
-    adEn: "Alpet Lefke Gemikonagi Station",
-    kisaAd: "Alpet Gemikonağı",
-    bolge: "Lefke",
-    lat: 35.1480,
-    lon: 32.8520,
-    ikon: Icons.local_gas_station_rounded,
-  ),
+// KKTC Sürüş & Trafik Odaklı Noktalar Veritabanı (Gerçek GPS Koordinatlarıyla)
+// AVM'ler, Plajlar, Üniversiteler, Havalimanı, Benzinlikler, Hastaneler ve Ana Arterler
+List<RotaNoktasi> get kktcNoktalari {
+  final List<RotaNoktasi> list = [];
+  // 1. Tüm Harita POI'leri (AVM, Plaj, Üniversite, Benzin, Hastane, Tamir, Otopark, Havalimanı)
+  for (final p in kktcHaritaPoiListesi) {
+    list.add(p.toRotaNoktasi());
+  }
+  // 2. Ana Yol & Sınır Kavşak Noktaları
+  for (final m in _kktcAnaKavsakNoktalari) {
+    if (!list.any((item) => item.id == m.id)) {
+      list.add(m);
+    }
+  }
+  return list;
+}
 
-  // ==========================================
-  // 🔧 2. OTO LASTİK & TAMİR & YOL YARDIM (7/24)
-  // ==========================================
-  const RotaNoktasi(
-    id: "poi-lastik-lefkosa",
-    ad: "Lefkoşa Sanayi 7/24 Lastik & Akü Yol Yardım",
-    adEn: "Lefkosa Industrial 7/24 Tire & Battery Service",
-    kisaAd: "Lefkoşa Lastikçi",
-    bolge: "Lefkoşa",
-    lat: 35.2180,
-    lon: 33.3620,
-    ikon: Icons.build_circle_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-lastik-girne",
-    ad: "Girne Alsancak Oto Servis & Mobil Lastikçi",
-    adEn: "Kyrenia Alsancak Tire & Auto Repair Service",
-    kisaAd: "Girne Lastikçi",
-    bolge: "Girne",
-    lat: 35.3420,
-    lon: 33.2350,
-    ikon: Icons.build_circle_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-lastik-magusa",
-    ad: "Gazimağusa Sanayi Lastik & Yol Yardım Servisi",
-    adEn: "Famagusta Industrial Tire & Recovery Service",
-    kisaAd: "Mağusa Lastikçi",
-    bolge: "Gazimağusa",
-    lat: 35.1320,
-    lon: 33.9210,
-    ikon: Icons.build_circle_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-lastik-guzelyurt",
-    ad: "Güzelyurt Sanayi Oto Lastik & Tamir Servisi",
-    adEn: "Guzelyurt Industrial Tire & Auto Repair",
-    kisaAd: "Güzelyurt Lastikçi",
-    bolge: "Güzelyurt",
-    lat: 35.2010,
-    lon: 32.9960,
-    ikon: Icons.build_circle_rounded,
-  ),
-
-  // ==========================================
-  // 🅿️ 3. OTOPARKLAR
-  // ==========================================
-  const RotaNoktasi(
-    id: "poi-otopark-lefkosa",
-    ad: "Lefkoşa Ledra Palace Yanı Belediye Otoparkı",
-    adEn: "Lefkosa Municipal Parking (Ledra Palace)",
-    kisaAd: "Lefkoşa Otoparkı",
-    bolge: "Lefkoşa",
-    lat: 35.1785,
-    lon: 33.3560,
-    ikon: Icons.local_parking_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-otopark-girne",
-    ad: "Girne Antik Liman Katlı Belediye Otoparkı",
-    adEn: "Kyrenia Multi-storey Municipal Parking",
-    kisaAd: "Girne Otoparkı",
-    bolge: "Girne",
-    lat: 35.3425,
-    lon: 33.3205,
-    ikon: Icons.local_parking_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-otopark-magusa",
-    ad: "Gazimağusa Suriçi Belediye Otoparkı",
-    adEn: "Famagusta Walled City Municipal Parking",
-    kisaAd: "Mağusa Otoparkı",
-    bolge: "Gazimağusa",
-    lat: 35.1245,
-    lon: 33.9410,
-    ikon: Icons.local_parking_rounded,
-  ),
-
-  // ==========================================
-  // 🏥 4. DEVLET HASTANELERİ & ACİL SERVİSLER (7/24)
-  // ==========================================
-  const RotaNoktasi(
-    id: "poi-hastane-lefkosa",
-    ad: "Dr. Burhan Nalbantoğlu Devlet Hastanesi Acil (112)",
-    adEn: "Dr. Burhan Nalbantoglu State Hospital Emergency",
-    kisaAd: "Lefkoşa Acil Hastanesi",
-    bolge: "Lefkoşa",
-    lat: 35.2036,
-    lon: 33.3361,
-    ikon: Icons.local_hospital_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-hastane-girne",
-    ad: "Girne Dr. Akçiçek Devlet Hastanesi Acil Servis",
-    adEn: "Kyrenia Dr. Akcicek State Hospital Emergency",
-    kisaAd: "Girne Acil Hastanesi",
-    bolge: "Girne",
-    lat: 35.3360,
-    lon: 33.3190,
-    ikon: Icons.local_hospital_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-hastane-magusa",
-    ad: "Gazimağusa Devlet Hastanesi Acil Servis",
-    adEn: "Famagusta State Hospital Emergency Service",
-    kisaAd: "Mağusa Acil Hastanesi",
-    bolge: "Gazimağusa",
-    lat: 35.1480,
-    lon: 33.9080,
-    ikon: Icons.local_hospital_rounded,
-  ),
-  const RotaNoktasi(
-    id: "poi-hastane-cengiztopel",
-    ad: "Cengiz Topel Devlet Hastanesi Acil (Lefke)",
-    adEn: "Cengiz Topel State Hospital Emergency (Lefke)",
-    kisaAd: "Cengiz Topel Hastanesi",
-    bolge: "Lefke",
-    lat: 35.1380,
-    lon: 32.8360,
-    ikon: Icons.local_hospital_rounded,
-  ),
-
-  // ==========================================
-  // 🚗 5. ANA TRAFİK VE ULAŞIM ARTERLERİ
-  // ==========================================
-  const RotaNoktasi(
-    id: "ercan_havalimani",
-    ad: "Ercan Uluslararası Havalimanı (Yeni Terminal)",
-    adEn: "Ercan International Airport (New Terminal)",
-    kisaAd: "Ercan Havalimanı",
-    bolge: "Lefkoşa",
-    lat: 35.1585,
-    lon: 33.5015,
-    ikon: Icons.flight_takeoff_rounded,
-  ),
+final List<RotaNoktasi> _kktcAnaKavsakNoktalari = [
   const RotaNoktasi(
     id: "gonyeli_cemberi",
     ad: "Gönyeli Çemberi & Kuzey Çevre Yolu Kavşağı",
@@ -558,6 +319,7 @@ final List<RotaNoktasi> kktcNoktalari = [
     lat: 35.2078,
     lon: 33.3085,
     ikon: Icons.traffic_rounded,
+    kategori: "merkez",
   ),
   const RotaNoktasi(
     id: "girne_liman",
@@ -568,6 +330,7 @@ final List<RotaNoktasi> kktcNoktalari = [
     lat: 35.3340,
     lon: 33.3280,
     ikon: Icons.directions_boat_rounded,
+    kategori: "merkez",
   ),
   const RotaNoktasi(
     id: "lefkosa_dereboyu",
@@ -578,6 +341,7 @@ final List<RotaNoktasi> kktcNoktalari = [
     lat: 35.1920,
     lon: 33.3510,
     ikon: Icons.location_city_rounded,
+    kategori: "merkez",
   ),
   const RotaNoktasi(
     id: "guzelyurt_merkez",
@@ -588,6 +352,7 @@ final List<RotaNoktasi> kktcNoktalari = [
     lat: 35.1980,
     lon: 32.9930,
     ikon: Icons.directions_bus_rounded,
+    kategori: "merkez",
   ),
   const RotaNoktasi(
     id: "metehan_sinir",
@@ -598,6 +363,7 @@ final List<RotaNoktasi> kktcNoktalari = [
     lat: 35.1795,
     lon: 33.3210,
     ikon: Icons.security_rounded,
+    kategori: "merkez",
   ),
 ];
 
@@ -5467,10 +5233,16 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
 
   final List<String> _bolgeler = [
     'Tümü',
+    '🛍️ AVM',
+    '🏖️ Plaj',
+    '🎓 Üniversite',
+    '✈️ Ulaşım',
+    '⛽ Benzin',
+    '🏥 Hastane',
     'Girne',
     'Lefkoşa',
-    'Güzelyurt',
     'Gazimağusa',
+    'Güzelyurt',
     'İskele',
     'Lefke',
   ];
@@ -5519,14 +5291,28 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
 
   int _noktaSayisi(String b) {
     if (b == 'Tümü') return widget.noktalar.length;
+    if (b == '🛍️ AVM') return widget.noktalar.where((n) => n.kategori == 'avm').length;
+    if (b == '🏖️ Plaj') return widget.noktalar.where((n) => n.kategori == 'plaj').length;
+    if (b == '🎓 Üniversite') return widget.noktalar.where((n) => n.kategori == 'universite').length;
+    if (b == '✈️ Ulaşım') return widget.noktalar.where((n) => n.kategori == 'havalimani').length;
+    if (b == '⛽ Benzin') return widget.noktalar.where((n) => n.kategori == 'benzin').length;
+    if (b == '🏥 Hastane') return widget.noktalar.where((n) => n.kategori == 'hastane').length;
     return widget.noktalar.where((n) => n.bolge.toLowerCase().contains(b.toLowerCase())).length;
   }
 
   List<RotaNoktasi> get _filtrelenmisNoktalar {
     return widget.noktalar.where((n) {
-      // Bölge Filtresi
-      if (_seciliBolge != 'Tümü' && !n.bolge.toLowerCase().contains(_seciliBolge.toLowerCase())) {
-        return false;
+      // Kategori veya Bölge Filtresi
+      if (_seciliBolge != 'Tümü') {
+        if (_seciliBolge == '🛍️ AVM' && n.kategori != 'avm') return false;
+        if (_seciliBolge == '🏖️ Plaj' && n.kategori != 'plaj') return false;
+        if (_seciliBolge == '🎓 Üniversite' && n.kategori != 'universite') return false;
+        if (_seciliBolge == '✈️ Ulaşım' && n.kategori != 'havalimani') return false;
+        if (_seciliBolge == '⛽ Benzin' && n.kategori != 'benzin') return false;
+        if (_seciliBolge == '🏥 Hastane' && n.kategori != 'hastane') return false;
+        if (!_seciliBolge.contains(' ') && !n.bolge.toLowerCase().contains(_seciliBolge.toLowerCase())) {
+          return false;
+        }
       }
       // Metin Arama
       if (_aramaMetni.trim().isNotEmpty) {
@@ -5535,7 +5321,8 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
         final matchEn = n.adEn.toLowerCase().contains(query);
         final matchKisa = n.kisaAd.toLowerCase().contains(query);
         final matchBolge = n.bolge.toLowerCase().contains(query);
-        return matchAd || matchEn || matchKisa || matchBolge;
+        final matchKat = n.kategori.toLowerCase().contains(query);
+        return matchAd || matchEn || matchKisa || matchBolge || matchKat;
       }
       return true;
     }).toList();
@@ -5762,6 +5549,129 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
                   ],
                 ),
               ),
+            ),
+          ),
+          const SizedBox(height: 4),
+
+          // 🏠 EVİM & 🏢 İŞİM HIZLI KARTLARI
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
+              children: [
+                // Evim Kartı
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(10, 8, 4, 8),
+                    decoration: BoxDecoration(
+                      color: NavHtmlColors.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.home_rounded, color: Color(0xFF10B981), size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              widget.onSecildi(KktcFavoriNoktalarServisi().evimRotaNoktasi);
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'Evim',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  KktcFavoriNoktalarServisi().evimAdres,
+                                  style: const TextStyle(color: Colors.white60, fontSize: 10),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit_location_alt_rounded, color: Color(0xFF10B981), size: 18),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+                          tooltip: 'Ev Adresini Değiştir',
+                          onPressed: () {
+                            showEvIsDuzenleModal(
+                              context: context,
+                              isEv: true,
+                              onKaydedildi: () => setState(() {}),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // İşim Kartı
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(10, 8, 4, 8),
+                    decoration: BoxDecoration(
+                      color: NavHtmlColors.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.work_rounded, color: Color(0xFF38BDF8), size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () {
+                              widget.onSecildi(KktcFavoriNoktalarServisi().isimRotaNoktasi);
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'İşim',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  KktcFavoriNoktalarServisi().isimAdres,
+                                  style: const TextStyle(color: Colors.white60, fontSize: 10),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit_location_alt_rounded, color: Color(0xFF38BDF8), size: 18),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+                          tooltip: 'İş Adresini Değiştir',
+                          onPressed: () {
+                            showEvIsDuzenleModal(
+                              context: context,
+                              isEv: false,
+                              onKaydedildi: () => setState(() {}),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 6),

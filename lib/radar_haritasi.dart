@@ -771,6 +771,7 @@ class KktcHaritaPoi {
       lat: lat,
       lon: lon,
       ikon: ikon,
+      kategori: kategori,
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'kktc_favori_noktalar_servisi.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -196,6 +197,7 @@ class _KktcETrafikDashboardSayfasiState
   @override
   void initState() {
     super.initState();
+    KktcFavoriNoktalarServisi().baslat();
     _girisYapildiMi = widget.initialGirisYapildiMi;
     if (widget.initialKullaniciAdi != null && widget.initialKullaniciAdi!.isNotEmpty) {
       _kullaniciAdi = widget.initialKullaniciAdi!;
@@ -1180,19 +1182,17 @@ class _KktcETrafikDashboardSayfasiState
                           MaterialPageRoute(
                             builder: (context) => YolTarifiSayfasi(
                               turkceMi: true,
-                              varisNoktasi: RotaNoktasi(
-                                id: 'evim',
-                                ad: _evimAdres,
-                                adEn: _evimAdres,
-                                kisaAd: 'Evim',
-                                bolge: 'Lefkoşa',
-                                lat: _evimLat,
-                                lon: _evimLon,
-                                ikon: Icons.home_rounded,
-                              ),
+                              varisNoktasi: KktcFavoriNoktalarServisi().evimRotaNoktasi,
                               otomatikNavigasyonBaslat: true,
                             ),
                           ),
+                        );
+                      },
+                      onEditTap: () {
+                        showEvIsDuzenleModal(
+                          context: context,
+                          isEv: true,
+                          onKaydedildi: () => setState(() {}),
                         );
                       },
                     ),
@@ -1210,19 +1210,17 @@ class _KktcETrafikDashboardSayfasiState
                           MaterialPageRoute(
                             builder: (context) => YolTarifiSayfasi(
                               turkceMi: true,
-                              varisNoktasi: RotaNoktasi(
-                                id: 'isim',
-                                ad: _isimAdres,
-                                adEn: _isimAdres,
-                                kisaAd: 'İşim',
-                                bolge: 'Lefkoşa',
-                                lat: _isimLat,
-                                lon: _isimLon,
-                                ikon: Icons.work_rounded,
-                              ),
+                              varisNoktasi: KktcFavoriNoktalarServisi().isimRotaNoktasi,
                               otomatikNavigasyonBaslat: true,
                             ),
                           ),
+                        );
+                      },
+                      onEditTap: () {
+                        showEvIsDuzenleModal(
+                          context: context,
+                          isEv: false,
+                          onKaydedildi: () => setState(() {}),
                         );
                       },
                     ),
@@ -2944,12 +2942,15 @@ class _KktcETrafikDashboardSayfasiState
     required String label,
     required Color color,
     required VoidCallback onTap,
+    VoidCallback? onLongPress,
+    VoidCallback? onEditTap,
   }) {
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 6),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -2975,6 +2976,13 @@ class _KktcETrafikDashboardSayfasiState
                 color: color,
               ),
             ),
+            if (onEditTap != null) ...[
+              const SizedBox(width: 3),
+              GestureDetector(
+                onTap: onEditTap,
+                child: Icon(Icons.edit_location_alt_rounded, size: 12, color: color.withOpacity(0.8)),
+              ),
+            ],
           ],
         ),
       ),
