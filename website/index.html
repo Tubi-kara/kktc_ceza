@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KKTC Trafik & Sabit Radar Portalı | Canlı Harita & Navigasyon</title>
+  <meta name="description" content="Kuzey Kıbrıs Türk Cumhuriyeti (KKTC) tüm sabit hız radarları, canlı trafik ikazı, 2026 güncel trafik cezası hesaplayıcı ve akıllı navigasyon uygulaması.">
+  <meta name="keywords" content="kktc radar, kıbrıs trafik cezası, lefkoşa radar, girne radar, kktc hız limiti, kktc navigasyon, kktc ceza puanı">
+
+  <!-- Open Graph & Social -->
+  <meta property="og:title" content="KKTC Trafik & Sabit Radar Portalı">
+  <meta property="og:description" content="Kuzey Kıbrıs'ın en kapsamlı sabit radar, ceza rehberi ve akıllı navigasyon portalı.">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Leaflet CSS for Interactive Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+
+  <!-- ========================================== -->
+  <!-- 🧭 NAVBAR                                  -->
+  <!-- ========================================== -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#hero" class="nav-brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-camera"></i>
+          <span class="pulse-indicator"></span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">KKTC <span class="accent-text">RADAR</span></span>
+          <span class="brand-subtitle" data-i18n="nav.subtitle">E-Trafik & Navigasyon</span>
+        </div>
+      </a>
+
+      <nav class="nav-menu" id="navMenu">
+        <a href="#harita" class="nav-link" data-i18n="nav.map"><i class="fa-solid fa-map-location-dot"></i> Canlı Radar Haritası</a>
+        <a href="#simulasyon" class="nav-link" data-i18n="nav.simulation"><i class="fa-solid fa-route"></i> Rota Simülatörü</a>
+        <a href="#ceza-hesapla" class="nav-link" data-i18n="nav.calculator"><i class="fa-solid fa-calculator"></i> 2026 Ceza Hesapla</a>
+        <a href="#ozellikler" class="nav-link" data-i18n="nav.features"><i class="fa-solid fa-shield-halved"></i> Özellikler</a>
+        <a href="#indir" class="nav-link" data-i18n="nav.download"><i class="fa-solid fa-download"></i> İndir</a>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Dil Değiştirici -->
+        <button id="langToggle" class="btn-lang" title="Switch Language">
+          <span class="lang-flag">🇹🇷</span>
+          <span class="lang-text">TR</span>
+        </button>
+
+        <!-- APK İndir Butonu -->
+        <a href="#indir" class="btn btn-primary btn-sm">
+          <i class="fa-brands fa-android"></i>
+          <span data-i18n="nav.getApk">APK İndir</span>
+        </a>
+
+        <!-- Mobil Menü Butonu -->
+        <button class="mobile-toggle" id="mobileToggle" aria-label="Menüyü Aç">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- 🚀 HERO SECTION                            -->
+  <!-- ========================================== -->
+  <section class="hero-section" id="hero">
+    <div class="hero-bg-glow"></div>
+    <div class="container hero-container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          <span data-i18n="hero.badge">KKTC E-Trafik & Radar Sistemi v2.4.0 Yayında</span>
+        </div>
+
+        <h1 class="hero-title">
+          <span data-i18n="hero.title1">Kuzey Kıbrıs'ın</span><br>
+          <span class="gradient-text" data-i18n="hero.title2">En Akıllı Sabit Radar &</span><br>
+          <span data-i18n="hero.title3">Trafik Kokpiti</span>
+        </h1>
+
+        <p class="hero-desc" data-i18n="hero.desc">
+          Lefkoşa, Girne, Gazimağusa, Güzelyurt ve tüm KKTC anayollarındaki 112+ sabit radar noktası, canlı hız ikazı, Google Maps kalitesinde azalan navigasyon ve 2026 güncel asgari ücret ceza tarifesi parmaklarınızın ucunda.
+        </p>
+
+        <div class="hero-cta-group">
+          <a href="#indir" class="btn btn-primary btn-lg">
+            <i class="fa-brands fa-android"></i>
+            <div>
+              <span class="btn-subtext" data-i18n="hero.freeDownload">Ücretsiz İndir</span>
+              <span class="btn-maintext">Android APK v2.4.0</span>
+            </div>
+          </a>
+          <a href="#harita" class="btn btn-secondary btn-lg">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span data-i18n="hero.liveMapBtn">Canlı Haritayı Aç</span>
+          </a>
+        </div>
+
+        <!-- İstatistik Çubuğu -->
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-number">112+</span>
+            <span class="stat-label" data-i18n="hero.statRadars">Sabit Radar & Kamera</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-number">0ms</span>
+            <span class="stat-label" data-i18n="hero.statLatency">GPS Gecikmesi</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-number">2026</span>
+            <span class="stat-label" data-i18n="hero.statFines">Resmi Ceza Tarifesi</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-number">7/24</span>
+            <span class="stat-label" data-i18n="hero.statSupport">Acil Yol Yardımı</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Telefon & Canlı Navigasyon Mockup -->
+      <div class="hero-mockup-wrapper">
+        <div class="phone-frame">
+          <div class="phone-notch">
+            <div class="notch-speaker"></div>
+            <div class="notch-camera"></div>
+          </div>
+          
+          <!-- Mockup Ekranı (Uygulamanın Canlı Ekranı) -->
+          <div class="phone-screen">
+            <!-- Üst Navigasyon Kartı -->
+            <div class="mockup-turn-banner">
+              <div class="turn-icon-box">
+                <i class="fa-solid fa-arrow-turn-up fa-rotate-270"></i>
+              </div>
+              <div class="turn-info">
+                <div class="turn-meta">
+                  <span class="turn-distance" id="mockTurnDist">168 m</span>
+                  <span class="turn-step">Dönüş 2/45</span>
+                </div>
+                <div class="turn-title" data-i18n="mockup.turnTitle">Sola Dönün</div>
+                <div class="turn-subtitle" data-i18n="mockup.turnDesc">Güzergahı takip edin</div>
+              </div>
+            </div>
+
+            <!-- Sağ Üst Dijital Hız Göstergesi (Yeni Düzeltilen Versiyon) -->
+            <div class="mockup-speedometer" id="mockSpeedometer">
+              <span class="mock-speed-value" id="mockSpeedVal">68</span>
+              <span class="mock-speed-unit">km/h</span>
+              <div class="mock-speed-limit">65</div>
+            </div>
+
+            <!-- Sol Üst Mod Kontrolleri -->
+            <div class="mockup-side-controls">
+              <div class="mock-pill active">
+                <i class="fa-solid fa-compress"></i> <span data-i18n="mockup.closeView">Dönüş Yakın Çekim</span>
+              </div>
+              <div class="mock-pill simulation">
+                <i class="fa-solid fa-play"></i> <span data-i18n="mockup.simRunning">Sürüş Simülasyonu</span>
+              </div>
+            </div>
+
+            <!-- Yaklaşan Radar Uyarısı -->
+            <div class="mockup-radar-alert" id="mockRadarAlert">
+              <div class="alert-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+              <div class="alert-info">
+                <div class="alert-title" data-i18n="mockup.radarWarning">SABİT RADAR UYARISI</div>
+                <div class="alert-desc" id="mockRadarDesc">Boğaz Yolu (St. Hilarion) • 450m</div>
+              </div>
+              <div class="alert-limit">65</div>
+            </div>
+
+            <!-- Harita Görseli & Animasyonlu Güzergah Çizgisi -->
+            <div class="mockup-map-bg">
+              <div class="mockup-route-line"></div>
+              <div class="mockup-car-marker" id="mockCar">
+                <i class="fa-solid fa-location-arrow"></i>
+              </div>
+              <div class="mockup-radar-pin">
+                <i class="fa-solid fa-camera"></i>
+              </div>
+            </div>
+
+            <!-- Alt Canlı ETA Dock'u (Dinamik Azalan Google Maps Tarzı) -->
+            <div class="mockup-bottom-dock">
+              <div class="dock-eta-info">
+                <div class="dock-time-row">
+                  <span class="dock-time" id="mockEtaDk">68 dk</span>
+                  <span class="dock-eta-badge">ETA</span>
+                </div>
+                <div class="dock-meta" id="mockEtaKm">64.1 km • 20:58 Varış</div>
+              </div>
+              <button class="dock-end-btn" data-i18n="mockup.endRoute">
+                <i class="fa-solid fa-xmark"></i> Rotayı Bitir
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 🗺️ CANLI İNTERAKTİF WEB RADAR HARİTASI      -->
+  <!-- ========================================== -->
+  <section class="map-section" id="harita">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-tag"><i class="fa-solid fa-satellite-dish"></i> <span data-i18n="map.tag">Canlı Veri Tabanı</span></div>
+        <h2 class="section-title" data-i18n="map.title">KKTC İnteraktif Sabit Radar Haritası</h2>
+        <p class="section-desc" data-i18n="map.desc">
+          Lefkoşa, Girne, Mağusa, Güzelyurt ve Lefke'deki tüm sabit hız kameralarını harita üzerinde anlık görüntüleyin, hız limitlerini ve olası ceza oranlarını inceleyin.
+        </p>
+      </div>
+
+      <!-- Harita Kontrol Paneli (Arama & Filtreler) -->
+      <div class="map-controls-card">
+        <div class="map-search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="radarSearchInput" placeholder="Radar adı, bölge veya cadde ara (örn: Gönyeli, Boğaz, Hastane)..." data-i18n-placeholder="map.searchPlaceholder">
+          <button id="clearSearchBtn" class="btn-clear" style="display: none;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="filter-groups">
+          <!-- Şehir Filtreleri -->
+          <div class="filter-pills" id="cityFilter">
+            <button class="pill active" data-city="all" data-i18n="map.filterAll">Tüm Bölgeler</button>
+            <button class="pill" data-city="Lefkoşa">Lefkoşa</button>
+            <button class="pill" data-city="Girne">Girne</button>
+            <button class="pill" data-city="Gazimağusa">Gazimağusa</button>
+            <button class="pill" data-city="Güzelyurt">Güzelyurt</button>
+            <button class="pill" data-city="Lefke">Lefke</button>
+          </div>
+
+          <!-- Hız Limiti Filtreleri -->
+          <div class="speed-filter-pills" id="speedFilter">
+            <button class="speed-pill active" data-speed="all" data-i18n="map.speedAll">Tüm Limitler</button>
+            <button class="speed-pill" data-speed="50">50 km/s</button>
+            <button class="speed-pill" data-speed="65">65 km/s</button>
+            <button class="speed-pill" data-speed="75">75 km/s</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Harita ve Liste Izgarası -->
+      <div class="map-layout">
+        <!-- Leaflet Canlı Harita Container -->
+        <div class="map-wrapper">
+          <div id="kktcLeafletMap"></div>
+          <div class="map-legend">
+            <div class="legend-item"><span class="legend-dot speed-50"></span> 50 km/s Şehir İçi</div>
+            <div class="legend-item"><span class="legend-dot speed-65"></span> 65 km/s Çevre Yolu</div>
+            <div class="legend-item"><span class="legend-dot speed-75"></span> 75 km/s Anayol / Düzlük</div>
+          </div>
+        </div>
+
+        <!-- Sağ Radar Liste Paneli -->
+        <div class="radar-sidebar">
+          <div class="sidebar-header">
+            <span class="sidebar-title"><i class="fa-solid fa-list-ul"></i> <span data-i18n="map.radarList">Radar Noktaları</span></span>
+            <span class="radar-counter" id="radarCounter">18 Nokta</span>
+          </div>
+          <div class="radar-list" id="radarListContainer">
+            <!-- JS tarafından dinamik doldurulur -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 🚗 CANLI SÜRÜŞ & ROTA SİMÜLATÖRÜ (DEMO)     -->
+  <!-- ========================================== -->
+  <section class="simulation-section" id="simulasyon">
+    <div class="container">
+      <div class="sim-card">
+        <div class="sim-header">
+          <div>
+            <div class="section-tag"><i class="fa-solid fa-gamepad"></i> <span data-i18n="sim.tag">Canlı Önizleme & Test</span></div>
+            <h2 class="section-title" data-i18n="sim.title">Gerçek Zamanlı Sürüş Navigasyon Simülatörü</h2>
+            <p class="section-desc" data-i18n="sim.desc">
+              Koltukta otururken KKTC rotalarında test sürüşü yapın; dinamik azalan süreyi, hız uyarısını ve yaklaşan radar ikazlarını tarayıcınızda deneyimleyin.
+            </p>
+          </div>
+          
+          <div class="sim-actions">
+            <select id="routeSelect" class="sim-select">
+              <option value="lefkosa_girne">Lefkoşa ➔ Girne Dağ Yolu (Boğaz)</option>
+              <option value="lefkosa_ercan">Lefkoşa ➔ Ercan Havalimanı (Hamitköy - Yonca)</option>
+              <option value="guzelyurt_lefkosa">Güzelyurt ➔ Lefkoşa (Yılmazköy Düzlüğü)</option>
+              <option value="lefkosa_magusa">Lefkoşa ➔ Gazimağusa (Dörtyol - DAÜ)</option>
+            </select>
+            <button id="startSimBtn" class="btn btn-primary">
+              <i class="fa-solid fa-play"></i> <span data-i18n="sim.startBtn">Simülasyonu Başlat</span>
+            </button>
+            <button id="resetSimBtn" class="btn btn-outline" style="display: none;">
+              <i class="fa-solid fa-rotate-left"></i> <span data-i18n="sim.resetBtn">Sıfırla</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="sim-cockpit-grid">
+          <!-- Hız & Radar Ekranı -->
+          <div class="cockpit-gauge-box">
+            <div class="gauge-circle" id="simGauge">
+              <div class="gauge-val" id="simSpeedVal">0</div>
+              <div class="gauge-unit">km/h</div>
+              <div class="gauge-sub" id="simSpeedLimit">Limit: 65</div>
+            </div>
+            <div class="gauge-status" id="simSpeedStatus">Beklemede</div>
+          </div>
+
+          <!-- Navigasyon Adımı & Manevra Ekranı -->
+          <div class="cockpit-maneuver-box">
+            <div class="sim-turn-card">
+              <div class="sim-turn-icon" id="simTurnIcon"><i class="fa-solid fa-arrow-up"></i></div>
+              <div class="sim-turn-info">
+                <div class="sim-turn-dist" id="simTurnDist">-- m</div>
+                <div class="sim-turn-inst" id="simTurnInst">Simülasyonu başlat butonuna tıklayın</div>
+              </div>
+            </div>
+            
+            <div class="sim-radar-detector" id="simRadarDetector">
+              <i class="fa-solid fa-radar fa-spin"></i>
+              <span id="simRadarStatusText">Radar tarayıcısı aktif...</span>
+            </div>
+          </div>
+
+          <!-- Canlı ETA & Mesafe Göstergesi (Kullanıcının İstediği Dinamik Sayaç) -->
+          <div class="cockpit-eta-box">
+            <div class="eta-metric">
+              <span class="eta-title" data-i18n="sim.remainingTime">Kalan Süre (ETA)</span>
+              <span class="eta-value green" id="simRemainingTime">-- dk</span>
+            </div>
+            <div class="eta-metric">
+              <span class="eta-title" data-i18n="sim.remainingDist">Kalan Mesafe</span>
+              <span class="eta-value" id="simRemainingDist">-- km</span>
+            </div>
+            <div class="eta-metric">
+              <span class="eta-title" data-i18n="sim.arrivalTime">Tahmini Varış</span>
+              <span class="eta-value" id="simArrivalTime">--:--</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 💰 2026 KKTC TRAFİK CEZASI HESAPLAYICI     -->
+  <!-- ========================================== -->
+  <section class="calculator-section" id="ceza-hesapla">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-tag"><i class="fa-solid fa-gavel"></i> <span data-i18n="calc.tag">Yasal Ceza Tarifesi</span></div>
+        <h2 class="section-title" data-i18n="calc.title">KKTC 2026 Trafik Cezası & Ceza Puanı Hesaplayıcı</h2>
+        <p class="section-desc" data-i18n="calc.desc">
+          KKTC Trafik Yasası uyarınca trafik cezaları resmi brüt asgari ücrete göre belirlenir. Hızınızı girerek ceza tutarını ve ceza puanını anında hesaplayın.
+        </p>
+      </div>
+
+      <div class="calculator-card">
+        <div class="calc-inputs">
+          <!-- İhlal Türü -->
+          <div class="form-group">
+            <label for="violationType" data-i18n="calc.violationType">Trafik İhlali Türü:</label>
+            <select id="violationType" class="form-select">
+              <option value="speed">Hız Sınırı Aşımı (Sabit Radar / Mobil)</option>
+              <option value="phone">Seyir Halinde Cep Telefonu Kullanımı</option>
+              <option value="belt">Emniyet Kemeri Takmama</option>
+              <option value="red_light">Kırmızı Işık İhlali</option>
+              <option value="alcohol">Alkollü Araç Kullanımı (50-100 Promil)</option>
+              <option value="inspection">Muayenesiz / Seyrüsefersiz Araç</option>
+            </select>
+          </div>
+
+          <!-- Hız Parametreleri (Yalnızca hız seçildiğinde) -->
+          <div id="speedParamsGroup">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="roadLimitSelect" data-i18n="calc.roadLimit">Yol Hız Limiti (km/s):</label>
+                <select id="roadLimitSelect" class="form-select">
+                  <option value="50">50 km/s (Şehir İçi)</option>
+                  <option value="65" selected>65 km/s (Çevre Yolu & Boğaz)</option>
+                  <option value="75">75 km/s (Bölünmüş Yol / Düzlük)</option>
+                  <option value="90">90 km/s (Girne - Lefkoşa Çift Şerit)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="driverSpeedInput" data-i18n="calc.driverSpeed">Sürüş Hızınız (km/s):</label>
+                <div class="input-with-stepper">
+                  <input type="number" id="driverSpeedInput" value="85" min="20" max="180">
+                  <span class="unit">km/h</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hız Slider -->
+            <div class="form-group">
+              <div class="slider-header">
+                <span data-i18n="calc.speedSlider">Hız Aşımını Kaydırıcıyla Ayarlayın:</span>
+                <span class="slider-badge" id="sliderBadge">Limit +20 km/s</span>
+              </div>
+              <input type="range" id="speedSlider" min="50" max="150" value="85" class="custom-range">
+            </div>
+          </div>
+        </div>
+
+        <!-- Hesaplama Sonuç Paneli -->
+        <div class="calc-result-panel" id="calcResultPanel">
+          <div class="result-badge danger" id="resultStatusBadge">CEZA KAPSAMINDA</div>
+          
+          <div class="fine-amount-row">
+            <span class="fine-label" data-i18n="calc.fineAmount">Ceza Tutarı:</span>
+            <span class="fine-value" id="fineAmountTL">5.277 ₺</span>
+          </div>
+
+          <div class="fine-points-row">
+            <span class="points-label" data-i18n="calc.penaltyPoints">Ehliyet Ceza Puanı:</span>
+            <span class="points-value" id="finePointsVal">25 Puan</span>
+          </div>
+
+          <div class="fine-description" id="fineDescription">
+            Hız sınırını 20 km/s ile 40 km/s arasında aştınız (Asgari Ücretin %15'i). 15 gün içinde ödenirse mahkemeye sevk edilmez.
+          </div>
+
+          <div class="wage-info">
+            <i class="fa-solid fa-circle-info"></i>
+            <span data-i18n="calc.wageBasis">Hesaplama, 2026 KKTC Resmi Brüt Asgari Ücreti (35.180 ₺) oranları baz alınarak otomatik yapılmaktadır.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 🛡️ ÖNE ÇIKAN ÖZELLİKLER GRID               -->
+  <!-- ========================================== -->
+  <section class="features-section" id="ozellikler">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="features.tag">Neden Bu Uygulama?</span></div>
+        <h2 class="section-title" data-i18n="features.title">Güvenli Sürüş İçin Eksiksiz Bir Kokpit</h2>
+        <p class="section-desc" data-i18n="features.desc">
+          KKTC yollarında sürüş yaparken ceza risklerini sıfıra indirin, en hızlı ve akıllı rotalarla güvenle seyahat edin.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon speed"><i class="fa-solid fa-gauge-high"></i></div>
+          <h3 class="feature-title" data-i18n="features.f1Title">0 Gecikmeli Sesli Radar Alarmı</h3>
+          <p class="feature-desc" data-i18n="features.f1Desc">
+            Sabit hız kameralarına 1000m, 500m ve 250m kala sesli Türkçe/İngilizce ikazlar ve görsel flaş uyarısıyla hızınızı güvenli limite çeker.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon route"><i class="fa-solid fa-map-location"></i></div>
+          <h3 class="feature-title" data-i18n="features.f2Title">Google Maps Tarzı Canlı Navigasyon</h3>
+          <p class="feature-desc" data-i18n="features.f2Desc">
+            Her metrede azalan kilometre, akıllı varış saati (ETA) sayacı ve viraj öncesi 'Şimdi Sola Dönün' manevra talimatları.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon offline"><i class="fa-solid fa-wifi"></i></div>
+          <h3 class="feature-title" data-i18n="features.f3Title">Çevrimdışı (Offline) Tam Uyum</h3>
+          <p class="feature-desc" data-i18n="features.f3Desc">
+            Dağ yollarında veya internet kesintilerinde önbellek haritası ve dahili GPS motoruyla kesintisiz radar takibi sağlar.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon community"><i class="fa-solid fa-users-viewfinder"></i></div>
+          <h3 class="feature-title" data-i18n="features.f4Title">Canlı Topluluk Yol Forumu</h3>
+          <p class="feature-desc" data-i18n="features.f4Desc">
+            Kıbrıs'taki sürücülerden anlık çevirme, kaza, yol yapımı ve gizli mobil polis kontrolü bildirimleri tek panelde.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon emergency"><i class="fa-solid fa-truck-medical"></i></div>
+          <h3 class="feature-title" data-i18n="features.f5Title">7/24 KKTC Acil Destek & Çekici</h3>
+          <p class="feature-desc" data-i18n="features.f5Desc">
+            Polis İmdat (155), Ambulans (112), İtfaiye (199) ve en yakın akü/çekici servislerine tek dokunuşla direkt çağrı yapın.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon darkmode"><i class="fa-solid fa-moon"></i></div>
+          <h3 class="feature-title" data-i18n="features.f6Title">Gece Sürüşü İçin OLED Dark Mode</h3>
+          <p class="feature-desc" data-i18n="features.f6Desc">
+            Göz yormayan lüks gece kokpiti, pil tasarrufu sağlayan derin siyah tonlar ve Apple CarPlay / HUD uyumlu göstergeler.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 📥 İNDİRME & KURULUM BÖLÜMÜ                -->
+  <!-- ========================================== -->
+  <section class="download-section" id="indir">
+    <div class="container">
+      <div class="download-card">
+        <div class="download-content">
+          <div class="section-tag"><i class="fa-brands fa-android"></i> <span data-i18n="download.tag">Android APK İndirme</span></div>
+          <h2 class="download-title" data-i18n="download.title">Uygulamayı Hemen Cihazınıza Yükleyin</h2>
+          <p class="download-desc" data-i18n="download.desc">
+            En güncel v2.4.0 sürümünü indirin. Reklamsız, hızlı ve tüm KKTC radarları yüklü olarak hemen kullanmaya başlayın.
+          </p>
+
+          <div class="apk-meta-badge">
+            <span><i class="fa-solid fa-code-branch"></i> Sürüm: <strong>v2.4.0 (Canlı)</strong></span>
+            <span><i class="fa-solid fa-file-zipper"></i> Boyut: <strong>~28 MB</strong></span>
+            <span><i class="fa-solid fa-shield-check"></i> Güvenlik: <strong>Temiz / Onaylı</strong></span>
+          </div>
+
+          <div class="download-cta-group">
+            <a href="KKTC_Trafik_Radar.apk" download="KKTC_Trafik_Radar.apk" class="btn btn-primary btn-lg" id="downloadApkBtn">
+              <i class="fa-solid fa-download"></i>
+              <div>
+                <span class="btn-subtext" data-i18n="download.directLink">Doğrudan İndir</span>
+                <span class="btn-maintext">KKTC_Trafik_Radar.apk</span>
+              </div>
+            </a>
+            <a href="https://github.com/Tubi-kara/kktc_ceza" target="_blank" class="btn btn-outline btn-lg">
+              <i class="fa-brands fa-github"></i> <span>GitHub</span>
+            </a>
+          </div>
+
+          <div class="install-steps">
+            <div class="step-item">
+              <span class="step-num">1</span>
+              <span class="step-text" data-i18n="download.step1">APK dosyasını indirin.</span>
+            </div>
+            <div class="step-item">
+              <span class="step-num">2</span>
+              <span class="step-text" data-i18n="download.step2">'Bilinmeyen Kaynaklara İzin Ver' uyarısını onaylayın.</span>
+            </div>
+            <div class="step-item">
+              <span class="step-num">3</span>
+              <span class="step-text" data-i18n="download.step3">Yükleyin ve GPS iznini vererek yola çıkın!</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="download-qr-box">
+          <div class="qr-frame">
+            <svg class="qr-svg" viewBox="0 0 100 100" fill="currentColor">
+              <!-- Modern stilize QR Kodu Temsili -->
+              <rect width="100" height="100" fill="#0B0F19" rx="10"/>
+              <path fill="#10B981" d="M10,10 h25 v25 h-25 z M15,15 v15 h15 v-15 z M20,20 h5 v5 h-5 z"/>
+              <path fill="#10B981" d="M65,10 h25 v25 h-25 z M70,15 v15 h15 v-15 z M75,20 h5 v5 h-5 z"/>
+              <path fill="#10B981" d="M10,65 h25 v25 h-25 z M15,70 v15 h15 v-15 z M20,75 h5 v5 h-5 z"/>
+              <path fill="#38BDF8" d="M45,15 h10 v5 h-10 z M40,25 h15 v5 h-15 z M45,40 h15 v15 h-15 z M25,45 h10 v10 h-10 z M65,45 h10 v5 h-10 z M75,55 h15 v5 h-15 z M40,65 h10 v10 h-10 z M60,65 h10 v15 h-10 z M75,70 h15 v20 h-15 z"/>
+              <circle cx="50" cy="50" r="6" fill="#10B981"/>
+            </svg>
+          </div>
+          <span class="qr-caption"><i class="fa-solid fa-mobile-screen"></i> <span data-i18n="download.scanQr">Telefonunuzla taratarak indirin</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- ❓ SIKÇA SORULAN SORULAR                   -->
+  <!-- ========================================== -->
+  <section class="faq-section" id="sss">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-tag"><i class="fa-solid fa-circle-question"></i> <span data-i18n="faq.tag">Yardım Merkezi</span></div>
+        <h2 class="section-title" data-i18n="faq.title">Sıkça Sorulan Sorular</h2>
+      </div>
+
+      <div class="faq-accordion">
+        <div class="faq-item">
+          <button class="faq-question">
+            <span data-i18n="faq.q1">Radarlar ve kameralar ne kadar güncel?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p data-i18n="faq.a1">
+              Veri tabanımız KKTC Trafik Dairesi ve Polis Genel Müdürlüğü resmi duyurularıyla eş zamanlı güncellenir. Lefkoşa, Girne, Mağusa, Güzelyurt ve tüm ilçelerdeki 112+ aktif sabit kamera koordinatları doğrulanmıştır.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span data-i18n="faq.q2">İnternet paketim bittiğinde uygulama çalışır mı?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p data-i18n="faq.a2">
+              Evet! Uygulama harita ve radar verilerini yerel olarak cihaz hafızasına önbelleğe alır. Yalnızca GPS uyduları açıkken bile yaklaşan tüm sabit radarları sesli olarak ikaz etmeye devam eder.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span data-i18n="faq.q3">Ekran kapalıyken veya arka planda çalışıyor mu?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p data-i18n="faq.a3">
+              Evet. Arka plan servis izni verildiğinde navigasyon ve radar ikaz sistemi ekran kilitliyken veya Spotify / YouTube açıkken dahi sesli bildirim vermeyi sürdürür.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span data-i18n="faq.q4">Cezalar 2026 asgari ücretine göre mi hesaplanıyor?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <div class="faq-answer">
+            <p data-i18n="faq.a4">
+              Kesinlikle. KKTC Trafik Yasası gereğince tüm para cezaları yürürlükteki brüt asgari ücrete (%10, %15, %25 gibi) endekslidir. Sistem her asgari ücret artışında otomatik güncellenir.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 🦶 FOOTER                                  -->
+  <!-- ========================================== -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-col">
+        <div class="footer-brand">
+          <i class="fa-solid fa-camera"></i>
+          <span>KKTC <span class="accent-text">RADAR</span></span>
+        </div>
+        <p class="footer-desc" data-i18n="footer.desc">
+          Kuzey Kıbrıs Türk Cumhuriyeti sürücüleri için geliştirilmiş bağımsız, ücretsiz ve açık kaynaklı trafik bilgi ve akıllı navigasyon platformu.
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading" data-i18n="footer.quickLinks">Hızlı Bağlantılar</h4>
+        <ul class="footer-links">
+          <li><a href="#harita" data-i18n="nav.map">Canlı Harita</a></li>
+          <li><a href="#simulasyon" data-i18n="nav.simulation">Sürüş Simülatörü</a></li>
+          <li><a href="#ceza-hesapla" data-i18n="nav.calculator">Ceza Hesaplayıcı</a></li>
+          <li><a href="#indir" data-i18n="nav.download">APK İndir</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-heading" data-i18n="footer.emergency">KKTC Acil Hatlar</h4>
+        <ul class="footer-emergency-list">
+          <li><span>Polis İmdat:</span> <strong>155</strong></li>
+          <li><span>Ambulans & Sağlık:</span> <strong>112</strong></li>
+          <li><span>İtfaiye:</span> <strong>199</strong></li>
+          <li><span>Orman Yangın:</span> <strong>177</strong></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <p data-i18n="footer.copy">© 2026 KKTC Trafik & Radar Portalı. Tüm hakları saklıdır.</p>
+        <p class="disclaimer" data-i18n="footer.disclaimer">
+          Yasal Uyarı: Bu portal bilgilendirme amaçlıdır. Lütfen KKTC Karayolları trafik kurallarına ve hız limitlerine daima uyunuz.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Leaflet JS for Interactive Map -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
