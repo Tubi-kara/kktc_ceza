@@ -1600,6 +1600,55 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
     final int anlikHiz = _canliSurusHizi > 0 ? _canliSurusHizi : 68;
     const int hizLimiti = 65; // Sabit KKTC anayol hız limiti
 
+    // Canlı azalan kalan km ve kalan süre hesabı (Google Maps dinamik akışı)
+    double canliKalanKm;
+    int canliKalanDakika;
+
+    if (_simulasyonAktif) {
+      final double kalanOran = (1.0 - _simulasyonIlerleme).clamp(0.0, 1.0);
+      canliKalanKm = (rota.mesafeKm * kalanOran).clamp(0.0, rota.mesafeKm);
+      canliKalanDakika = (rota.tahminiDakika * kalanOran).round();
+      if (_simulasyonIlerleme >= 0.985 || canliKalanKm < 0.05) {
+        canliKalanKm = 0.0;
+        canliKalanDakika = 0;
+      } else if (canliKalanDakika < 1 && canliKalanKm > 0.2) {
+        canliKalanDakika = 1;
+      }
+    } else {
+      // Gerçek GPS sürüşü: mevcut manevraya kalan metre + kalan manevraların toplamı
+      double kalanToplamMetre = _mevcutManevrayaKalanMetre;
+      for (int i = _aktifManevraIndeksi + 1; i < manevralar.length; i++) {
+        kalanToplamMetre += (manevralar[i].mesafeMetre ?? 450.0);
+      }
+      final double toplamRotaMetre = rota.mesafeKm * 1000.0;
+      if (kalanToplamMetre > toplamRotaMetre) {
+        kalanToplamMetre = toplamRotaMetre;
+      }
+      canliKalanKm = (kalanToplamMetre / 1000.0).clamp(0.0, rota.mesafeKm);
+      final double oran = toplamRotaMetre > 0 ? (kalanToplamMetre / toplamRotaMetre).clamp(0.0, 1.0) : 1.0;
+      canliKalanDakika = (rota.tahminiDakika * oran).round();
+      if (canliKalanDakika < 1 && canliKalanKm > 0.2) {
+        canliKalanDakika = 1;
+      } else if (canliKalanKm < 0.05) {
+        canliKalanKm = 0.0;
+        canliKalanDakika = 0;
+      }
+    }
+
+    final String kalanDkMetni = canliKalanDakika <= 0
+        ? (widget.turkceMi ? 'Ulaşıldı' : 'Arrived')
+        : (canliKalanDakika < 1
+            ? (widget.turkceMi ? '< 1 dk' : '< 1 min')
+            : '$canliKalanDakika ${widget.turkceMi ? 'dk' : 'min'}');
+
+    final String kalanKmMetni = canliKalanKm < 1.0
+        ? '${(canliKalanKm * 1000).round()} m'
+        : '${canliKalanKm.toStringAsFixed(1)} km';
+
+    final DateTime tahminiVaris = DateTime.now().add(Duration(minutes: canliKalanDakika));
+    final String varisSaatStr = '${tahminiVaris.hour.toString().padLeft(2, '0')}:${tahminiVaris.minute.toString().padLeft(2, '0')}';
+    final String varisMetni = widget.turkceMi ? '$varisSaatStr Varış' : '$varisSaatStr Arrival';
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -1976,7 +2025,7 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
                           Row(
                             children: [
                               Text(
-                                '${rota.tahminiDakika} dk',
+                                kalanDkMetni,
                                 style: const TextStyle(
                                   color: Color(0xFF10B981),
                                   fontSize: 20,
@@ -2003,7 +2052,7 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${rota.mesafeKm} km • ${DateTime.now().add(Duration(minutes: rota.tahminiDakika)).hour.toString().padLeft(2, '0')}:${DateTime.now().add(Duration(minutes: rota.tahminiDakika)).minute.toString().padLeft(2, '0')} Varış',
+                            '$kalanKmMetni • $varisMetni',
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.70),
                               fontSize: 11,
@@ -4211,8 +4260,8 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
 
                     // 7. SAĞ ÜST: HARİTA KONTROLLERİ (Trafik / Katman / Odaklan / + / -)
                     Positioned(
-                      top: widget.navigasyonAktif ? 100 : 10,
-                      right: 10,
+                      top: widget.navigasyonAktif ? (MediaQuery.of(context).padding.top + 198) : 10,
+                      right: 12,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -4653,9 +4702,51 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
 
   // 🗺️ GOOGLE MAPS ALT BARI (ETA, KALAN SÜRE, ADIM BUTONLARI VE DURDUR)
   Widget _buildNavigasyonAktifAltBar(double width) {
-    final int kalanDk = widget.rota.tahminiDakika;
+    double canliKalanKm;
+    int canliKalanDakika;
+
+    if (widget.simulasyonAktif) {
+      final double kalanOran = (1.0 - widget.simulasyonIlerleme).clamp(0.0, 1.0);
+      canliKalanKm = (widget.rota.mesafeKm * kalanOran).clamp(0.0, widget.rota.mesafeKm);
+      canliKalanDakika = (widget.rota.tahminiDakika * kalanOran).round();
+      if (widget.simulasyonIlerleme >= 0.985 || canliKalanKm < 0.05) {
+        canliKalanKm = 0.0;
+        canliKalanDakika = 0;
+      } else if (canliKalanDakika < 1 && canliKalanKm > 0.2) {
+        canliKalanDakika = 1;
+      }
+    } else {
+      double kalanToplamMetre = widget.mevcutManevrayaKalanMetre;
+      for (int i = widget.aktifManevraIndeksi + 1; i < widget.aktifManevralar.length; i++) {
+        kalanToplamMetre += (widget.aktifManevralar[i].mesafeMetre ?? 450.0);
+      }
+      final double toplamRotaMetre = widget.rota.mesafeKm * 1000.0;
+      if (kalanToplamMetre > toplamRotaMetre) {
+        kalanToplamMetre = toplamRotaMetre;
+      }
+      canliKalanKm = (kalanToplamMetre / 1000.0).clamp(0.0, widget.rota.mesafeKm);
+      final double oran = toplamRotaMetre > 0 ? (kalanToplamMetre / toplamRotaMetre).clamp(0.0, 1.0) : 1.0;
+      canliKalanDakika = (widget.rota.tahminiDakika * oran).round();
+      if (canliKalanDakika < 1 && canliKalanKm > 0.2) {
+        canliKalanDakika = 1;
+      } else if (canliKalanKm < 0.05) {
+        canliKalanKm = 0.0;
+        canliKalanDakika = 0;
+      }
+    }
+
+    final String kalanDkMetni = canliKalanDakika <= 0
+        ? (widget.turkceMi ? 'Ulaşıldı' : 'Arrived')
+        : (canliKalanDakika < 1
+            ? (widget.turkceMi ? '< 1 dk' : '< 1 min')
+            : '$canliKalanDakika ${widget.turkceMi ? 'dk' : 'min'}');
+
+    final String kalanKmMetni = canliKalanKm < 1.0
+        ? '${(canliKalanKm * 1000).round()} m'
+        : '${canliKalanKm.toStringAsFixed(1)} km';
+
     final now = DateTime.now();
-    final varisZamani = now.add(Duration(minutes: kalanDk));
+    final varisZamani = now.add(Duration(minutes: canliKalanDakika));
     final saatStr = '${varisZamani.hour.toString().padLeft(2, '0')}:${varisZamani.minute.toString().padLeft(2, '0')}';
 
     final int toplamAdim = widget.aktifManevralar.length;
@@ -4709,7 +4800,7 @@ class _KktcRealRouteMapViewState extends State<KktcRealRouteMapView>
                     ],
                   ),
                   Text(
-                    '$kalanDk dk • ${widget.rota.mesafeKm} km',
+                    '$kalanDkMetni • $kalanKmMetni',
                     style: TextStyle(
                       color: NavHtmlColors.secondary.withValues(alpha: 0.9),
                       fontSize: 10.5,
