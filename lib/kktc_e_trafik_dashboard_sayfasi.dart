@@ -1,4 +1,5 @@
 import 'kktc_favori_noktalar_servisi.dart';
+import 'kktc_tema_servisi.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -320,91 +321,99 @@ class _KktcETrafikDashboardSayfasiState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: cBg,
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.dark.copyWith(
-          statusBarColor: Colors.transparent,
-          systemNavigationBarColor: Colors.white,
-        ),
-        child: Stack(
-          children: [
-            // Ana İçerik Alanı
-            if (_selectedTabIndex == 1)
-              Positioned.fill(
-                bottom: 68, // Alt Navigasyon Barı için boşluk
-                child: _buildFullScreenHaritalarTab(),
-              )
-            else
-              Positioned.fill(
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  padding: EdgeInsets.only(
-                    left: _selectedTabIndex == 4 ? 18 : 20,
-                    right: _selectedTabIndex == 4 ? 18 : 20,
-                    top: _selectedTabIndex == 4
-                        ? (MediaQuery.of(context).padding.top + 16)
-                        : (MediaQuery.of(context).padding.top + 84),
-                    bottom: 120, // Bottom navigation bar boşluğu (içerik arkada kalmaz)
-                  ),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
-                      child: _selectedTabIndex == 3
-                          ? _buildCezalarVeSigortaTab()
-                          : (_selectedTabIndex == 4
-                              ? KktcETrafikMenuSayfasi(
-                                  onOpenPanel: () => setState(() => _selectedTabIndex = 0),
-                                  onOpenRadars: () => setState(() => _selectedTabIndex = 1),
-                                  onOpenFines: () {
-                                    _girisKontrolEt(
-                                      islemAdi: 'Cezalar ve harçlar sekmesini açmak',
-                                      onGirisSonrasi: () {
-                                        setState(() {
-                                          _selectedTabIndex = 3;
-                                          _cezaSigortaSubTab = 0;
-                                        });
+    return ListenableBuilder(
+      listenable: KktcTemaServisi(),
+      builder: (context, _) {
+        final tema = KktcTemaServisi();
+        final bool koyuMu = tema.isKoyu(context);
+
+        return Scaffold(
+          backgroundColor: tema.bg,
+          body: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: (koyuMu ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark).copyWith(
+              statusBarColor: Colors.transparent,
+              systemNavigationBarColor: tema.navBarBg,
+            ),
+            child: Stack(
+              children: [
+                // Ana İçerik Alanı
+                if (_selectedTabIndex == 1)
+                  Positioned.fill(
+                    bottom: 68, // Alt Navigasyon Barı için boşluk
+                    child: _buildFullScreenHaritalarTab(),
+                  )
+                else
+                  Positioned.fill(
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      padding: EdgeInsets.only(
+                        left: _selectedTabIndex == 4 ? 18 : 20,
+                        right: _selectedTabIndex == 4 ? 18 : 20,
+                        top: _selectedTabIndex == 4
+                            ? (MediaQuery.of(context).padding.top + 16)
+                            : (MediaQuery.of(context).padding.top + 84),
+                        bottom: 120, // Bottom navigation bar boşluğu (içerik arkada kalmaz)
+                      ),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 480),
+                          child: _selectedTabIndex == 3
+                              ? _buildCezalarVeSigortaTab()
+                              : (_selectedTabIndex == 4
+                                  ? KktcETrafikMenuSayfasi(
+                                      onOpenPanel: () => setState(() => _selectedTabIndex = 0),
+                                      onOpenRadars: () => setState(() => _selectedTabIndex = 1),
+                                      onOpenFines: () {
+                                        _girisKontrolEt(
+                                          islemAdi: 'Cezalar ve harçlar sekmesini açmak',
+                                          onGirisSonrasi: () {
+                                            setState(() {
+                                              _selectedTabIndex = 3;
+                                              _cezaSigortaSubTab = 0;
+                                            });
+                                          },
+                                        );
                                       },
-                                    );
-                                  },
-                                  onCikisYap: () {
-                                    setState(() {
-                                      _girisYapildiMi = false;
-                                      _kullaniciAdi = 'Misafir Kullanıcı';
-                                    });
-                                    if (widget.onCikisYap != null) {
-                                      widget.onCikisYap!();
-                                    }
-                                  },
-                                  girisYapildiMi: _girisYapildiMi,
-                                  kullaniciAdi: _kullaniciAdi,
-                                  onGirisYap: () => _girisEkraniniAc(),
-                                )
-                              : _buildDashboardTab()),
+                                      onCikisYap: () {
+                                        setState(() {
+                                          _girisYapildiMi = false;
+                                          _kullaniciAdi = 'Misafir Kullanıcı';
+                                        });
+                                        if (widget.onCikisYap != null) {
+                                          widget.onCikisYap!();
+                                        }
+                                      },
+                                      girisYapildiMi: _girisYapildiMi,
+                                      kullaniciAdi: _kullaniciAdi,
+                                      onGirisYap: () => _girisEkraniniAc(),
+                                    )
+                                  : _buildDashboardTab()),
+                        ),
+                      ),
                     ),
                   ),
+
+                // Üst Header / Karşılama Barı (Sadece Panel ve Cezalar sekmelerinde gösterilir)
+                if (_selectedTabIndex == 0 || _selectedTabIndex == 3)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: _buildTopHeaderBar(),
+                  ),
+
+                // 5 Sekmeli Modern Alt Navigasyon Barı (E-Denetim + Menü Rozeti)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: _buildBottomNavigationBar(),
                 ),
-              ),
-
-            // Üst Header / Karşılama Barı (Sadece Panel ve Cezalar sekmelerinde gösterilir)
-            if (_selectedTabIndex == 0 || _selectedTabIndex == 3)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: _buildTopHeaderBar(),
-              ),
-
-            // 5 Sekmeli Modern Alt Navigasyon Barı (E-Denetim + Menü Rozeti)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: _buildBottomNavigationBar(),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -7470,15 +7479,18 @@ class _KktcETrafikDashboardSayfasiState
   // 1. ÜST HEADER / KARŞILAMA BARI
   // ===========================================================================
   Widget _buildTopHeaderBar() {
+    final tema = KktcTemaServisi();
+    final bool koyuMu = tema.isKoyu(context);
+
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.97),
+            color: (koyuMu ? const Color(0xFF0D1424) : Colors.white).withValues(alpha: 0.97),
             border: Border(
               bottom: BorderSide(
-                color: cSoft.withOpacity(0.7),
+                color: koyuMu ? const Color(0xFF1E293B) : cSoft.withValues(alpha: 0.7),
                 width: 1,
               ),
             ),
@@ -7563,10 +7575,10 @@ class _KktcETrafikDashboardSayfasiState
                                 _girisYapildiMi ? 'Merhaba, $_kullaniciAdi' : 'Hoş Geldiniz',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
-                                  color: cNavy,
+                                  color: koyuMu ? Colors.white : cNavy,
                                   letterSpacing: -0.3,
                                 ),
                               ),
@@ -7580,50 +7592,66 @@ class _KktcETrafikDashboardSayfasiState
 
                   // Sağ: Giriş Yap Butonu (Giriş Yapılmadıysa) VEYA Oturum / Bildirim İkonları
                   if (!_girisYapildiMi)
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          _girisEkraniniAc();
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7.5),
-                          decoration: BoxDecoration(
-                            color: cNavy,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildHeaderIconButton(
+                          icon: koyuMu ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                          onTap: () => tema.showTemaSecimDialog(context),
+                        ),
+                        const SizedBox(width: 6),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              _girisEkraniniAc();
+                            },
                             borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: cNavy.withOpacity(0.22),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7.5),
+                              decoration: BoxDecoration(
+                                color: koyuMu ? const Color(0xFF1E293B) : cNavy,
+                                borderRadius: BorderRadius.circular(20),
+                                border: koyuMu ? Border.all(color: const Color(0xFF334155)) : null,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (koyuMu ? Colors.black : cNavy).withValues(alpha: 0.22),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.login_rounded, size: 15, color: cLime),
-                              SizedBox(width: 5),
-                              Text(
-                                'Giriş Yap',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                  letterSpacing: 0.2,
-                                ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.login_rounded, size: 15, color: cLime),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    'Giriş Yap',
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     )
                   else
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        _buildHeaderIconButton(
+                          icon: koyuMu ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                          onTap: () => tema.showTemaSecimDialog(context),
+                        ),
+                        const SizedBox(width: 6),
                         _buildHeaderIconButton(
                           icon: Icons.car_repair_rounded,
                           onTap: () {
@@ -7666,6 +7694,7 @@ class _KktcETrafikDashboardSayfasiState
     required VoidCallback onTap,
     bool showDot = false,
   }) {
+    final koyuMu = KktcTemaServisi().isKoyu(context);
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -7678,12 +7707,12 @@ class _KktcETrafikDashboardSayfasiState
           width: 37,
           height: 37,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: koyuMu ? const Color(0xFF16203B) : Colors.white,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: cSoft),
+            border: Border.all(color: koyuMu ? const Color(0xFF263354) : cSoft),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: koyuMu ? 0.25 : 0.03),
                 blurRadius: 4,
                 offset: const Offset(0, 1),
               ),
@@ -7692,7 +7721,7 @@ class _KktcETrafikDashboardSayfasiState
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(icon, size: 20, color: cNavy),
+              Icon(icon, size: 20, color: koyuMu ? const Color(0xFF38BDF8) : cNavy),
               if (showDot)
                 Positioned(
                   top: 8,
@@ -9106,18 +9135,21 @@ class _KktcETrafikDashboardSayfasiState
   // 6. ALT NAVİGASYON BARI (5 SEKMELİ E-DENETİM & AKTİF MENÜ ROZETLİ)
   // ===========================================================================
   Widget _buildBottomNavigationBar() {
+    final tema = KktcTemaServisi();
+    final bool koyuMu = tema.isKoyu(context);
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tema.navBarBg,
         border: Border(
           top: BorderSide(
-            color: cSoft.withOpacity(0.9),
+            color: tema.navBarBorder,
             width: 1,
           ),
         ),
         boxShadow: [
           BoxShadow(
-            color: cNavy.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: koyuMu ? 0.35 : 0.08),
             blurRadius: 18,
             offset: const Offset(0, -4),
           ),
@@ -9212,6 +9244,10 @@ class _KktcETrafikDashboardSayfasiState
     VoidCallback? onCustomTap,
   }) {
     final bool isActive = _selectedTabIndex == index;
+    final tema = KktcTemaServisi();
+    final bool koyuMu = tema.isKoyu(context);
+    final activeCol = koyuMu ? const Color(0xFF38BDF8) : cNavy;
+    final inactiveCol = koyuMu ? const Color(0xFF64748B) : cSlate;
 
     return Expanded(
       child: Material(
@@ -9232,20 +9268,20 @@ class _KktcETrafikDashboardSayfasiState
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                   decoration: BoxDecoration(
-                    color: cNavy.withOpacity(0.08),
+                    color: activeCol.withValues(alpha: koyuMu ? 0.2 : 0.08),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(icon, size: 20, color: cNavy),
+                      Icon(icon, size: 20, color: activeCol),
                       const SizedBox(height: 2),
                       Text(
                         label,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
-                          color: cNavy,
+                          color: activeCol,
                           letterSpacing: -0.2,
                         ),
                       ),
@@ -9262,7 +9298,7 @@ class _KktcETrafikDashboardSayfasiState
                         Icon(
                           icon,
                           size: 21,
-                          color: isActive ? cNavy : cSlate,
+                          color: isActive ? activeCol : inactiveCol,
                         ),
                         if (hasNotificationBadge)
                           Positioned(
@@ -9274,7 +9310,7 @@ class _KktcETrafikDashboardSayfasiState
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF43F5E),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 1.5),
+                                border: Border.all(color: koyuMu ? const Color(0xFF0D1424) : Colors.white, width: 1.5),
                               ),
                             ),
                           ),
@@ -9288,7 +9324,7 @@ class _KktcETrafikDashboardSayfasiState
                               decoration: BoxDecoration(
                                 color: cLime,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 1.5),
+                                border: Border.all(color: koyuMu ? const Color(0xFF0D1424) : Colors.white, width: 1.5),
                               ),
                             ),
                           ),
@@ -9306,7 +9342,7 @@ class _KktcETrafikDashboardSayfasiState
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
-                            color: isActive ? cNavy : cSlate,
+                            color: isActive ? activeCol : inactiveCol,
                             letterSpacing: -0.2,
                           ),
                         ),

@@ -10,6 +10,7 @@ import 'hizli_arama_modali.dart';
 import 'guncelleme_servisi.dart';
 import 'guvenlik_duvari.dart';
 import 'kktc_e_trafik_dashboard_sayfasi.dart';
+import 'kktc_tema_servisi.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,36 +74,34 @@ class _KktcCezaAppState extends State<KktcCezaApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'KKTC e-Trafik',
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF4F5F7),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF010E3C),
-          primary: const Color(0xFF010E3C),
-          surface: Colors.white,
-          surfaceTint: Colors.transparent,
-        ),
-      ),
-      home: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 400),
-        child: _splashGosteriliyor
-            ? AcilisAnimasyonuSayfasi(
-                key: const ValueKey('splash_screen'),
-                turkceMi: _turkceMi,
-                onTamamlandi: () {
-                  setState(() => _splashGosteriliyor = false);
-                },
-              )
-            : KktcETrafikDashboardSayfasi(
-                key: const ValueKey('kktc_modern_dashboard'),
-                onCikisYap: _cikisYap,
-                initialGirisYapildiMi: _girisYapildiMi,
-                initialKullaniciAdi: _kullaniciAdi,
-              ),
-      ),
+    return ListenableBuilder(
+      listenable: KktcTemaServisi(),
+      builder: (context, _) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'KKTC e-Trafik',
+          themeMode: KktcTemaServisi().flutterThemeMode,
+          theme: KktcTemaServisi.acikTemaData,
+          darkTheme: KktcTemaServisi.koyuTemaData,
+          home: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 400),
+            child: _splashGosteriliyor
+                ? AcilisAnimasyonuSayfasi(
+                    key: const ValueKey('splash_screen'),
+                    turkceMi: _turkceMi,
+                    onTamamlandi: () {
+                      setState(() => _splashGosteriliyor = false);
+                    },
+                  )
+                : KktcETrafikDashboardSayfasi(
+                    key: const ValueKey('kktc_modern_dashboard'),
+                    onCikisYap: _cikisYap,
+                    initialGirisYapildiMi: _girisYapildiMi,
+                    initialKullaniciAdi: _kullaniciAdi,
+                  ),
+          ),
+        );
+      },
     );
   }
 }

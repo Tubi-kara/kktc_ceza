@@ -8,6 +8,7 @@ import 'hizli_arama_modali.dart';
 import 'guvenlik_duvari.dart';
 import 'guncelleme_servisi.dart';
 import 'main.dart' show BarkodluBelgeSayfasi, DekontlarSayfasi, ItirazSayfasi, BildirimAyarlariSayfasi;
+import 'kktc_tema_servisi.dart';
 
 /// KKTC e-Trafik Kategorize Edilmiş Zengin Menü Sayfası
 /// Kullanıcının ilettiği HTML / Tailwind tasarımının ve önceki tüm gelişmiş özelliklerin tam entegre Flutter uygulamasıdır.
@@ -726,8 +727,21 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
             leading: const Icon(Icons.palette_outlined, color: cNavy),
             title: const Text('Tema Görünümü', style: TextStyle(fontWeight: FontWeight.w600)),
             subtitle: const Text('Açık / Koyu Tema Seçimi'),
-            trailing: const Text('Otomatik', style: TextStyle(color: cSlate, fontWeight: FontWeight.bold)),
-            onTap: () => _showSnackbar('Sistem teması aktif'),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: cNavy.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                KktcTemaServisi().temaAdi,
+                style: const TextStyle(color: cNavy, fontWeight: FontWeight.bold, fontSize: 11.5),
+              ),
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              KktcTemaServisi().showTemaSecimDialog(context);
+            },
           ),
           const Divider(),
           ListTile(
