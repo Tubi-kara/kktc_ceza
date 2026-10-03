@@ -1346,99 +1346,90 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               ],
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // Misafir Avatarı
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: cNavy.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.person_outline_rounded,
+                      color: cNavy,
+                      size: 22,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Misafir Avatarı
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: cNavy.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.person_outline_rounded,
-                            color: cNavy,
-                            size: 24,
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 6,
+                        runSpacing: 2,
+                        children: [
+                          const Text(
+                            'Misafir Kullanıcı',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: cNavy,
+                            ),
                           ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: const Text(
+                              'Giriş Yapılmadı',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: cSlate,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      const Text(
+                        'Cezalar ve araç dökümü için tıklayın',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: cSlate,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              children: [
-                                const Flexible(
-                                  child: Text(
-                                    'Misafir Kullanıcı',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 14.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: cNavy,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade100,
-                                    borderRadius: BorderRadius.circular(999),
-                                    border: Border.all(color: Colors.grey.shade300),
-                                  ),
-                                  child: const Text(
-                                    'Giriş Yapılmadı',
-                                    style: TextStyle(
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: cSlate,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 3),
-                            const Text(
-                              'Cezalar ve araç dökümü için tıklayın',
+                      const SizedBox(height: 4),
+                      const Row(
+                        children: [
+                          Icon(Icons.login_rounded, size: 12, color: Color(0xFF059669)),
+                          SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'Kimlik / Ehliyet ile Giriş Yap',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 11.5,
-                                color: cSlate,
-                                fontWeight: FontWeight.w500,
+                                fontSize: 10.5,
+                                color: Color(0xFF059669),
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            const Row(
-                              children: [
-                                Icon(Icons.login_rounded, size: 12, color: Color(0xFF059669)),
-                                SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    'Kimlik / Ehliyet ile Giriş Yap',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Color(0xFF059669),
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

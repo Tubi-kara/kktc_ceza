@@ -11,6 +11,7 @@ import 'radar_haritasi.dart';
 import 'guncelleme_servisi.dart';
 import 'yol_tarifi_sayfasi.dart';
 import 'canli_gps_servisi.dart';
+import 'kktc_akaryakit_servisi.dart';
 import 'main.dart' show BarkodluBelgeSayfasi, ItirazSayfasi, DekontlarSayfasi;
 
 /// KKTC e-Trafik Modern Dashboard (Kullanıcı Paneli)
@@ -90,7 +91,12 @@ class _KktcETrafikDashboardSayfasiState
   }
 
   bool _girisKontrolEt({required String islemAdi, VoidCallback? onGirisSonrasi}) {
-    if (_girisYapildiMi) return true;
+    if (_girisYapildiMi) {
+      if (onGirisSonrasi != null) {
+        onGirisSonrasi();
+      }
+      return true;
+    }
 
     HapticFeedback.selectionClick();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -124,6 +130,7 @@ class _KktcETrafikDashboardSayfasiState
   final GlobalKey<KktcOpenStreetMapTileViewState> _haritaOsmKey = GlobalKey<KktcOpenStreetMapTileViewState>();
   String _seciliPoiKategori = 'tumu'; // 'tumu', 'benzin', 'tamir', 'otopark', 'hastane'
   KktcHaritaPoi? _seciliPoi;
+  final KktcAkaryakitServisi _akaryakitServisi = KktcAkaryakitServisi();
 
   // 🚗 ARAÇ MODU
   final CanliGpsServisi _gps = CanliGpsServisi();
@@ -194,6 +201,9 @@ class _KktcETrafikDashboardSayfasiState
     _gps.addListener(_gpsGuncellendi);
     _gps.servisiBaslat();
 
+    // Canlı Akaryakıt Fiyatları Dinleyici
+    _akaryakitServisi.addListener(_akaryakitGuncellendi);
+
     // Otomatik resmi kamu mevzuat ve ceza katsayıları kontrolü
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 2), () {
@@ -202,6 +212,22 @@ class _KktcETrafikDashboardSayfasiState
         }
       });
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant KktcETrafikDashboardSayfasi oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialGirisYapildiMi != oldWidget.initialGirisYapildiMi) {
+      setState(() {
+        _girisYapildiMi = widget.initialGirisYapildiMi;
+      });
+    }
+    if (widget.initialKullaniciAdi != oldWidget.initialKullaniciAdi &&
+        widget.initialKullaniciAdi != null) {
+      setState(() {
+        _kullaniciAdi = widget.initialKullaniciAdi!;
+      });
+    }
   }
 
   void _gpsGuncellendi() {
@@ -233,9 +259,14 @@ class _KktcETrafikDashboardSayfasiState
 
   @override
   void dispose() {
+    _akaryakitServisi.removeListener(_akaryakitGuncellendi);
     _gps.removeListener(_gpsGuncellendi);
     _pulseController.dispose();
     super.dispose();
+  }
+
+  void _akaryakitGuncellendi() {
+    if (mounted) setState(() {});
   }
 
   void _showInfoDialog({required String title, required String message}) {
@@ -297,7 +328,7 @@ class _KktcETrafikDashboardSayfasiState
                     top: _selectedTabIndex == 4
                         ? (MediaQuery.of(context).padding.top + 16)
                         : (MediaQuery.of(context).padding.top + 84),
-                    bottom: 105, // Bottom navigation bar boşluğu
+                    bottom: 120, // Bottom navigation bar boşluğu (içerik arkada kalmaz)
                   ),
                   child: Center(
                     child: ConstrainedBox(
@@ -818,6 +849,12 @@ class _KktcETrafikDashboardSayfasiState
                   ],
                 ),
               ),
+
+              // ⛽ CANLI AKARYAKIT FİYATLARI BİLGİ ŞERİDİ (Benzinlikler seçiliyken)
+              if (_seciliPoiKategori == 'benzin') ...[
+                const SizedBox(height: 8),
+                _buildLiveAkaryakitFiyatBanner(),
+              ],
             ],
           ),
         ),
@@ -825,7 +862,7 @@ class _KktcETrafikDashboardSayfasiState
         // 3. SAĞ: ZOOM KONTROL BUTONLARI
         Positioned(
           right: 14,
-          top: MediaQuery.of(context).padding.top + 108,
+          top: MediaQuery.of(context).padding.top + (_seciliPoiKategori == 'benzin' ? 185 : 108),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -954,6 +991,187 @@ class _KktcETrafikDashboardSayfasiState
             ),
           ),
       ],
+    );
+  }
+
+  // ⛽ CANLI AKARYAKIT FİYATLARI ŞERİDİ (Resmi Gazete / Bakanlar Kurulu Tavan Fiyatları)
+  Widget _buildLiveAkaryakitFiyatBanner() {
+    final fiyatlar = _akaryakitServisi.fiyatlar;
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black.withOpacity(0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE11D48).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.local_gas_station_rounded,
+                  color: Color(0xFFE11D48),
+                  size: 15,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'KKTC RESMİ AKARYAKIT TARİFESİ',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: cNavy,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    Text(
+                      'Bakanlar Kurulu / Resmi Gazete Azami Tavan Tarifesi',
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: cSlate,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (_akaryakitServisi.yukleniyor)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: cNavy),
+                )
+              else
+                InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () async {
+                    HapticFeedback.lightImpact();
+                    final ok = await _akaryakitServisi.canliFiyatlariGuncelle();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(ok
+                              ? 'Canlı akaryakıt verileri güncellendi.'
+                              : 'Güncel 2026 tavan fiyat tarifesi devrede.'),
+                          duration: const Duration(seconds: 2),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF10B981).withOpacity(0.25)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.sync_rounded, size: 12, color: Color(0xFF10B981)),
+                        SizedBox(width: 4),
+                        Text(
+                          'CANLI',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF047857),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: [
+                _buildYakitMiniFiyatChip(
+                  etiket: 'Euro Diesel (Motorin)',
+                  fiyat: '${fiyatlar.euroDiesel.toStringAsFixed(2)} ₺',
+                  vurgulu: true,
+                ),
+                const SizedBox(width: 6),
+                _buildYakitMiniFiyatChip(
+                  etiket: 'Kurşunsuz 95',
+                  fiyat: '${fiyatlar.kursunsuz95.toStringAsFixed(2)} ₺',
+                ),
+                const SizedBox(width: 6),
+                _buildYakitMiniFiyatChip(
+                  etiket: 'Kurşunsuz 98',
+                  fiyat: '${fiyatlar.kursunsuz98.toStringAsFixed(2)} ₺',
+                ),
+                const SizedBox(width: 6),
+                _buildYakitMiniFiyatChip(
+                  etiket: 'Gaz Yağı',
+                  fiyat: '${fiyatlar.gazYagi.toStringAsFixed(2)} ₺',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildYakitMiniFiyatChip({
+    required String etiket,
+    required String fiyat,
+    bool vurgulu = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: vurgulu ? const Color(0xFF047857).withOpacity(0.1) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: vurgulu ? const Color(0xFF10B981).withOpacity(0.35) : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            etiket,
+            style: TextStyle(
+              fontSize: 8.5,
+              fontWeight: vurgulu ? FontWeight.w700 : FontWeight.w500,
+              color: vurgulu ? const Color(0xFF047857) : const Color(0xFF64748B),
+            ),
+          ),
+          Text(
+            fiyat,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              color: vurgulu ? const Color(0xFF065F46) : cNavy,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1152,37 +1370,78 @@ class _KktcETrafikDashboardSayfasiState
                 ),
 
                 // Yakıt Fiyatları (benzinlik ise göster)
-                if (poi.yakitFiyatlari.isNotEmpty) ...[
+                if (poi.kategori == 'benzin' || poi.yakitFiyatlari.isNotEmpty) ...[
                   const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Text(
+                        'Akaryakıt Tarifesi',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: cNavy,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          'CANLI TARİFE',
+                          style: TextStyle(
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF047857),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     physics: const BouncingScrollPhysics(),
                     child: Row(
-                      children: poi.yakitFiyatlari.entries.map((e) {
+                      children: (poi.kategori == 'benzin'
+                              ? _akaryakitServisi.guncelYakitFiyatlariMap
+                              : poi.yakitFiyatlari)
+                          .entries
+                          .map((e) {
+                        final bool isMotorin = e.key.toLowerCase().contains('diesel') ||
+                            e.key.toLowerCase().contains('motorin');
                         return Container(
                           margin: const EdgeInsets.only(right: 8),
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: cNavy.withOpacity(0.06),
+                            color: isMotorin
+                                ? const Color(0xFF047857).withOpacity(0.08)
+                                : cNavy.withOpacity(0.06),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: cNavy.withOpacity(0.12)),
+                            border: Border.all(
+                              color: isMotorin
+                                  ? const Color(0xFF10B981).withOpacity(0.35)
+                                  : cNavy.withOpacity(0.12),
+                            ),
                           ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 e.key,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 9.5,
-                                  color: cNavy,
-                                  fontWeight: FontWeight.w600,
+                                  color: isMotorin ? const Color(0xFF047857) : cNavy,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                               Text(
                                 e.value,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: cNavy,
+                                  color: isMotorin ? const Color(0xFF065F46) : cNavy,
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
@@ -3010,7 +3269,7 @@ class _KktcETrafikDashboardSayfasiState
 
         // Segmented Sub-Tab Switcher (3 Sekmeli Şık Hap Kapsül)
         Container(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             color: const Color(0xFFE2E8F0).withOpacity(0.6),
             borderRadius: BorderRadius.circular(16),
@@ -3066,7 +3325,7 @@ class _KktcETrafikDashboardSayfasiState
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 9),
+          padding: const EdgeInsets.symmetric(vertical: 8.5, horizontal: 2),
           decoration: BoxDecoration(
             color: isSelected ? Colors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
@@ -3082,36 +3341,41 @@ class _KktcETrafikDashboardSayfasiState
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 icon,
-                size: 15,
+                size: 13.5,
                 color: isSelected ? cNavy : cSlate,
               ),
-              const SizedBox(width: 5),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected ? cNavy : cSlate,
+              const SizedBox(width: 3.5),
+              Flexible(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                    color: isSelected ? cNavy : cSlate,
+                  ),
                 ),
               ),
               if (badgeText != null) ...[
-                const SizedBox(width: 5),
+                const SizedBox(width: 3.5),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  padding: const EdgeInsets.symmetric(horizontal: 4.5, vertical: 1),
                   decoration: BoxDecoration(
                     color: index == 0
                         ? (isSelected ? const Color(0xFFD90429) : const Color(0xFFD90429).withOpacity(0.85))
                         : (isSelected ? cNavy : cSlate),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     badgeText,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 9,
+                      fontSize: 8.5,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -5136,10 +5400,10 @@ class _KktcETrafikDashboardSayfasiState
   Widget _buildTopHeaderBar() {
     return ClipRect(
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
           decoration: BoxDecoration(
-            color: cBg.withOpacity(0.92),
+            color: Colors.white.withOpacity(0.97),
             border: Border(
               bottom: BorderSide(
                 color: cSoft.withOpacity(0.7),
@@ -5151,89 +5415,96 @@ class _KktcETrafikDashboardSayfasiState
             bottom: false,
             child: Container(
               height: 64,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Sol: Profil Avatarı ve Karşılama
-                  Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: cNavy,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: cNavy.withOpacity(0.18),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: _girisYapildiMi
-                              ? Text(
-                                  _kullaniciAdi.isNotEmpty
-                                      ? (_kullaniciAdi.length >= 2
-                                          ? _kullaniciAdi.substring(0, 2).toUpperCase()
-                                          : _kullaniciAdi.toUpperCase())
-                                      : 'AD',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 16,
-                                    letterSpacing: 0.5,
-                                  ),
-                                )
-                              : const Icon(
-                                  Icons.person_outline_rounded,
-                                  color: Colors.white,
-                                  size: 22,
-                                ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                _girisYapildiMi ? 'KKTC e-TRAFİK' : 'KKTC e-TRAFİK • MİSAFİR',
-                                style: const TextStyle(
-                                  fontSize: 11.5,
-                                  color: cNavy,
-                                  fontWeight: FontWeight.w800,
-                                ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: cNavy,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: cNavy.withOpacity(0.18),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
                               ),
-                              const SizedBox(width: 6),
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: _girisYapildiMi ? cEmerald : cLimeDark,
-                                  shape: BoxShape.circle,
+                            ],
+                          ),
+                          child: Center(
+                            child: _girisYapildiMi
+                                ? Text(
+                                    _kullaniciAdi.isNotEmpty
+                                        ? (_kullaniciAdi.length >= 2
+                                            ? _kullaniciAdi.substring(0, 2).toUpperCase()
+                                            : _kullaniciAdi.toUpperCase())
+                                        : 'AD',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.person_outline_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    _girisYapildiMi ? 'KKTC e-TRAFİK' : 'KKTC e-TRAFİK • MİSAFİR',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: cNavy,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      color: _girisYapildiMi ? cEmerald : cLimeDark,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _girisYapildiMi ? 'Merhaba, $_kullaniciAdi' : 'Hoş Geldiniz',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: cNavy,
+                                  letterSpacing: -0.3,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _girisYapildiMi ? 'Merhaba, $_kullaniciAdi' : 'Hoş Geldiniz',
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w800,
-                              color: cNavy,
-                              letterSpacing: -0.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 6),
 
                   // Sağ: Giriş Yap Butonu (Giriş Yapılmadıysa) VEYA Oturum / Bildirim İkonları
                   if (!_girisYapildiMi)
@@ -5246,7 +5517,7 @@ class _KktcETrafikDashboardSayfasiState
                         },
                         borderRadius: BorderRadius.circular(20),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7.5),
                           decoration: BoxDecoration(
                             color: cNavy,
                             borderRadius: BorderRadius.circular(20),
@@ -5261,12 +5532,12 @@ class _KktcETrafikDashboardSayfasiState
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.login_rounded, size: 16, color: cLime),
-                              SizedBox(width: 6),
+                              Icon(Icons.login_rounded, size: 15, color: cLime),
+                              SizedBox(width: 5),
                               Text(
                                 'Giriş Yap',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 12.5,
                                   fontWeight: FontWeight.w800,
                                   color: Colors.white,
                                   letterSpacing: 0.2,
@@ -5279,6 +5550,7 @@ class _KktcETrafikDashboardSayfasiState
                     )
                   else
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         _buildHeaderIconButton(
                           icon: Icons.car_repair_rounded,
@@ -5286,7 +5558,7 @@ class _KktcETrafikDashboardSayfasiState
                             _showYolYardimBottomSheet();
                           },
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         _buildHeaderIconButton(
                           icon: Icons.notifications_rounded,
                           showDot: !_cezaOdendi,
@@ -5299,7 +5571,7 @@ class _KktcETrafikDashboardSayfasiState
                             );
                           },
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         _buildHeaderIconButton(
                           icon: Icons.logout_rounded,
                           onTap: () {
@@ -5329,13 +5601,13 @@ class _KktcETrafikDashboardSayfasiState
           HapticFeedback.lightImpact();
           onTap();
         },
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: Container(
-          width: 40,
-          height: 40,
+          width: 37,
+          height: 37,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: cSoft),
             boxShadow: [
               BoxShadow(
@@ -6343,13 +6615,13 @@ class _KktcETrafikDashboardSayfasiState
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Flexible(
+                        Expanded(
                           child: Text(
                             bottomLabel,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 11,
+                              fontSize: 10.5,
                               color: cSlate,
                             ),
                           ),
@@ -6357,9 +6629,11 @@ class _KktcETrafikDashboardSayfasiState
                         const SizedBox(width: 4),
                         Text(
                           bottomValue,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 12.5,
+                            fontSize: 11.5,
                             fontWeight: FontWeight.w800,
                             color: cNavy,
                           ),
@@ -6762,17 +7036,17 @@ class _KktcETrafikDashboardSayfasiState
   Widget _buildBottomNavigationBar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.96),
+        color: Colors.white,
         border: Border(
           top: BorderSide(
-            color: cSoft.withOpacity(0.8),
+            color: cSoft.withOpacity(0.9),
             width: 1,
           ),
         ),
         boxShadow: [
           BoxShadow(
-            color: cNavy.withOpacity(0.06),
-            blurRadius: 16,
+            color: cNavy.withOpacity(0.08),
+            blurRadius: 18,
             offset: const Offset(0, -4),
           ),
         ],
@@ -6821,25 +7095,20 @@ class _KktcETrafikDashboardSayfasiState
                   );
                 },
               ),
-              // 4. Cezalar & Sigorta (Kırmızı Bildirim Noktalı)
+              // 4. Ceza & Sigorta (Kırmızı Bildirim Noktalı)
               _buildBottomNavItem(
                 index: 3,
                 icon: Icons.receipt_long_rounded,
-                label: 'Cezalar & Sigorta',
+                label: 'Ceza & Sigorta',
                 hasNotificationBadge: _girisYapildiMi && !_cezaOdendi,
                 onCustomTap: () {
-                  _girisKontrolEt(
-                    islemAdi: 'Ceza ve seyrüsefer durumunu sorgulamak',
-                    onGirisSonrasi: () {
-                      setState(() {
-                        _selectedTabIndex = 3;
-                        _cezaSigortaSubTab = 0;
-                      });
-                      if (widget.onOpenFines != null) {
-                        widget.onOpenFines!();
-                      }
-                    },
-                  );
+                  setState(() {
+                    _selectedTabIndex = 3;
+                    _cezaSigortaSubTab = 0;
+                  });
+                  if (widget.onOpenFines != null) {
+                    widget.onOpenFines!();
+                  }
                 },
               ),
               // 5. Menü (Referans Tasarımdaki Vurgulu Hap Kapsülü)
@@ -6949,13 +7218,21 @@ class _KktcETrafikDashboardSayfasiState
                       ],
                     ),
                     const SizedBox(height: 3),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
-                        color: isActive ? cNavy : cSlate,
-                        letterSpacing: -0.2,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
+                            color: isActive ? cNavy : cSlate,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
                       ),
                     ),
                   ],

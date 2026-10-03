@@ -190,6 +190,7 @@ class _YardimRehberiSayfasiState extends State<YardimRehberiSayfasi>
   void dispose() {
     _tabController.dispose();
     _aramaController.dispose();
+    _sssSearchCtrl.dispose();
     super.dispose();
   }
 
@@ -788,76 +789,374 @@ class _YardimRehberiSayfasiState extends State<YardimRehberiSayfasi>
   // ==========================================
   // ❓ 4. SEKME: SIKÇA SORULAN SORULAR (SSS)
   // ==========================================
+  String _sssKategori = 'Tümü';
+  final TextEditingController _sssSearchCtrl = TextEditingController();
+  String _sssSearchText = '';
+
   Widget _buildSssSekmesi() {
-    final sssListesi = [
+    final List<Map<String, dynamic>> tumSssListesi = [
       {
-        "q": widget.turkceMi ? "TC Kimlik No veya Pasaport ile nasıl giriş yapılır?" : "How to log in with Turkish ID or Passport?",
+        "kategori": "Cezalar & İndirim",
+        "rozet": "%30 İNDİRİM",
+        "rozetRenk": const Color(0xFF10B981),
+        "ikon": Icons.discount_rounded,
+        "q": widget.turkceMi
+            ? "Trafik cezalarında %30 erken ödeme indirimi nasıl işler? Son gün ne zamandır?"
+            : "How does the 30% early payment discount on traffic fines work?",
         "a": widget.turkceMi
-            ? "Giriş ekranında 'TC Kimlik / Yabancı Pasaport' sekmesine geçip 11 haneli kimlik numaranızı veya pasaport numaranızı yazarak anında sorgulama yapabilirsiniz. Askeri personel ve TC vatandaşları için tam uyumludur."
-            : "Select the 'TR ID / Passport' tab on the login screen, enter your 11-digit Turkish ID or passport number to access records directly.",
+            ? "KKTC Trafik Yasası uyarınca, tebliğ edilen trafik cezaları 15 takvim günü içerisinde ödendiğinde %30 indirim uygulanır (Örn: ₺1.850 tutarındaki sabit radar cezası ₺1.295 olarak tahsil edilir).\n\n15 günlük yasal süre dolduğunda indirim hakkı kalkar, aylık yasal gecikme faizi eklenir ve dosya Trafik Mahkemesi'ne sevk edilir. Cezalarınızı kredi kartı veya banka kartınız ile uygulama üzerinden güvenle ödeyebilirsiniz."
+            : "Under TRNC traffic law, fines settled within 15 calendar days receive a 30% discount (e.g. ₺1,850 drops to ₺1,295). After 15 days, late fees apply and the case is forwarded to traffic court.",
       },
       {
-        "q": widget.turkceMi ? "Üniversite öğrenci numarasıyla ceza sorgulanabilir mi?" : "Can university students log in with student ID?",
+        "kategori": "Radarlar & Tolerans",
+        "rozet": "%10 HIZ TOLERANSI",
+        "rozetRenk": const Color(0xFFF59E0B),
+        "ikon": Icons.speed_rounded,
+        "q": widget.turkceMi
+            ? "Sabit hız radarlarında yasal hız toleransı var mı? Hangi hızda ceza kesilir?"
+            : "Is there a speed tolerance on fixed speed cameras in TRNC?",
         "a": widget.turkceMi
-            ? "Evet! ODTÜ Kuzey Kıbrıs, Doğu Akdeniz Üniversitesi (DAÜ), Yakın Doğu (YDÜ), Uluslararası Kıbrıs (UKÜ) ve Lefke Avrupa Üniversitesi (LAÜ) öğrencileri 'Öğrenci Girişi' sekmesinden öğrenci numaralarıyla giriş yapabilir."
-            : "Yes! Students from METU NCC, EMU, NEU, CIU and EUL can authenticate via the 'Student Login' tab using their student numbers.",
+            ? "Evet, KKTC'deki tüm sabit hız kameralarında yasal hız sınırının üzerine %10 tolerans payı tanınmaktadır:\n\n• 50 km/s Şehir İçi: 56 km/s ve üzeri hızlarda ceza yazılır.\n• 65 km/s Çevre Yolu: 72 km/s ve üzeri hızlarda ceza yazılır.\n• 75 km/s Bölünmüş Anayol: 83 km/s ve üzeri hızlarda ceza yazılır.\n• 90 km/s Otoyol (Ercan / Mağusa): 100 km/s ve üzeri hızlarda ceza yazılır.\n\nRadar kameraları hem gündüz hem gece çift yönlü telemetri ve flaşlı plaka algılama yapmaktadır."
+            : "Yes, a 10% speed tolerance is officially applied. For example, in a 65 km/h zone, tickets are triggered at 72 km/h and above. Speed limits: 50 km/h (urban), 75 km/h (intercity), 90 km/h (motorway).",
       },
       {
-        "q": widget.turkceMi ? "Sabit hız radarlarını yol tarifinde nasıl takip ederim?" : "How do I monitor speed cameras on the route?",
+        "kategori": "E-Denetim & Polis",
+        "rozet": "RESMİ BELGE",
+        "rozetRenk": const Color(0xFF3B82F6),
+        "ikon": Icons.qr_code_2_rounded,
+        "q": widget.turkceMi
+            ? "Polis çevirmesinde fiziksel ruhsat taşımak zorunda mıyım? E-Denetim QR nedir?"
+            : "Do I need physical vehicle registration at police checkpoints?",
         "a": widget.turkceMi
-            ? "'Yol Tarifi' sekmesinde başlangıç ve varış noktanızı seçtiğinizde, güzergahtaki tüm sabit radarlar harita üzerinde kırmızı hız tabelası pinleriyle gösterilir. 'Canlı Sürüşü Başlat' butonuna basarak yaklaştığınız radarlar için 500m kala sesli ve görsel ikaz alabilirsiniz."
-            : "In the 'Route Navigation' tab, select your start and destination points. All cameras on the path will appear on the map with red speed signs. Click 'Start Live Simulation' for real-time proximity alerts.",
+            ? "Hayır, alt menüdeki 'E-Denetim' sekmesinden oluşturacağınız resmi karekodlu dijital sürücü ve araç belgesi, KKTC Polis Genel Müdürlüğü (PGM) ve Bayındırlık ve Ulaştırma Bakanlığı nezdinde geçerli resmi dijital belgedir.\n\nGörevli polis ekipleri bu dinamik QR kodu kendi el terminalleriyle taratarak ruhsat, muayene geçerliliği, sigorta poliçesi ve sürücü ceza puanı durumunuzu anlık olarak kamu sunucularından teyit edebilir."
+            : "No, the dynamic QR document generated in the 'E-Denetim' tab is officially recognized by the TRNC Police (PGM). Officers scan this QR code to verify registration, insurance, and license points instantly.",
       },
       {
-        "q": widget.turkceMi ? "Seyrüsefer ve araç muayene süremi nasıl öğrenirim?" : "Where can I check vehicle inspection and road tax?",
+        "kategori": "Cezalar & İndirim",
+        "rozet": "KRİPTOLU DELİL",
+        "rozetRenk": const Color(0xFF8B5CF6),
+        "ikon": Icons.camera_enhance_rounded,
+        "q": widget.turkceMi
+            ? "Radar kamerası fotoğrafımı ve kanıt görüntüsünü nasıl inceleyebilirim?"
+            : "How can I view the radar camera violation photo and telemetry evidence?",
         "a": widget.turkceMi
-            ? "Ana menüdeki 'Cezalar & Sigorta' ekranından aracınızın plakasını seçerek seyrüsefer vergisi, zorunlu trafik sigortası ve muayene bitiş tarihine kaç gün kaldığını canlı olarak görebilirsiniz."
-            : "From the 'Fines & Insurance' tab, view remaining days for road tax (seyrüsefer), mandatory third-party insurance, and technical vehicle inspection.",
+            ? "Cezalar sekmesindeki ihlal kartının altında yer alan 'Delil İncele' butonuna veya Ana Menüdeki 'Radar Fotoğrafı & Kanıt İnceleme' ekranına tıklayarak ihlal anının yüksek çözünürlüklü radar fotoğrafını, araç plaka yakınlaştırmasını, radarın ölçtüğü tam hız telemetrisini ve PGM tebliğ numarasını kriptolu olarak görüntüleyebilirsiniz."
+            : "Click 'Delil İncele' on your ticket card or go to Menu ➔ 'Radar Photography & Evidence' to view the camera snapshot, plate crop, measured radar speed and official teblig number.",
       },
       {
-        "q": widget.turkceMi ? "Hatalı yazılan bir cezaya nereden itiraz edebilirim?" : "How can I dispute an incorrect traffic ticket?",
+        "kategori": "Seyrüsefer & Ruhsat",
+        "rozet": "ONLİNE HARÇ",
+        "rozetRenk": const Color(0xFF06B6D4),
+        "ikon": Icons.description_rounded,
+        "q": widget.turkceMi
+            ? "Seyrüsefer harcımı online ödeyebilir miyim? Gecikirse ne olur?"
+            : "Can I pay vehicle road tax (seyrüsefer) online? What are late penalties?",
         "a": widget.turkceMi
-            ? "Menü ➔ 'Trafik Hakem Heyeti İtirazı' bölümüne giderek ceza tutanağının fotoğrafını yükleyebilir ve resmi itiraz dilekçenizi online olarak Trafik İhtilaf Komisyonu'na iletebilirsiniz."
-            : "Go to Menu ➔ 'Traffic Dispute & Petition' to upload ticket photos and submit an official online dispute directly to the review board.",
+            ? "Evet, 'Cezalar & Sigorta' ekranındaki 'Seyrüsefer' sekmesine geçerek kredi kartınızla güvenli resmi ödeme yapabilirsiniz. Ödeme anında barkodlu onay makbuzu üretilir.\n\nSeyrüsefer süresi geçen araçlara her ay için %2 ila %5 arasında gecikme faizi uygulanır. Seyrüsefersiz araç kullanılması halinde polis tarafından araç trafikten men edilebilir ve yüksek para cezası kesilir."
+            : "Yes, you can renew your road tax online via the 'Seyrüsefer' tab. A certified barcode receipt is generated. Late renewals incur monthly interest and driving without valid road tax leads to vehicle impoundment.",
       },
+      {
+        "kategori": "Seyrüsefer & Ruhsat",
+        "rozet": "MUAYENE TAKVİMİ",
+        "rozetRenk": const Color(0xFFEAB308),
+        "ikon": Icons.calendar_month_rounded,
+        "q": widget.turkceMi
+            ? "Araç fenni muayene tarihini nasıl takip ederim? Cezası nedir?"
+            : "How do I check my vehicle technical inspection date (fenni muayene)?",
+        "a": widget.turkceMi
+            ? "KKTC'de araç muayeneleri plakanın son rakamına göre Trafik Dairesi'nin yayımladığı yıllık takvimle belirlenir. Uygulama, kayıtlı aracınızın muayene bitiş tarihine kaç gün kaldığını canlı olarak takip eder ve 30 gün kala uyarı bildirimi gönderir.\n\nMuayenesi geçmiş araçla trafiğe çıkmak 10 ceza puanı ve brüt asgari ücretin %10'u oranında para cezasına tabidir."
+            : "Vehicle inspection schedules are organized by license plate numbers. The app tracks remaining days and sends automatic reminders 30 days prior. Driving without valid inspection results in 10 penalty points and fine.",
+      },
+      {
+        "kategori": "Cezalar & İndirim",
+        "rozet": "HAKEM HEYETİ",
+        "rozetRenk": const Color(0xFFEC4899),
+        "ikon": Icons.gavel_rounded,
+        "q": widget.turkceMi
+            ? "Hatalı yazıldığını düşündüğüm bir trafik cezasına nasıl itiraz edebilirim?"
+            : "How can I dispute an incorrect traffic ticket or radar violation?",
+        "a": widget.turkceMi
+            ? "Menü ➔ 'İtiraz & Dilekçe İşlemleri' bölümüne giderek ceza tutanağı numarasını, itiraz gerekçenizi (örn: araç satışı, çalıntı/ikiz plaka, acil sağlık durumu, radar cihazı kalibrasyon hatası) belirterek ve kanıt fotoğraflarınızı ekleyerek Trafik İhtilaf Hakem Kurulu'na online resmi itiraz başvurusu yapabilirsiniz. İtiraz süresince ceza faizi durdurulur."
+            : "Go to Menu ➔ 'Dispute & Petitions' to submit an official appeal to the Traffic Dispute Commission with ticket number, reason and supporting photos. Penalties are frozen during review.",
+      },
+      {
+        "kategori": "Giriş & Puan",
+        "rozet": "100 TAM PUAN",
+        "rozetRenk": const Color(0xFF6366F1),
+        "ikon": Icons.assignment_late_rounded,
+        "q": widget.turkceMi
+            ? "KKTC 100 Ceza Puanı sistemi nasıl çalışır? Puanım biterse ne olur?"
+            : "How does the TRNC 100 demerit points system work? What if points hit zero?",
+        "a": widget.turkceMi
+            ? "Tüm KKTC ve geçerli yabancı ehliyet sahipleri 100 tam puanla sürüşe başlar. Her kural ihlalinde katsayıya göre ceza puanı düşülür:\n\n• Hız sınırını %20 aşmak: -10 puan\n• Seyir halinde telefonla konuşmak: -15 puan\n• Kırmızı ışık ihlali: -20 puan\n• Emniyet kemeri takmamak: -10 puan\n• Alkollü araç kullanmak: -50 ila -100 puan\n\nPuanı 0'a inen sürücülerin ehliyetine 3 ay el konulur. İhlal tarihinden sonraki 12 ay içinde yeni ceza alınmazsa puanlar eski haline döner."
+            : "Drivers start with 100 points. Points are deducted based on severity (speeding: 10, mobile phone: 15, red light: 20). If points drop to zero, driving license is suspended for 3 months.",
+      },
+      {
+        "kategori": "Giriş & Puan",
+        "rozet": "EHLİYET NO İLE GİRİŞ",
+        "rozetRenk": const Color(0xFF14B8A6),
+        "ikon": Icons.badge_rounded,
+        "q": widget.turkceMi
+            ? "Sisteme nasıl giriş yapılır? Hangi bilgiler gereklidir?"
+            : "How do I log in to the system? What credentials are required?",
+        "a": widget.turkceMi
+            ? "Uygulamamıza KKTC Sürüş Ehliyet Numaranız (örn: D-849201 veya Kimlik Numaranız) ve şifreniz ile güvenli bir şekilde giriş yapabilirsiniz.\n\nİlk kez kullanıyorsanız giriş ekranındaki 'Yeni Kayıt' sekmesinden Ehliyet Numaranızı, son kullanma tarihini ve telefon numaranızı girerek saniyeler içinde hesabınızı oluşturabilirsiniz. Giriş yaptıktan sonra adınıza kayıtlı araçlar, bekleyen radar cezaları, seyrüsefer ve muayene durumunuz otomatik olarak yüklenir."
+            : "You can securely log in using your Driving License Number (e.g. D-849201 or ID Number) and password.\n\nFirst-time users can create an account via the 'Register' tab by entering their license number, expiry date, and mobile phone. All registered vehicles, radar fines, road tax, and inspection records will load automatically.",
+      },
+      {
+        "kategori": "Radarlar & Tolerans",
+        "rozet": "ÇEVRİMDIŞI GPS",
+        "rozetRenk": const Color(0xFF64748B),
+        "ikon": Icons.signal_wifi_off_rounded,
+        "q": widget.turkceMi
+            ? "İnternetim kapalıyken sabit hız radarları beni sesli olarak uyarır mı?"
+            : "Do speed camera voice warnings work without an active internet connection?",
+        "a": widget.turkceMi
+            ? "Evet! KKTC genelindeki 142 adet sabit radar, tepe kamerası ve ışık sensörünün koordinatları uygulamanın dahili veritabanında çevrimdışı olarak saklanır. Cihazınızın GPS'i açık olduğu sürece internet paketiniz olmasa dahi radarlara 500m ve 250m kala sesli ve titreşimli olarak uyarılırsınız."
+            : "Yes! Coordinates of all 142 fixed cameras are stored locally on your device. Proximity warnings (at 500m and 250m) work offline using device GPS sensors.",
+      },
+      {
+        "kategori": "E-Denetim & Polis",
+        "rozet": "7/24 DESTEK",
+        "rozetRenk": const Color(0xFFEF4444),
+        "ikon": Icons.car_crash_rounded,
+        "q": widget.turkceMi
+            ? "Trafik kazası, yol hasarı veya araç arızasında hangi numaraları aramalıyım?"
+            : "Which numbers should I call in case of accident, roadside breakdown or damage?",
+        "a": widget.turkceMi
+            ? "Acil durumlarda uygulamadaki 'Acil Yardım' sekmesinden ücretsiz aranabilen resmi hatlar:\n\n• 155: Polis İmdat & Trafik Şube (Trafik kazaları ve adli bildirimler)\n• 112: Hızır Acil Ambulans (Yaralanma ve tıbbi yardım)\n• 199: İtfaiye Yangın & Kurtarma (Sıkışmalı kaza ve yangın)\n• 159: Karayolları Yol Hasar Hattı (Yoldaki çökme, dökülen yük veya engeller)\n• 0392 228 88 88: 7/24 KKTC Çekici ve Yol Yardım Servisi"
+            : "Emergency contacts available: 155 (Police), 112 (Ambulance), 199 (Fire & Rescue), 159 (Highways Road Damage), 0392 228 88 88 (24/7 Roadside Towing).",
+      },
+      {
+        "kategori": "Cezalar & İndirim",
+        "rozet": "2026/2027 MEVZUAT",
+        "rozetRenk": const Color(0xFF059669),
+        "ikon": Icons.sync_rounded,
+        "q": widget.turkceMi
+            ? "Ceza miktarları ve asgari ücret katsayıları ne sıklıkla güncellenir?"
+            : "How often are fine amounts and minimum wage multipliers updated?",
+        "a": widget.turkceMi
+            ? "KKTC'de trafik para cezaları brüt asgari ücrete endekslidir. Asgari ücret tespit komisyonu yeni tutarı yayımladığında, uygulamanın 'Otomatik Güncelleme Servisi' arka planda resmi kamu veritabanına bağlanır ve tüm ceza tutarlarını en güncel tarifeye göre yeniler. Menü ➔ 'Mevzuat & Veri Eşitleme' butonundan da dilediğiniz zaman manuel kontrol sağlayabilirsiniz."
+            : "TRNC traffic fines are indexed to the statutory gross minimum wage. The app automatically fetches updated tariff coefficients from official servers upon launch.",
+      },
+    ];
+
+    // Filtreleme
+    final filtrelenmisListesi = tumSssListesi.where((item) {
+      final matchesCategory = _sssKategori == 'Tümü' || item['kategori'] == _sssKategori;
+      final qText = (item['q'] as String).toLowerCase();
+      final aText = (item['a'] as String).toLowerCase();
+      final sText = _sssSearchText.toLowerCase();
+      final matchesSearch = sText.isEmpty || qText.contains(sText) || aText.contains(sText);
+      return matchesCategory && matchesSearch;
+    }).toList();
+
+    final kategoriler = [
+      'Tümü',
+      'Cezalar & İndirim',
+      'Radarlar & Tolerans',
+      'E-Denetim & Polis',
+      'Seyrüsefer & Ruhsat',
+      'Giriş & Puan',
     ];
 
     return ListView(
       padding: const EdgeInsets.all(16),
-      children: sssListesi.map((item) {
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
+      children: [
+        // Arama Kutusu
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: HelpColors.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.white12),
           ),
-          child: ExpansionTile(
-            shape: const RoundedRectangleBorder(side: BorderSide.none),
-            collapsedShape: const RoundedRectangleBorder(side: BorderSide.none),
-            leading: const Icon(Icons.help_outline_rounded, color: HelpColors.tertiary, size: 20),
-            title: Text(
-              item["q"]!,
+          child: TextField(
+            controller: _sssSearchCtrl,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            onChanged: (v) => setState(() => _sssSearchText = v),
+            decoration: InputDecoration(
+              icon: const Icon(Icons.search_rounded, color: HelpColors.tertiary, size: 20),
+              hintText: widget.turkceMi
+                  ? 'Soru, ceza veya kural ara... (örn: %30 indirim, tolerans, QR)'
+                  : 'Search FAQs... (e.g. 30% discount, radar tolerance, QR)',
+              hintStyle: TextStyle(color: HelpColors.secondary.withValues(alpha: 0.6), fontSize: 12),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              suffixIcon: _sssSearchText.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, color: HelpColors.secondary, size: 18),
+                      onPressed: () {
+                        _sssSearchCtrl.clear();
+                        setState(() => _sssSearchText = '');
+                      },
+                    )
+                  : null,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Kategori Çipleri (Yatay Kaydırma)
+        SizedBox(
+          height: 36,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            children: kategoriler.map((kat) {
+              final bool isSelected = _sssKategori == kat;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  label: Text(kat),
+                  selected: isSelected,
+                  onSelected: (val) {
+                    setState(() => _sssKategori = kat);
+                  },
+                  backgroundColor: HelpColors.surfaceContainerHigh,
+                  selectedColor: HelpColors.tertiary.withValues(alpha: 0.25),
+                  checkmarkColor: HelpColors.tertiary,
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.white : HelpColors.secondary,
+                    fontSize: 11.5,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                  ),
+                  side: BorderSide(
+                    color: isSelected ? HelpColors.tertiary : Colors.white12,
+                    width: 1,
+                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Sonuç Sayacı / Başlık
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              widget.turkceMi ? 'SIKÇA SORULAN SORULAR' : 'FREQUENTLY ASKED QUESTIONS',
               style: const TextStyle(
-                color: Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+                color: HelpColors.secondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.8,
               ),
             ),
-            childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            children: [
-              Text(
-                item["a"]!,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: HelpColors.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '${filtrelenmisListesi.length} Soru',
                 style: const TextStyle(
-                  color: HelpColors.secondary,
-                  fontSize: 12,
-                  height: 1.45,
+                  color: HelpColors.tertiary,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-            ],
-          ),
-        );
-      }).toList(),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+
+        // Soru Listesi
+        if (filtrelenmisListesi.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: HelpColors.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.search_off_rounded, size: 40, color: HelpColors.secondary),
+                const SizedBox(height: 10),
+                Text(
+                  widget.turkceMi ? 'Aramanızla eşleşen soru bulunamadı.' : 'No questions matching your search.',
+                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          )
+        else
+          ...filtrelenmisListesi.map((item) {
+            final Color rozetRenk = item["rozetRenk"] as Color;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: HelpColors.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+              ),
+              child: ExpansionTile(
+                shape: const RoundedRectangleBorder(side: BorderSide.none),
+                collapsedShape: const RoundedRectangleBorder(side: BorderSide.none),
+                leading: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: rozetRenk.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(item["ikon"] as IconData, color: rozetRenk, size: 20),
+                ),
+                title: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: rozetRenk.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        item["rozet"] as String,
+                        style: TextStyle(
+                          color: rozetRenk,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    item["q"] as String,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                children: [
+                  const Divider(color: Colors.white10, height: 1),
+                  const SizedBox(height: 12),
+                  Text(
+                    item["a"] as String,
+                    style: const TextStyle(
+                      color: HelpColors.onSurface,
+                      fontSize: 12.5,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+      ],
     );
   }
 }
