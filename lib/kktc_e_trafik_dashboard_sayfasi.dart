@@ -7534,7 +7534,7 @@ class _KktcETrafikDashboardSayfasiState
             bottom: false,
             child: Container(
               height: 64,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -7543,8 +7543,8 @@ class _KktcETrafikDashboardSayfasiState
                     child: Row(
                       children: [
                         Container(
-                          width: 42,
-                          height: 42,
+                          width: 38,
+                          height: 38,
                           decoration: BoxDecoration(
                             color: cNavy,
                             borderRadius: BorderRadius.circular(15),
@@ -7578,23 +7578,28 @@ class _KktcETrafikDashboardSayfasiState
                                   ),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    _girisYapildiMi ? 'KKTC e-TRAFİK' : dil('KKTC e-TRAFİK • MİSAFİR', 'TRNC e-TRAFFIC • GUEST'),
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: cInk,
-                                      fontWeight: FontWeight.w800,
+                                  Flexible(
+                                    child: Text(
+                                      _girisYapildiMi ? 'KKTC e-TRAFİK' : dil('KKTC e-TRAFİK • MİSAFİR', 'TRNC e-TRAFFIC • GUEST'),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 10.5,
+                                        color: cInk,
+                                        fontWeight: FontWeight.w800,
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 5),
+                                  const SizedBox(width: 4),
                                   Container(
                                     width: 6,
                                     height: 6,
@@ -7611,7 +7616,7 @@ class _KktcETrafikDashboardSayfasiState
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w800,
                                   color: koyuMu ? Colors.white : cInk,
                                   letterSpacing: -0.3,
@@ -7623,7 +7628,7 @@ class _KktcETrafikDashboardSayfasiState
                       ],
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 4),
 
                   // Sağ: Giriş Yap Butonu (Giriş Yapılmadıysa) VEYA Oturum / Bildirim İkonları
                   if (!_girisYapildiMi)
@@ -7631,12 +7636,12 @@ class _KktcETrafikDashboardSayfasiState
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _buildHeaderLanguageButton(),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 4),
                         _buildHeaderIconButton(
                           icon: koyuMu ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
                           onTap: () => tema.showTemaSecimDialog(context),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 4),
                         Material(
                           color: Colors.transparent,
                           child: InkWell(
@@ -7644,12 +7649,12 @@ class _KktcETrafikDashboardSayfasiState
                               HapticFeedback.lightImpact();
                               _girisEkraniniAc();
                             },
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(16),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7.5),
+                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6.5),
                               decoration: BoxDecoration(
                                 color: koyuMu ? const Color(0xFF1E293B) : cNavy,
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(16),
                                 border: koyuMu ? Border.all(color: const Color(0xFF334155)) : null,
                                 boxShadow: [
                                   BoxShadow(
@@ -7662,15 +7667,15 @@ class _KktcETrafikDashboardSayfasiState
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.login_rounded, size: 15, color: cLime),
-                                  const SizedBox(width: 5),
+                                  const Icon(Icons.login_rounded, size: 14, color: cLime),
+                                  const SizedBox(width: 4),
                                   Text(
                                     dil('Giriş Yap', 'Sign In'),
                                     style: const TextStyle(
-                                      fontSize: 12.5,
+                                      fontSize: 11.5,
                                       fontWeight: FontWeight.w800,
                                       color: Colors.white,
-                                      letterSpacing: 0.2,
+                                      letterSpacing: 0.1,
                                     ),
                                   ),
                                 ],
@@ -7685,19 +7690,19 @@ class _KktcETrafikDashboardSayfasiState
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _buildHeaderLanguageButton(),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 4),
                         _buildHeaderIconButton(
                           icon: koyuMu ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
                           onTap: () => tema.showTemaSecimDialog(context),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 4),
                         _buildHeaderIconButton(
                           icon: Icons.car_repair_rounded,
                           onTap: () {
                             _showYolYardimBottomSheet();
                           },
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 4),
                         _buildHeaderIconButton(
                           icon: Icons.notifications_rounded,
                           showDot: !_cezaOdendi,
@@ -7710,7 +7715,7 @@ class _KktcETrafikDashboardSayfasiState
                             );
                           },
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 4),
                         _buildHeaderIconButton(
                           icon: Icons.logout_rounded,
                           onTap: () {
@@ -7738,13 +7743,13 @@ class _KktcETrafikDashboardSayfasiState
           HapticFeedback.lightImpact();
           KktcDilServisi().showDilSecimDialog(context);
         },
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          height: 37,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          height: 35,
+          padding: const EdgeInsets.symmetric(horizontal: 7),
           decoration: BoxDecoration(
             color: koyuMu ? const Color(0xFF16203B) : cSurface,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: koyuMu ? const Color(0xFF263354) : cSoft),
             boxShadow: [
               BoxShadow(
@@ -7759,13 +7764,13 @@ class _KktcETrafikDashboardSayfasiState
             children: [
               Text(
                 isEn ? '🇬🇧' : '🇹🇷',
-                style: const TextStyle(fontSize: 13),
+                style: const TextStyle(fontSize: 12.5),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 3),
               Text(
                 isEn ? 'EN' : 'TR',
                 style: TextStyle(
-                  fontSize: 11.5,
+                  fontSize: 11,
                   fontWeight: FontWeight.w800,
                   color: koyuMu ? const Color(0xFF38BDF8) : cInk,
                 ),
@@ -7790,13 +7795,13 @@ class _KktcETrafikDashboardSayfasiState
           HapticFeedback.lightImpact();
           onTap();
         },
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          width: 37,
-          height: 37,
+          width: 35,
+          height: 35,
           decoration: BoxDecoration(
             color: koyuMu ? const Color(0xFF16203B) : cSurface,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: koyuMu ? const Color(0xFF263354) : cSoft),
             boxShadow: [
               BoxShadow(
@@ -8311,7 +8316,7 @@ class _KktcETrafikDashboardSayfasiState
                 child: Text(
                   _girisYapildiMi
                       ? (_seyruseferYenilendi ? dil('Güncel', 'Up to date') : dil('86 Gün Kaldı', '86 Days Left'))
-                      : 'GİRİŞ GEREKLİ',
+                      : dil('GİRİŞ GEREKLİ', 'LOGIN REQUIRED'),
                   style: TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w700,
@@ -8350,7 +8355,7 @@ class _KktcETrafikDashboardSayfasiState
                 child: Text(
                   _girisYapildiMi
                       ? (_cezaOdendi ? dil('TEMİZ', 'CLEAR') : dil('1 ÖDENMEMİŞ', '1 UNPAID'))
-                      : 'GİRİŞ GEREKLİ',
+                      : dil('GİRİŞ GEREKLİ', 'LOGIN REQUIRED'),
                   style: TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w900,
@@ -8387,9 +8392,9 @@ class _KktcETrafikDashboardSayfasiState
                   color: const Color(0xFFEF4444),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
-                  '7/24 ACİL',
-                  style: TextStyle(
+                child: Text(
+                  dil('7/24 ACİL', '24/7 SOS'),
+                  style: const TextStyle(
                     fontSize: 8.5,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
@@ -8397,7 +8402,7 @@ class _KktcETrafikDashboardSayfasiState
                 ),
               ),
               title: dil('7/24 Yol Yardımı', '24/7 Road Assistance'),
-              subtitle: 'Çekici, Akü & Acil Destek',
+              subtitle: dil('Çekici, Akü & Acil Destek', 'Towing, Battery & SOS'),
               onTap: _showYolYardimBottomSheet,
             ),
           ],
