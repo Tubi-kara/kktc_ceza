@@ -50,12 +50,12 @@ class KktcETrafikDashboardSayfasi extends StatefulWidget {
 class _KktcETrafikDashboardSayfasiState
     extends State<KktcETrafikDashboardSayfasi>
     with SingleTickerProviderStateMixin {
-  // Renk Paleti (HTML tasarımındaki tokenlar ile birebir)
+  // Renk Paleti (HTML tasarımındaki tokenlar ile birebir & Koyu Tema Uyumlu)
   static const Color cNavy = Color(0xFF010E3C);
   static const Color cSlate = Color(0xFF747675);
-  static const Color cSoft = Color(0xFFE3E3E3);
-  static const Color cBg = Color(0xFFF4F5F7);
-  static const Color cCard = Color(0xFFFFFFFF);
+  Color get cSoft => KktcTemaServisi().isKoyu(context) ? const Color(0xFF243048) : const Color(0xFFE3E3E3);
+  Color get cBg => KktcTemaServisi().isKoyu(context) ? const Color(0xFF0F172A) : const Color(0xFFF4F5F7);
+  Color get cCard => KktcTemaServisi().isKoyu(context) ? const Color(0xFF151D30) : const Color(0xFFFFFFFF);
   static const Color cLime = Color(0xFFD1C929);
   static const Color cLimeDark = Color(0xFF948D08);
   static const Color cEmerald = Color(0xFF10B981);
@@ -7403,14 +7403,14 @@ class _KktcETrafikDashboardSayfasiState
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: cSlate),
                 onTap: () => _showInfoDialog(title: 'PDF İndirme', message: 'Resmi karekodlu ehliyet belgeniz cihaza indirildi.'),
               ),
-              const Divider(height: 1, color: cSoft),
+              Divider(height: 1, color: cSoft),
               ListTile(
                 leading: const Icon(Icons.security_rounded, color: cNavy),
                 title: const Text('Polis Doğrulama Modu', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: cSlate),
                 onTap: () => _showInfoDialog(title: 'Polis Denetim Modu', message: 'Karekod tam parlaklıkta ekrana yansıtılıyor.'),
               ),
-              const Divider(height: 1, color: cSoft),
+              Divider(height: 1, color: cSoft),
               ListTile(
                 leading: const Icon(Icons.logout_rounded, color: Color(0xFFD90429)),
                 title: const Text('Güvenli Çıkış Yap', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5, color: Color(0xFFD90429))),
@@ -7884,7 +7884,7 @@ class _KktcETrafikDashboardSayfasiState
                   ],
                 ),
                 child: _girisYapildiMi
-                    ? const Column(
+                    ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(

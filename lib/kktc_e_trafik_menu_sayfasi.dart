@@ -147,9 +147,13 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
     VoidCallback? onAction,
   }) {
     HapticFeedback.lightImpact();
+    final bool koyuMu = KktcTemaServisi().isKoyu(context);
+    final Color sheetBg = koyuMu ? const Color(0xFF151D30) : Colors.white;
+    final Color titleColor = koyuMu ? Colors.white : cNavy;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: sheetBg,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -167,7 +171,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     width: 44,
                     height: 4.5,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
+                      color: koyuMu ? Colors.white24 : Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -179,15 +183,15 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     Expanded(
                       child: Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
-                          color: cNavy,
+                          color: titleColor,
                         ),
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: cSlate),
+                      icon: Icon(Icons.close_rounded, color: koyuMu ? Colors.white70 : cSlate),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -201,7 +205,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     height: 50,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: cNavy,
+                        backgroundColor: koyuMu ? const Color(0xFF2563EB) : cNavy,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -265,13 +269,21 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
     required String chassis,
     required bool isActive,
   }) {
+    final bool koyuMu = KktcTemaServisi().isKoyu(context);
+    final Color cardBg = isActive
+        ? (koyuMu ? const Color(0xFF064E3B).withOpacity(0.35) : const Color(0xFFF0FDF4))
+        : (koyuMu ? const Color(0xFF1E293B) : Colors.white);
+    final Color borderCol = isActive
+        ? const Color(0xFF10B981)
+        : (koyuMu ? const Color(0xFF334155) : Colors.grey.shade200);
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFF0FDF4) : Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isActive ? const Color(0xFF10B981) : Colors.grey.shade200,
+          color: borderCol,
           width: isActive ? 1.5 : 1,
         ),
       ),
@@ -280,7 +292,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: cNavy,
+              color: koyuMu ? const Color(0xFF2563EB) : cNavy,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
@@ -300,22 +312,25 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               children: [
                 Text(
                   model,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: cNavy,
+                    color: koyuMu ? Colors.white : cNavy,
                     fontSize: 14,
                   ),
                 ),
                 Text(
                   'Şasi: $chassis',
-                  style: const TextStyle(fontSize: 11, color: cSlate),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: koyuMu ? const Color(0xFF94A3B8) : cSlate,
+                  ),
                 ),
               ],
             ),
           ),
           if (isActive)
-            const Chip(
-              label: Text(
+            Chip(
+              label: const Text(
                 'Seçili',
                 style: TextStyle(
                   color: Color(0xFF047857),
@@ -323,7 +338,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              backgroundColor: Color(0xFFDCFCE7),
+              backgroundColor: koyuMu ? const Color(0xFF064E3B) : const Color(0xFFDCFCE7),
               padding: EdgeInsets.zero,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -718,24 +733,30 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
 
   // Genel Ayarlar Modalı
   void _openSettingsModal() {
+    final bool koyuMu = KktcTemaServisi().isKoyu(context);
+    final Color titleColor = koyuMu ? Colors.white : cNavy;
+    final Color subColor = koyuMu ? const Color(0xFF94A3B8) : cSlate;
+    final Color iconColor = koyuMu ? const Color(0xFF38BDF8) : cNavy;
+    final Color divColor = koyuMu ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0);
+
     _showInfoSheet(
       title: 'Uygulama Ayarları',
       content: Column(
         children: [
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.palette_outlined, color: cNavy),
-            title: const Text('Tema Görünümü', style: TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: const Text('Açık / Koyu Tema Seçimi'),
+            leading: Icon(Icons.palette_outlined, color: iconColor),
+            title: Text('Tema Görünümü', style: TextStyle(fontWeight: FontWeight.w600, color: titleColor)),
+            subtitle: Text('Açık / Koyu Tema Seçimi', style: TextStyle(color: subColor)),
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: cNavy.withValues(alpha: 0.08),
+                color: koyuMu ? const Color(0xFF1E293B) : cNavy.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 KktcTemaServisi().temaAdi,
-                style: const TextStyle(color: cNavy, fontWeight: FontWeight.bold, fontSize: 11.5),
+                style: TextStyle(color: koyuMu ? const Color(0xFF38BDF8) : cNavy, fontWeight: FontWeight.bold, fontSize: 11.5),
               ),
             ),
             onTap: () {
@@ -743,34 +764,34 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               KktcTemaServisi().showTemaSecimDialog(context);
             },
           ),
-          const Divider(),
+          Divider(color: divColor),
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.language_rounded, color: cNavy),
-            title: const Text('Varsayılan Dil', style: TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: const Text('Türkçe / English'),
-            trailing: const Text('Türkçe', style: TextStyle(color: cSlate, fontWeight: FontWeight.bold)),
+            leading: Icon(Icons.language_rounded, color: iconColor),
+            title: Text('Varsayılan Dil', style: TextStyle(fontWeight: FontWeight.w600, color: titleColor)),
+            subtitle: Text('Türkçe / English', style: TextStyle(color: subColor)),
+            trailing: Text('Türkçe', style: TextStyle(color: subColor, fontWeight: FontWeight.bold)),
             onTap: () => _showSnackbar('Dil seçimi üst bardan da değiştirilebilir'),
           ),
-          const Divider(),
+          Divider(color: divColor),
           ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.cloud_off_rounded, color: cNavy),
-            title: const Text('Çevrimdışı Radar Veritabanı', style: TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: const Text('İnternetsiz GPS sesli uyarıları'),
+            leading: Icon(Icons.cloud_off_rounded, color: iconColor),
+            title: Text('Çevrimdışı Radar Veritabanı', style: TextStyle(fontWeight: FontWeight.w600, color: titleColor)),
+            subtitle: Text('İnternetsiz GPS sesli uyarıları', style: TextStyle(color: subColor)),
             trailing: Switch(
               value: true,
-              activeColor: cNavy,
+              activeColor: koyuMu ? const Color(0xFF38BDF8) : cNavy,
               onChanged: (v) {},
             ),
           ),
-          const Divider(),
+          Divider(color: divColor),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.security_rounded, color: Color(0xFF10B981)),
-            title: const Text('Siber Güvenlik Duvarı & SOC', style: TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: const Text('WAF Koruma Paneli (Özel Yönetici Girişi)'),
-            trailing: const Icon(Icons.lock_rounded, size: 18, color: cSlate),
+            title: Text('Siber Güvenlik Duvarı & SOC', style: TextStyle(fontWeight: FontWeight.w600, color: titleColor)),
+            subtitle: Text('WAF Koruma Paneli (Özel Yönetici Girişi)', style: TextStyle(color: subColor)),
+            trailing: Icon(Icons.lock_rounded, size: 18, color: subColor),
             onTap: () {
               Navigator.pop(context);
               _adminPinDiyaloguAc();
@@ -1223,6 +1244,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
 
   // Üst Bar (Header)
   Widget _buildTopHeader() {
+    final bool koyuMu = KktcTemaServisi().isKoyu(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -1240,11 +1262,11 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: cNavy,
+                  color: koyuMu ? const Color(0xFF2563EB) : cNavy,
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: cNavy.withOpacity(0.2),
+                      color: (koyuMu ? const Color(0xFF2563EB) : cNavy).withOpacity(0.25),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -1263,7 +1285,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                 ),
               ),
               const SizedBox(width: 10),
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -1271,7 +1293,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w900,
-                      color: cNavy,
+                      color: koyuMu ? Colors.white : cNavy,
                       letterSpacing: 0.6,
                     ),
                   ),
@@ -1280,7 +1302,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     style: TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w500,
-                      color: cSlate,
+                      color: koyuMu ? const Color(0xFF94A3B8) : cSlate,
                     ),
                   ),
                 ],
@@ -1309,21 +1331,21 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: koyuMu ? const Color(0xFF151D30) : Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(color: koyuMu ? const Color(0xFF243048) : Colors.grey.shade200),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
+                    color: Colors.black.withOpacity(koyuMu ? 0.2 : 0.03),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.qr_code_2_rounded,
                 size: 20,
-                color: cNavy,
+                color: koyuMu ? Colors.white : cNavy,
               ),
             ),
           ),
@@ -1334,6 +1356,12 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
 
   // Profil Kartı
   Widget _buildProfileCard() {
+    final bool koyuMu = KktcTemaServisi().isKoyu(context);
+    final Color cardBg = koyuMu ? const Color(0xFF151D30) : Colors.white;
+    final Color cardBorder = koyuMu ? const Color(0xFF243048) : Colors.grey.shade200;
+    final Color titleColor = koyuMu ? Colors.white : cNavy;
+    final Color subColor = koyuMu ? const Color(0xFF94A3B8) : cSlate;
+
     if (!widget.girisYapildiMi) {
       return Material(
         color: Colors.transparent,
@@ -1348,12 +1376,12 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cardBg,
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: cardBorder),
               boxShadow: [
                 BoxShadow(
-                  color: cNavy.withOpacity(0.04),
+                  color: Colors.black.withOpacity(koyuMu ? 0.25 : 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -1367,13 +1395,13 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: cNavy.withOpacity(0.08),
+                    color: koyuMu ? const Color(0xFF1E293B) : cNavy.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.person_outline_rounded,
-                      color: cNavy,
+                      color: koyuMu ? const Color(0xFF60A5FA) : cNavy,
                       size: 22,
                     ),
                   ),
@@ -1389,47 +1417,47 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                         spacing: 6,
                         runSpacing: 2,
                         children: [
-                          const Text(
+                          Text(
                             'Misafir Kullanıcı',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w800,
-                              color: cNavy,
+                              color: titleColor,
                             ),
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
+                              color: koyuMu ? const Color(0xFF1E293B) : Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(999),
-                              border: Border.all(color: Colors.grey.shade300),
+                              border: Border.all(color: koyuMu ? const Color(0xFF334155) : Colors.grey.shade300),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Giriş Yapılmadı',
                               style: TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
-                                color: cSlate,
+                                color: subColor,
                               ),
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 3),
-                      const Text(
+                      Text(
                         'Cezalar ve araç dökümü için tıklayın',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 11,
-                          color: cSlate,
+                          color: subColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(height: 4),
                       const Row(
                         children: [
-                          Icon(Icons.login_rounded, size: 12, color: Color(0xFF059669)),
+                          Icon(Icons.login_rounded, size: 12, color: Color(0xFF10B981)),
                           SizedBox(width: 4),
                           Expanded(
                             child: Text(
@@ -1438,7 +1466,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 10.5,
-                                color: Color(0xFF059669),
+                                color: Color(0xFF10B981),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -1452,7 +1480,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                   decoration: BoxDecoration(
-                    color: cNavy,
+                    color: koyuMu ? const Color(0xFF2563EB) : cNavy,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Row(
@@ -1503,12 +1531,12 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: cardBg,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: Colors.grey.shade100),
+            border: Border.all(color: koyuMu ? const Color(0xFF243048) : Colors.grey.shade100),
             boxShadow: [
               BoxShadow(
-                color: cNavy.withOpacity(0.04),
+                color: Colors.black.withOpacity(koyuMu ? 0.25 : 0.04),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -1528,14 +1556,14 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                           width: 52,
                           height: 52,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFE4E6),
+                            color: koyuMu ? const Color(0xFF881337).withOpacity(0.4) : const Color(0xFFFFE4E6),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Center(
                             child: Text(
                               initials,
-                              style: const TextStyle(
-                                color: Color(0xFFBE123C),
+                              style: TextStyle(
+                                color: koyuMu ? const Color(0xFFFDA4AF) : const Color(0xFFBE123C),
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -1551,7 +1579,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF10B981),
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
+                              border: Border.all(color: koyuMu ? const Color(0xFF151D30) : Colors.white, width: 2),
                             ),
                           ),
                         ),
@@ -1570,10 +1598,10 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                                   widget.kullaniciAdi,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w800,
-                                    color: cNavy,
+                                    color: titleColor,
                                   ),
                                 ),
                               ),
@@ -1581,27 +1609,27 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: cAccentLight,
+                                  color: koyuMu ? const Color(0xFF422006) : cAccentLight,
                                   borderRadius: BorderRadius.circular(999),
-                                  border: Border.all(color: cAccent.withOpacity(0.4)),
+                                  border: Border.all(color: koyuMu ? const Color(0xFFEAB308).withOpacity(0.5) : cAccent.withOpacity(0.4)),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   '85/100 Puan',
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF857B0D),
+                                    color: koyuMu ? const Color(0xFFFDE047) : const Color(0xFF857B0D),
                                   ),
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 3),
-                          const Text(
+                          Text(
                             'KKTC Ehliyet: 123456',
                             style: TextStyle(
                               fontSize: 12,
-                              color: cSlate,
+                              color: subColor,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -1611,26 +1639,26 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
+                                  color: koyuMu ? const Color(0xFF1E293B) : Colors.grey.shade100,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Sınıf A2, B, D',
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF374151),
+                                    color: koyuMu ? const Color(0xFFCBD5E1) : const Color(0xFF374151),
                                   ),
                                 ),
                               ),
                               const SizedBox(width: 6),
-                              const Text('•', style: TextStyle(color: cSlate, fontSize: 11)),
+                              Text('•', style: TextStyle(color: subColor, fontSize: 11)),
                               const SizedBox(width: 6),
                               const Text(
                                 'Geçerli Sürücü',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Color(0xFF059669),
+                                  color: Color(0xFF10B981),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -1647,13 +1675,13 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: koyuMu ? const Color(0xFF1E293B) : Colors.grey.shade50,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.chevron_right_rounded,
                   size: 20,
-                  color: Color(0xFF9CA3AF),
+                  color: koyuMu ? const Color(0xFF64748B) : const Color(0xFF9CA3AF),
                 ),
               ),
             ],
@@ -1669,6 +1697,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
     required String title,
     required List<Widget> items,
   }) {
+    final bool koyuMu = KktcTemaServisi().isKoyu(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1687,10 +1716,10 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w800,
-                  color: cSlate,
+                  color: koyuMu ? const Color(0xFF94A3B8) : cSlate,
                   letterSpacing: 0.8,
                 ),
               ),
@@ -1725,6 +1754,15 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
     Color? borderColor,
     VoidCallback? onTap,
   }) {
+    final bool koyuMu = KktcTemaServisi().isKoyu(context);
+    final Color itemCardBg = koyuMu ? const Color(0xFF151D30) : Colors.white;
+    final Color itemCardBorder = koyuMu ? const Color(0xFF243048) : (borderColor ?? Colors.grey.shade100);
+    final Color itemTitleColor = koyuMu ? Colors.white : cNavy;
+    final Color itemSubtitleColor = subtitleColor ?? (koyuMu ? const Color(0xFF94A3B8) : cSlate);
+    final Color itemChevronBg = koyuMu ? const Color(0xFF1E293B) : Colors.grey.shade50;
+    final Color itemChevronIcon = koyuMu ? const Color(0xFF64748B) : const Color(0xFF9CA3AF);
+    final Color itemIconBg = koyuMu ? iconColor.withOpacity(0.18) : iconBgColor;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1736,15 +1774,15 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         child: Container(
           padding: const EdgeInsets.all(13.5),
           decoration: BoxDecoration(
-            color: gradientBackground == null ? Colors.white : null,
+            color: gradientBackground == null ? itemCardBg : null,
             gradient: gradientBackground,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: borderColor ?? Colors.grey.shade100,
+              color: itemCardBorder,
             ),
             boxShadow: [
               BoxShadow(
-                color: cNavy.withOpacity(0.025),
+                color: Colors.black.withOpacity(koyuMu ? 0.2 : 0.025),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -1760,7 +1798,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: iconBgColor,
+                        color: itemIconBg,
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Center(
@@ -1779,10 +1817,10 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w700,
-                              color: cNavy,
+                              color: itemTitleColor,
                             ),
                           ),
                           if (subtitle != null) ...[
@@ -1792,7 +1830,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
-                                color: subtitleColor ?? cSlate,
+                                color: itemSubtitleColor,
                               ),
                             ),
                           ],
@@ -1809,7 +1847,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: trailingBadgeBg ?? const Color(0xFFFFE4E6),
+                        color: trailingBadgeBg ?? (koyuMu ? const Color(0xFF881337).withOpacity(0.5) : const Color(0xFFFFE4E6)),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
@@ -1817,7 +1855,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                         style: TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w800,
-                          color: trailingBadgeTextColor ?? const Color(0xFFBE123C),
+                          color: trailingBadgeTextColor ?? (koyuMu ? const Color(0xFFFDA4AF) : const Color(0xFFBE123C)),
                         ),
                       ),
                     ),
@@ -1827,13 +1865,13 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
+                      color: itemChevronBg,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.chevron_right_rounded,
                       size: 18,
-                      color: Color(0xFF9CA3AF),
+                      color: itemChevronIcon,
                     ),
                   ),
                 ],
@@ -1847,6 +1885,12 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
 
   // Alt Ayarlar & Çıkış Yap Bölümü
   Widget _buildBottomUtilityActions() {
+    final bool koyuMu = KktcTemaServisi().isKoyu(context);
+    final Color cardBg = koyuMu ? const Color(0xFF151D30) : Colors.white;
+    final Color cardBorder = koyuMu ? const Color(0xFF243048) : Colors.grey.shade200;
+    final Color titleColor = koyuMu ? Colors.white : cNavy;
+    final Color iconColor = koyuMu ? const Color(0xFF94A3B8) : cSlate;
+
     return Row(
       children: [
         // Ayarlar Butonu
@@ -1859,28 +1903,28 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cardBg,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: Colors.grey.shade200),
+                  border: Border.all(color: cardBorder),
                   boxShadow: [
                     BoxShadow(
-                      color: cNavy.withOpacity(0.03),
+                      color: Colors.black.withOpacity(koyuMu ? 0.2 : 0.03),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.settings_outlined, size: 19, color: cSlate),
-                    SizedBox(width: 8),
+                    Icon(Icons.settings_outlined, size: 19, color: iconColor),
+                    const SizedBox(width: 8),
                     Text(
                       'Ayarlar',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: cNavy,
+                        color: titleColor,
                       ),
                     ),
                   ],
@@ -1907,18 +1951,20 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: widget.girisYapildiMi ? cSoftRed : cNavy,
+                  color: widget.girisYapildiMi
+                      ? (koyuMu ? const Color(0xFF4C0519).withOpacity(0.5) : cSoftRed)
+                      : (koyuMu ? const Color(0xFF2563EB) : cNavy),
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     color: widget.girisYapildiMi
-                        ? const Color(0xFFFECDD3)
+                        ? (koyuMu ? const Color(0xFF881337) : const Color(0xFFFECDD3))
                         : Colors.transparent,
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: widget.girisYapildiMi
                           ? cDanger.withOpacity(0.04)
-                          : cNavy.withOpacity(0.18),
+                          : (koyuMu ? const Color(0xFF2563EB).withOpacity(0.2) : cNavy.withOpacity(0.18)),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -1930,7 +1976,9 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     Icon(
                       widget.girisYapildiMi ? Icons.logout_rounded : Icons.login_rounded,
                       size: 19,
-                      color: widget.girisYapildiMi ? cDanger : const Color(0xFFD1C929),
+                      color: widget.girisYapildiMi
+                          ? (koyuMu ? const Color(0xFFFDA4AF) : cDanger)
+                          : const Color(0xFFD1C929),
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -1938,7 +1986,9 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: widget.girisYapildiMi ? cDanger : Colors.white,
+                        color: widget.girisYapildiMi
+                            ? (koyuMu ? const Color(0xFFFDA4AF) : cDanger)
+                            : Colors.white,
                       ),
                     ),
                   ],
