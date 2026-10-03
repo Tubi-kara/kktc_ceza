@@ -474,11 +474,25 @@ function initLeafletMap() {
     scrollWheelZoom: false
   });
 
-  // CartoDB Voyager / Dark Matter Tiles (Harita Tarzı)
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a>, OpenStreetMap',
+  // %100 Ücretsiz, API Key İstemeyen Resmi OpenStreetMap ve Esri Uydu Katmanları
+  const osmHarita = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19
-  }).addTo(map);
+  });
+
+  const esriUydu = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '&copy; Esri, Maxar, Earthstar Geographics',
+    maxZoom: 18
+  });
+
+  // Varsayılan olarak OpenStreetMap başlat
+  osmHarita.addTo(map);
+
+  // Sağ üste katman değiştirici ekle (Sokak / Uydu)
+  L.control.layers({
+    "🗺️ Sokak Haritası": osmHarita,
+    "🛰️ Canlı Uydu": esriUydu
+  }, null, { position: 'topright' }).addTo(map);
 
   markersLayer = L.layerGroup().addTo(map);
 
