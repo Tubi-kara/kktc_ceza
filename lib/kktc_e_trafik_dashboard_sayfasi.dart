@@ -1,5 +1,6 @@
 import 'kktc_favori_noktalar_servisi.dart';
 import 'kktc_tema_servisi.dart';
+import 'kktc_dil_servisi.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

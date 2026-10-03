@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'kktc_dil_servisi.dart';
 
 /// KKTC e-Trafik Modern Güvenli Giriş ve Kayıt Sayfası
 /// Bayındırlık ve Ulaştırma Bakanlığı & Trafik Portalı kurumsal kimliği ile
@@ -48,7 +49,7 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
   bool _obscurePassword = true;
   bool _regObscurePassword = true;
   bool _rememberMe = true;
-  bool _isEnglish = false;
+  bool get _isEnglish => KktcDilServisi().isEnglish;
   bool _isIdHighlighted = false;
 
 
@@ -929,10 +930,12 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildLanguageButton(label: 'TR', active: !_isEnglish, onTap: () {
-                    if (_isEnglish) setState(() => _isEnglish = false);
+                    KktcDilServisi().dilDegistir(true);
+                    setState(() {});
                   }),
                   _buildLanguageButton(label: 'EN', active: _isEnglish, onTap: () {
-                    if (!_isEnglish) setState(() => _isEnglish = true);
+                    KktcDilServisi().dilDegistir(false);
+                    setState(() {});
                   }),
                 ],
               ),

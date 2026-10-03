@@ -9,6 +9,7 @@ import 'guvenlik_duvari.dart';
 import 'guncelleme_servisi.dart';
 import 'main.dart' show BarkodluBelgeSayfasi, DekontlarSayfasi, ItirazSayfasi, BildirimAyarlariSayfasi;
 import 'kktc_tema_servisi.dart';
+import 'kktc_dil_servisi.dart';
 
 /// KKTC e-Trafik Kategorize Edilmiş Zengin Menü Sayfası
 /// Kullanıcının ilettiği HTML / Tailwind tasarımının ve önceki tüm gelişmiş özelliklerin tam entegre Flutter uygulamasıdır.
@@ -748,39 +749,55 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
 
     _showInfoSheet(
       title: 'Uygulama Ayarları',
-      content: Column(
-        children: [
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.palette_outlined, color: iconColor),
-            title: Text('Tema Görünümü', style: TextStyle(fontWeight: FontWeight.w600, color: titleColor)),
-            subtitle: Text('Açık / Koyu Tema Seçimi', style: TextStyle(color: subColor)),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: koyuMu ? const Color(0xFF1E293B) : cNavy.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(8),
+      content: ListenableBuilder(
+        listenable: Listenable.merge([KktcTemaServisi(), KktcDilServisi()]),
+        builder: (modalCtx, _) {
+          return Column(
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.palette_outlined, color: iconColor),
+                title: Text('Tema Görünümü', style: TextStyle(fontWeight: FontWeight.w600, color: titleColor)),
+                subtitle: Text('Açık / Koyu Tema Seçimi', style: TextStyle(color: subColor)),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: koyuMu ? const Color(0xFF1E293B) : cNavy.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    KktcTemaServisi().temaAdi,
+                    style: TextStyle(color: koyuMu ? const Color(0xFF38BDF8) : cInk, fontWeight: FontWeight.bold, fontSize: 11.5),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  KktcTemaServisi().showTemaSecimDialog(context);
+                },
               ),
-              child: Text(
-                KktcTemaServisi().temaAdi,
-                style: TextStyle(color: koyuMu ? const Color(0xFF38BDF8) : cInk, fontWeight: FontWeight.bold, fontSize: 11.5),
+              Divider(color: divColor),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.language_rounded, color: iconColor),
+                title: Text('Varsayılan Dil', style: TextStyle(fontWeight: FontWeight.w600, color: titleColor)),
+                subtitle: Text('Türkçe / English', style: TextStyle(color: subColor)),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: koyuMu ? const Color(0xFF1E293B) : cNavy.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    KktcDilServisi().dilAdi,
+                    style: TextStyle(color: koyuMu ? const Color(0xFF38BDF8) : cInk, fontWeight: FontWeight.bold, fontSize: 11.5),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  KktcDilServisi().showDilSecimDialog(context);
+                },
               ),
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              KktcTemaServisi().showTemaSecimDialog(context);
-            },
-          ),
-          Divider(color: divColor),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.language_rounded, color: iconColor),
-            title: Text('Varsayılan Dil', style: TextStyle(fontWeight: FontWeight.w600, color: titleColor)),
-            subtitle: Text('Türkçe / English', style: TextStyle(color: subColor)),
-            trailing: Text('Türkçe', style: TextStyle(color: subColor, fontWeight: FontWeight.bold)),
-            onTap: () => _showSnackbar('Dil seçimi üst bardan da değiştirilebilir'),
-          ),
-          Divider(color: divColor),
+              Divider(color: divColor),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Icon(Icons.cloud_off_rounded, color: iconColor),
@@ -805,8 +822,10 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
             },
           ),
         ],
-      ),
-    );
+      );
+    },
+  ),
+);
   }
 
   int _secretLogoClicks = 0;
@@ -1048,7 +1067,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => YolTarifiSayfasi(
-                      turkceMi: true,
+                      turkceMi: KktcDilServisi().turkceMi,
                       onTamEkranDegisti: (tamEkran) {},
                     ),
                   ),

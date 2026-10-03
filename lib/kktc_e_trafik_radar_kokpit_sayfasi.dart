@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'canli_gps_servisi.dart';
 import 'radar_haritasi.dart';
+import 'kktc_dil_servisi.dart';
 
 /// KKTC e-Trafik Radar & Taktiksel Canlı Navigasyon Kokpiti
 /// HTML / Tailwind CSS tasarımının birebir Flutter uyarlamasıdır.
@@ -50,7 +51,7 @@ class _KktcETrafikRadarKokpitSayfasiState
 
   // Durum Değişkenleri
   bool _isSoundOn = true;
-  bool _isEnglish = false;
+  bool get _isEnglish => KktcDilServisi().isEnglish;
   int _selectedBottomNavIndex = 1; // 1: Radarlar aktif
   int _currentSpeed = 68;
   final int _speedLimit = 65;
@@ -350,7 +351,8 @@ class _KktcETrafikRadarKokpitSayfasiState
                         child: InkWell(
                           onTap: () {
                             HapticFeedback.selectionClick();
-                            setState(() => _isEnglish = !_isEnglish);
+                            KktcDilServisi().dilDegistir(!KktcDilServisi().turkceMi);
+                            setState(() {});
                           },
                           borderRadius: BorderRadius.circular(8),
                           child: Container(

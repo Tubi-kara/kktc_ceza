@@ -11,6 +11,7 @@ import 'guncelleme_servisi.dart';
 import 'guvenlik_duvari.dart';
 import 'kktc_e_trafik_dashboard_sayfasi.dart';
 import 'kktc_tema_servisi.dart';
+import 'kktc_dil_servisi.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,7 +62,6 @@ class KktcCezaApp extends StatefulWidget {
 
 class _KktcCezaAppState extends State<KktcCezaApp> {
   bool _splashGosteriliyor = true; // Sinematik açılış animasyonu devrede
-  final bool _turkceMi = true;
   bool _girisYapildiMi = false; // Doğrudan misafir modunda başlar
   String _kullaniciAdi = "Misafir Kullanıcı";
 
@@ -75,7 +75,7 @@ class _KktcCezaAppState extends State<KktcCezaApp> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: KktcTemaServisi(),
+      listenable: Listenable.merge([KktcTemaServisi(), KktcDilServisi()]),
       builder: (context, _) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -88,7 +88,7 @@ class _KktcCezaAppState extends State<KktcCezaApp> {
             child: _splashGosteriliyor
                 ? AcilisAnimasyonuSayfasi(
                     key: const ValueKey('splash_screen'),
-                    turkceMi: _turkceMi,
+                    turkceMi: KktcDilServisi().turkceMi,
                     onTamamlandi: () {
                       setState(() => _splashGosteriliyor = false);
                     },
