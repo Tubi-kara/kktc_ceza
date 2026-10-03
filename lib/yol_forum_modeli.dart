@@ -1,3 +1,4 @@
+import 'kktc_dil_servisi.dart';
 import 'package:flutter/material.dart';
 import 'kktc_tema_servisi.dart';
 
@@ -14,6 +15,16 @@ enum YolForumTipi {
 
 extension YolForumTipiExtension on YolForumTipi {
   String get baslik {
+    if (KktcDilServisi().isEnglish) {
+      switch (this) {
+        case YolForumTipi.cevirme:
+          return 'Police Check';
+        case YolForumTipi.kaza:
+          return 'Accident Ahead';
+        case YolForumTipi.calisma:
+          return 'Roadwork';
+      }
+    }
     switch (this) {
       case YolForumTipi.cevirme:
         return 'Çevirme Var';
@@ -25,6 +36,16 @@ extension YolForumTipiExtension on YolForumTipi {
   }
 
   String get altBaslik {
+    if (KktcDilServisi().isEnglish) {
+      switch (this) {
+        case YolForumTipi.cevirme:
+          return 'Police & Radar Control';
+        case YolForumTipi.kaza:
+          return 'Traffic Accident & Congestion';
+        case YolForumTipi.calisma:
+          return 'Road Construction & Maintenance';
+      }
+    }
     switch (this) {
       case YolForumTipi.cevirme:
         return 'Polis & Radar Kontrolü';

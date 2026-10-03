@@ -174,13 +174,16 @@ class _KktcETrafikRadarKokpitSayfasiState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: cBg,
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light.copyWith(
-          statusBarColor: Colors.transparent,
-          systemNavigationBarColor: cSurfaceLowest,
-        ),
+    return ListenableBuilder(
+      listenable: KktcDilServisi(),
+      builder: (context, _) {
+        return Scaffold(
+          backgroundColor: cBg,
+          body: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle.light.copyWith(
+              statusBarColor: Colors.transparent,
+              systemNavigationBarColor: cSurfaceLowest,
+            ),
         child: Stack(
           children: [
             // Ana Kaydırılabilir İçerik Alanı
@@ -451,8 +454,8 @@ class _KktcETrafikRadarKokpitSayfasiState
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

@@ -426,10 +426,10 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const BarkodluBelgeSayfasi(
+                    builder: (context) => BarkodluBelgeSayfasi(
                       kullanici: 'Ahmet Demir',
                       puan: 85,
-                      turkceMi: true,
+                      turkceMi: KktcDilServisi().turkceMi,
                     ),
                   ),
                 );
@@ -456,7 +456,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         backgroundColor: cSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         title: Text(
-          'Seyrüsefer Harcı Tahsilatı',
+          dil('Seyrüsefer Harcı Tahsilatı', 'Road Tax Payment'),
           style: TextStyle(fontWeight: FontWeight.w900, color: cInk, fontSize: 17),
         ),
         content: Column(
@@ -464,7 +464,10 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'RZ 123 (BMW 3.20i) için 2027 1. Dönem erken yenileme harcı (%10 indirimle ₺3.105,00) tahsil edilecektir.',
+              dil(
+                'RZ 123 (BMW 3.20i) için 2027 1. Dönem erken yenileme harcı (%10 indirimle ₺3.105,00) tahsil edilecektir.',
+                'For RZ 123 (BMW 3.20i), 2027 Term 1 early renewal fee (₺3,105.00 with 10% discount) will be charged.',
+              ),
               style: TextStyle(fontSize: 13, color: cMuted),
             ),
             const SizedBox(height: 14),
@@ -478,8 +481,8 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               child: Row(
                 children: [
                   Icon(Icons.credit_card_rounded, color: cInk, size: 20),
-                  SizedBox(width: 8),
-                  Text('Garanti Bonus (•••• 4412)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                  const SizedBox(width: 8),
+                  Text('Garanti Bonus (•••• 4412)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
                 ],
               ),
             ),
@@ -488,7 +491,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Vazgeç', style: TextStyle(color: cMuted)),
+            child: Text(dil('Vazgeç', 'Cancel'), style: TextStyle(color: cMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -498,19 +501,19 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
             ),
             onPressed: () {
               Navigator.pop(ctx);
-              _showSnackbar('Seyrüsefer yenilendi! Resmi dijital pul oluşturuldu.');
+              _showSnackbar(dil('Seyrüsefer yenilendi! Resmi dijital pul oluşturuldu.', 'Road tax renewed! Digital tax disc created.'));
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const BarkodluBelgeSayfasi(
+                  builder: (context) => BarkodluBelgeSayfasi(
                     kullanici: 'Ahmet Demir',
                     puan: 85,
-                    turkceMi: true,
+                    turkceMi: KktcDilServisi().turkceMi,
                   ),
                 ),
               );
             },
-            child: const Text('Öde & Belgeyi Al', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(dil('Öde & Belgeyi Al', 'Pay & Get Certificate'), style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -1553,7 +1556,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               builder: (context) => BarkodluBelgeSayfasi(
                 kullanici: widget.kullaniciAdi,
                 puan: 85,
-                turkceMi: true,
+                turkceMi: KktcDilServisi().turkceMi,
               ),
             ),
           );

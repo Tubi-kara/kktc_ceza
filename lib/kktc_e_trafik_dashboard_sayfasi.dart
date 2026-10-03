@@ -580,7 +580,7 @@ class _KktcETrafikDashboardSayfasiState
                       key: _dashboardMapKey,
                       radarlar: kktcRadarListesi,
                       seciliRadar: null,
-                      turkceMi: true,
+                      turkceMi: KktcDilServisi().turkceMi,
                       radarlariGoster: true,
                       poiNoktalari: kktcHaritaPoiListesi,
                       gosterUstBar: false,
@@ -724,7 +724,7 @@ class _KktcETrafikDashboardSayfasiState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => HizliAramaModalSayfasi(
-        turkceMi: true,
+        turkceMi: KktcDilServisi().turkceMi,
         onHedefeGit: (hedefId) {},
       ),
     );
@@ -842,7 +842,7 @@ class _KktcETrafikDashboardSayfasiState
                               context,
                               MaterialPageRoute(
                                 builder: (context) => YolTarifiSayfasi(
-                                  turkceMi: true,
+                                  turkceMi: KktcDilServisi().turkceMi,
                                   varisNoktasi: RotaNoktasi(
                                     id: 'evim',
                                     ad: _evimAdres,
@@ -870,7 +870,7 @@ class _KktcETrafikDashboardSayfasiState
                               context,
                               MaterialPageRoute(
                                 builder: (context) => YolTarifiSayfasi(
-                                  turkceMi: true,
+                                  turkceMi: KktcDilServisi().turkceMi,
                                   varisNoktasi: RotaNoktasi(
                                     id: 'isim',
                                     ad: _isimAdres,
@@ -1077,7 +1077,7 @@ class _KktcETrafikDashboardSayfasiState
             radarlar: const [],
             seciliRadar: null,
             onRadarSelected: (_) {},
-            turkceMi: true,
+            turkceMi: KktcDilServisi().turkceMi,
             radarlariGoster: false,
             gosterUstBar: false,
             gosterZoomButonlari: false, // Kartlarla çakışmayı önlemek için sağda özel konumlandırılır
@@ -1131,7 +1131,7 @@ class _KktcETrafikDashboardSayfasiState
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Nereye gitmek istiyorsunuz? Yol tarifi ara...',
+                              dil('Nereye gitmek istiyorsunuz? Yol tarifi ara...', 'Where do you want to go? Search routes...'),
                               style: TextStyle(
                                 color: cMuted,
                                 fontSize: 12.5,
@@ -1147,7 +1147,7 @@ class _KktcETrafikDashboardSayfasiState
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const YolTarifiSayfasi(turkceMi: true),
+                                  builder: (context) => YolTarifiSayfasi(turkceMi: KktcDilServisi().turkceMi),
                                 ),
                               );
                             },
@@ -1198,7 +1198,7 @@ class _KktcETrafikDashboardSayfasiState
                           context,
                           MaterialPageRoute(
                             builder: (context) => YolTarifiSayfasi(
-                              turkceMi: true,
+                              turkceMi: KktcDilServisi().turkceMi,
                               varisNoktasi: KktcFavoriNoktalarServisi().evimRotaNoktasi,
                               otomatikNavigasyonBaslat: true,
                             ),
@@ -1226,7 +1226,7 @@ class _KktcETrafikDashboardSayfasiState
                           context,
                           MaterialPageRoute(
                             builder: (context) => YolTarifiSayfasi(
-                              turkceMi: true,
+                              turkceMi: KktcDilServisi().turkceMi,
                               varisNoktasi: KktcFavoriNoktalarServisi().isimRotaNoktasi,
                               otomatikNavigasyonBaslat: true,
                             ),
@@ -1298,7 +1298,7 @@ class _KktcETrafikDashboardSayfasiState
                   children: [
                     _buildPoiCategoryChip(
                       id: 'tumu',
-                      label: 'Tüm KKTC',
+                      label: dil('Tüm KKTC', 'All TRNC'),
                       icon: Icons.map_rounded,
                       onTap: () {
                         setState(() {
@@ -1310,7 +1310,7 @@ class _KktcETrafikDashboardSayfasiState
                     ),
                     _buildPoiCategoryChip(
                       id: 'avm',
-                      label: '🛍️ AVM & Çarşı',
+                      label: dil('🛍️ AVM & Çarşı', '🛍️ Malls & Bazaars'),
                       icon: Icons.shopping_bag_rounded,
                       onTap: () {
                         setState(() {
@@ -1322,7 +1322,7 @@ class _KktcETrafikDashboardSayfasiState
                     ),
                     _buildPoiCategoryChip(
                       id: 'plaj',
-                      label: '🏖️ Plaj & Tatil',
+                      label: dil('🏖️ Plaj & Tatil', '🏖️ Beaches & Resorts'),
                       icon: Icons.beach_access_rounded,
                       onTap: () {
                         setState(() {
@@ -1334,7 +1334,7 @@ class _KktcETrafikDashboardSayfasiState
                     ),
                     _buildPoiCategoryChip(
                       id: 'benzin',
-                      label: '⛽ Benzinlikler',
+                      label: dil('⛽ Benzinlikler', '⛽ Gas Stations'),
                       icon: Icons.local_gas_station_rounded,
                       onTap: () {
                         setState(() {
@@ -1346,7 +1346,7 @@ class _KktcETrafikDashboardSayfasiState
                     ),
                     _buildPoiCategoryChip(
                       id: 'universite',
-                      label: '🎓 Üniversiteler',
+                      label: dil('🎓 Üniversiteler', '🎓 Universities'),
                       icon: Icons.school_rounded,
                       onTap: () {
                         setState(() {
@@ -1358,7 +1358,7 @@ class _KktcETrafikDashboardSayfasiState
                     ),
                     _buildPoiCategoryChip(
                       id: 'havalimani',
-                      label: '✈️ Ulaşım & Liman',
+                      label: dil('✈️ Ulaşım & Liman', '✈️ Transport & Ports'),
                       icon: Icons.flight_takeoff_rounded,
                       onTap: () {
                         setState(() {
@@ -1370,7 +1370,7 @@ class _KktcETrafikDashboardSayfasiState
                     ),
                     _buildPoiCategoryChip(
                       id: 'tamir',
-                      label: '🔧 Tamir & Servis',
+                      label: dil('🔧 Tamir & Servis', '🔧 Repairs & Service'),
                       icon: Icons.build_rounded,
                       onTap: () {
                         setState(() {
@@ -1382,7 +1382,7 @@ class _KktcETrafikDashboardSayfasiState
                     ),
                     _buildPoiCategoryChip(
                       id: 'otopark',
-                      label: '🅿️ Otoparklar',
+                      label: dil('🅿️ Otoparklar', '🅿️ Parking'),
                       icon: Icons.local_parking_rounded,
                       onTap: () {
                         setState(() {
@@ -1394,7 +1394,7 @@ class _KktcETrafikDashboardSayfasiState
                     ),
                     _buildPoiCategoryChip(
                       id: 'hastane',
-                      label: '🏥 Acil & Hastane',
+                      label: dil('🏥 Acil & Hastane', '🏥 Hospital & Emergency'),
                       icon: Icons.local_hospital_rounded,
                       onTap: () {
                         setState(() {
@@ -1511,7 +1511,7 @@ class _KktcETrafikDashboardSayfasiState
                         radarlar: const [],
                         seciliRadar: null,
                         onRadarSelected: (_) {},
-                        turkceMi: true,
+                        turkceMi: KktcDilServisi().turkceMi,
                         radarlariGoster: false,
                         gosterUstBar: false,
                         gosterZoomButonlari: false, // Alttaki kartlarla çakışma önlendi
@@ -3615,7 +3615,7 @@ class _KktcETrafikDashboardSayfasiState
                               context,
                               MaterialPageRoute(
                                 builder: (context) => YolTarifiSayfasi(
-                                  turkceMi: true,
+                                  turkceMi: KktcDilServisi().turkceMi,
                                   varisNoktasi: poi.toRotaNoktasi(),
                                   otomatikNavigasyonBaslat: true,
                                 ),
@@ -4079,7 +4079,7 @@ class _KktcETrafikDashboardSayfasiState
                             key: _osmKey,
                             radarlar: kktcRadarListesi,
                             seciliRadar: _seciliRadarKamerasi ?? kktcRadarListesi.first,
-                            turkceMi: true,
+                            turkceMi: KktcDilServisi().turkceMi,
                             onRadarSelected: (radar) {
                               setState(() => _seciliRadarKamerasi = radar);
                               _showRadarDetailSheet(
@@ -4388,7 +4388,7 @@ class _KktcETrafikDashboardSayfasiState
                     context,
                     MaterialPageRoute(
                       builder: (context) => YolTarifiSayfasi(
-                        turkceMi: true,
+                        turkceMi: KktcDilServisi().turkceMi,
                         varisNoktasi: hedef,
                         otomatikNavigasyonBaslat: true,
                       ),
@@ -4396,9 +4396,9 @@ class _KktcETrafikDashboardSayfasiState
                   );
                 },
                 icon: const Icon(Icons.directions_rounded, size: 15, color: Colors.white),
-                label: const Text(
-                  'Yol Tarifi',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11.5),
+                label: Text(
+                  dil('Yol Tarifi', 'Directions'),
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11.5),
                 ),
               ),
               const SizedBox(width: 6),
@@ -4436,7 +4436,7 @@ class _KktcETrafikDashboardSayfasiState
                     context,
                     MaterialPageRoute(
                       builder: (context) => KktcTamEkranHaritaSayfasi(
-                        turkceMi: true,
+                        turkceMi: KktcDilServisi().turkceMi,
                         baslangicRadari: _seciliRadarKamerasi,
                       ),
                     ),
@@ -5082,7 +5082,7 @@ class _KktcETrafikDashboardSayfasiState
                         context,
                         MaterialPageRoute(
                           builder: (context) => YolTarifiSayfasi(
-                            turkceMi: true,
+                            turkceMi: KktcDilServisi().turkceMi,
                             varisNoktasi: hedefRota,
                             otomatikNavigasyonBaslat: true,
                           ),
@@ -5090,7 +5090,7 @@ class _KktcETrafikDashboardSayfasiState
                       );
                     },
                     icon: const Icon(Icons.directions_rounded, size: 18, color: Colors.white),
-                    label: const Text('Yol Tarifi Al', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                    label: Text(dil('Yol Tarifi Al', 'Get Directions'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -5140,14 +5140,14 @@ class _KktcETrafikDashboardSayfasiState
                     context,
                     MaterialPageRoute(
                       builder: (context) => KktcTamEkranHaritaSayfasi(
-                        turkceMi: true,
+                        turkceMi: KktcDilServisi().turkceMi,
                         baslangicRadari: hedefKamera,
                       ),
                     ),
                   );
                 },
                 icon: const Icon(Icons.fullscreen_rounded, size: 20),
-                label: const Text('Tam Ekran Haritada Odaklan', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                label: Text(dil('Tam Ekran Haritada Odaklan', 'Focus on Fullscreen Map'), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
               ),
             ),
           ],
@@ -5839,16 +5839,16 @@ class _KktcETrafikDashboardSayfasiState
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const BarkodluBelgeSayfasi(
+                        builder: (context) => BarkodluBelgeSayfasi(
                           kullanici: 'Ahmet Demir',
                           puan: 95,
-                          turkceMi: true,
+                          turkceMi: KktcDilServisi().turkceMi,
                         ),
                       ),
                     );
                   },
                   icon: const Icon(Icons.qr_code_rounded, size: 16),
-                  label: const Text('Son Tahsilat Makbuzunu / QR İndir', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                  label: Text(dil('Son Tahsilat Makbuzunu / QR İndir', 'Download Last Receipt / QR'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
                 ),
               ],
             ),
@@ -5859,7 +5859,7 @@ class _KktcETrafikDashboardSayfasiState
 
         // Ödenmiş Geçmiş Cezalar
         Text(
-          'Ödenmiş Geçmiş Cezalar',
+          dil('Ödenmiş Geçmiş Cezalar', 'Paid Past Fines'),
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w800,
@@ -5894,12 +5894,12 @@ class _KktcETrafikDashboardSayfasiState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Haspolat Çevre Yolu Radarı',
+                        dil('Haspolat Çevre Yolu Radarı', 'Haspolat Bypass Radar'),
                         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: cInk),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
-                        '24 Ocak 2024 • #KKTC-2024-110294',
+                        dil('24 Ocak 2024 • #KKTC-2024-110294', '24 Jan 2024 • #KKTC-2024-110294'),
                         style: TextStyle(fontSize: 11, color: cMuted),
                       ),
                     ],
@@ -5928,8 +5928,8 @@ class _KktcETrafikDashboardSayfasiState
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const DekontlarSayfasi(
-                            dekontlar: [
+                          builder: (context) => DekontlarSayfasi(
+                            dekontlar: const [
                               {
                                 'cezaId': 'PGM-2024-110294',
                                 'cezaAdi': 'Haspolat Çevre Yolu Radarı',
@@ -5939,12 +5939,12 @@ class _KktcETrafikDashboardSayfasiState
                                 'dekontNo': 'DK-9921',
                               },
                             ],
-                            turkceMi: true,
+                            turkceMi: KktcDilServisi().turkceMi,
                           ),
                         ),
                       );
                     },
-                    child: Text('Makbuz', style: TextStyle(fontSize: 11, color: cInk, fontWeight: FontWeight.bold)),
+                    child: Text(dil('Makbuz', 'Receipt'), style: TextStyle(fontSize: 11, color: cInk, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -5967,14 +5967,14 @@ class _KktcETrafikDashboardSayfasiState
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const ItirazSayfasi(turkceMi: true),
+                  builder: (context) => ItirazSayfasi(turkceMi: KktcDilServisi().turkceMi),
                 ),
               );
             },
             icon: const Icon(Icons.gavel_rounded, size: 18),
-            label: const Text(
-              'Cezaya İtiraz Talebi Oluştur',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+            label: Text(
+              dil('Cezaya İtiraz Talebi Oluştur', 'File a Fine Appeal'),
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
             ),
           ),
         ),
@@ -6147,10 +6147,10 @@ class _KktcETrafikDashboardSayfasiState
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const BarkodluBelgeSayfasi(
+                          builder: (context) => BarkodluBelgeSayfasi(
                             kullanici: 'Ahmet Demir',
                             puan: 85,
-                            turkceMi: true,
+                            turkceMi: KktcDilServisi().turkceMi,
                           ),
                         ),
                       );
@@ -6179,7 +6179,7 @@ class _KktcETrafikDashboardSayfasiState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Dijital Araç Ruhsatı (Koçan)',
+                    dil('Dijital Araç Ruhsatı (Koçan)', 'Digital Vehicle Logbook'),
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cInk),
                   ),
                   IconButton(
@@ -6188,10 +6188,10 @@ class _KktcETrafikDashboardSayfasiState
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const BarkodluBelgeSayfasi(
+                          builder: (context) => BarkodluBelgeSayfasi(
                             kullanici: 'Ahmet Demir',
                             puan: 85,
-                            turkceMi: true,
+                            turkceMi: KktcDilServisi().turkceMi,
                           ),
                         ),
                       );
@@ -6201,7 +6201,10 @@ class _KktcETrafikDashboardSayfasiState
               ),
               const SizedBox(height: 6),
               Text(
-                'KKTC Bayındırlık ve Ulaştırma Bakanlığı Trafik Dairesi onaylı resmi e-Ruhsat belgenizi barkodlu olarak görüntüleyebilirsiniz.',
+                dil(
+                  'KKTC Bayındırlık ve Ulaştırma Bakanlığı Trafik Dairesi onaylı resmi e-Ruhsat belgenizi barkodlu olarak görüntüleyebilirsiniz.',
+                  'View your official digital vehicle license approved by the TRNC Traffic Department with barcode verification.',
+                ),
                 style: TextStyle(fontSize: 12, color: cMuted),
               ),
             ],
@@ -6867,16 +6870,16 @@ class _KktcETrafikDashboardSayfasiState
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const BarkodluBelgeSayfasi(
+                      builder: (context) => BarkodluBelgeSayfasi(
                         kullanici: 'Ahmet Demir',
                         puan: 95,
-                        turkceMi: true,
+                        turkceMi: KktcDilServisi().turkceMi,
                       ),
                     ),
                   );
                 },
                 icon: const Icon(Icons.receipt_rounded, size: 16),
-                label: const Text('Resmi Makbuz & Barkodlu Belge', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(dil('Resmi Makbuz & Barkodlu Belge', 'Official Receipt & Barcode Doc'), style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -6901,7 +6904,7 @@ class _KktcETrafikDashboardSayfasiState
             height: MediaQuery.of(context).size.height * 0.78,
             decoration: BoxDecoration(
               color: cSurface,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: Column(
               children: [
@@ -6923,10 +6926,13 @@ class _KktcETrafikDashboardSayfasiState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Seyrüsefer Harcı Erken Yenileme',
+                            dil('Seyrüsefer Harcı Erken Yenileme', 'Road Tax Early Renewal'),
                             style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: cInk),
                           ),
-                          Text('Bayındırlık ve Ulaştırma Bakanlığı • RZ 123', style: TextStyle(fontSize: 11, color: cMuted)),
+                          Text(
+                            dil('Bayındırlık ve Ulaştırma Bakanlığı • RZ 123', 'Ministry of Transport • RZ 123'),
+                            style: TextStyle(fontSize: 11, color: cMuted),
+                          ),
                         ],
                       ),
                       IconButton(
@@ -6945,7 +6951,7 @@ class _KktcETrafikDashboardSayfasiState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Yenileme Dönemi Seçin',
+                          dil('Yenileme Dönemi Seçin', 'Select Renewal Period'),
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: cInk),
                         ),
                         const SizedBox(height: 10),
@@ -6976,8 +6982,14 @@ class _KktcETrafikDashboardSayfasiState
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('1 Yıllık Tam Dönem (2027)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cInk)),
-                                        Text('Erken ödemede %10 kamu indirimi', style: TextStyle(fontSize: 11, color: cEmerald)),
+                                        Text(
+                                          dil('1 Yıllık Tam Dönem (2027)', '1-Year Full Period (2027)'),
+                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cInk),
+                                        ),
+                                        Text(
+                                          dil('Erken ödemede %10 kamu indirimi', '10% public discount on early payment'),
+                                          style: const TextStyle(fontSize: 11, color: cEmerald),
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -7018,8 +7030,14 @@ class _KktcETrafikDashboardSayfasiState
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text('6 Aylık Yarı Dönem', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cInk)),
-                                        Text('Erken yenileme harcı', style: TextStyle(fontSize: 11, color: cMuted)),
+                                        Text(
+                                          dil('6 Aylık Yarı Dönem', '6-Month Semi-Annual'),
+                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cInk),
+                                        ),
+                                        Text(
+                                          dil('Erken yenileme harcı', 'Early renewal tax'),
+                                          style: TextStyle(fontSize: 11, color: cMuted),
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -7034,7 +7052,10 @@ class _KktcETrafikDashboardSayfasiState
                         ),
                         const SizedBox(height: 18),
 
-                        Text('Ödeme Kartı: Garanti BBVA Bonus (•••• 4412)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: cMuted)),
+                        Text(
+                          dil('Ödeme Kartı: Garanti BBVA Bonus (•••• 4412)', 'Payment Card: Garanti BBVA Bonus (•••• 4412)'),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: cMuted),
+                        ),
                       ],
                     ),
                   ),
@@ -7065,18 +7086,18 @@ class _KktcETrafikDashboardSayfasiState
                                   });
                                   HapticFeedback.heavyImpact();
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
+                                    SnackBar(
                                       backgroundColor: cEmerald,
-                                      content: Text('Seyrüsefer harcınız yenilendi ve dijital pul üretildi!'),
+                                      content: Text(dil('Seyrüsefer harcınız yenilendi ve dijital pul üretildi!', 'Road tax renewed and digital tax disc issued!')),
                                     ),
                                   );
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const BarkodluBelgeSayfasi(
+                                      builder: (context) => BarkodluBelgeSayfasi(
                                         kullanici: 'Ahmet Demir',
                                         puan: 85,
-                                        turkceMi: true,
+                                        turkceMi: KktcDilServisi().turkceMi,
                                       ),
                                     ),
                                   );
@@ -7085,7 +7106,9 @@ class _KktcETrafikDashboardSayfasiState
                         child: isProcessing
                             ? const CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
                             : Text(
-                                selectedDonem == 0 ? 'Ödeme Yap & Pulu Üret (₺3.105,00)' : 'Ödeme Yap & Pulu Üret (₺1.665,00)',
+                                selectedDonem == 0
+                                    ? dil('Ödeme Yap & Pulu Üret (₺3.105,00)', 'Pay & Generate Disc (₺3,105.00)')
+                                    : dil('Ödeme Yap & Pulu Üret (₺1.665,00)', 'Pay & Generate Disc (₺1,665.00)'),
                                 style: const TextStyle(fontWeight: FontWeight.w800),
                               ),
                       ),
