@@ -824,7 +824,6 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
   // Üst Bar: "Resmi Kamu Ağı" & Dil Seçici
   Widget _buildTopUtilitiesBar() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         if (Navigator.canPop(context))
           Material(
@@ -833,7 +832,7 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
               onTap: () => Navigator.pop(context),
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(12),
@@ -842,67 +841,77 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70, size: 14),
-                    SizedBox(width: 6),
-                    Text('Panele Dön', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                    Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70, size: 12),
+                    SizedBox(width: 4),
+                    Text('Panele Dön', style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w600)),
                   ],
                 ),
               ),
             ),
-          )
-        else
-          const SizedBox.shrink(),
+          ),
+        const Spacer(),
 
         // Resmi Kamu Ağı Hapı
-        ClipRRect(
-          borderRadius: BorderRadius.circular(999),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: Colors.white.withOpacity(0.12)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedBuilder(
-                    animation: _pulseAnimation,
-                    builder: (context, child) {
-                      return Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: cAccent.withOpacity(_pulseAnimation.value),
-                          boxShadow: [
-                            BoxShadow(
-                              color: cAccent.withOpacity(_pulseAnimation.value * 0.6),
-                              blurRadius: 6,
-                              spreadRadius: 1,
+        Flexible(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: Colors.white.withOpacity(0.12)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedBuilder(
+                        animation: _pulseAnimation,
+                        builder: (context, child) {
+                          return Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: cAccent.withOpacity(_pulseAnimation.value),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: cAccent.withOpacity(_pulseAnimation.value * 0.6),
+                                  blurRadius: 4,
+                                  spreadRadius: 1,
+                                ),
+                              ],
                             ),
-                          ],
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          _isEnglish ? 'OFFICIAL NETWORK' : 'RESMİ KAMU AĞI',
+                          style: const TextStyle(
+                            color: cText,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.3,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _isEnglish ? 'OFFICIAL PUBLIC NETWORK' : 'RESMİ KAMU AĞI',
-                    style: const TextStyle(
-                      color: cText,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
         ),
+
+        const Spacer(),
 
         // Dil Seçici (TR / EN)
         ClipRRect(
@@ -910,7 +919,7 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
-              padding: const EdgeInsets.all(3),
+              padding: const EdgeInsets.all(2.5),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.06),
                 borderRadius: BorderRadius.circular(999),
