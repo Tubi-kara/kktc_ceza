@@ -2506,9 +2506,7 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
 
         final int numTiles = 1 << intZoom;
         final bool isKoyuHarita = KktcTemaServisi().isKoyuAktif;
-        final String template = (isKoyuHarita && _mapStyleIndex == 0)
-            ? 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
-            : _tileProviders[_mapStyleIndex];
+        final String template = _tileProviders[_mapStyleIndex];
 
         return GestureDetector(
           onScaleStart: (details) {
@@ -2568,15 +2566,33 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                           top: height / 2.0 + (ty - centerTileY) * tileSize,
                           width: tileSize + 0.6,
                           height: tileSize + 0.6,
-                          child: Image.network(
-                            template
-                                .replaceAll('{z}', '$intZoom')
-                                .replaceAll('{x}', '${((tx % numTiles) + numTiles) % numTiles}')
-                                .replaceAll('{y}', '$ty'),
-                            headers: const {'User-Agent': 'KktcTrafikCezaRadar/1.0'},
-                            fit: BoxFit.fill,
-                            errorBuilder: (c, e, s) => const SizedBox.shrink(),
-                          ),
+                          child: (isKoyuHarita && _mapStyleIndex == 0)
+                              ? ColorFiltered(
+                                  colorFilter: const ColorFilter.matrix([
+                                    -0.82, 0, 0, 0, 225,
+                                    0, -0.82, 0, 0, 225,
+                                    0, 0, -0.82, 0, 225,
+                                    0, 0, 0, 1, 0,
+                                  ]),
+                                  child: Image.network(
+                                    template
+                                        .replaceAll('{z}', '$intZoom')
+                                        .replaceAll('{x}', '${((tx % numTiles) + numTiles) % numTiles}')
+                                        .replaceAll('{y}', '$ty'),
+                                    headers: const {'User-Agent': 'KktcTrafikCezaRadar/1.0'},
+                                    fit: BoxFit.fill,
+                                    errorBuilder: (c, e, s) => const SizedBox.shrink(),
+                                  ),
+                                )
+                              : Image.network(
+                                  template
+                                      .replaceAll('{z}', '$intZoom')
+                                      .replaceAll('{x}', '${((tx % numTiles) + numTiles) % numTiles}')
+                                      .replaceAll('{y}', '$ty'),
+                                  headers: const {'User-Agent': 'KktcTrafikCezaRadar/1.0'},
+                                  fit: BoxFit.fill,
+                                  errorBuilder: (c, e, s) => const SizedBox.shrink(),
+                                ),
                         ),
 
                   // 3. OPENSTREETMAP ŞEHİR İSİM ROZETLERİ (Zoom seviyesine göre akıllı filtreleme)
