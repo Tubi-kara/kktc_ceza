@@ -52,6 +52,12 @@ class _KktcETrafikDashboardSayfasiState
     with SingleTickerProviderStateMixin {
   // Renk Paleti (HTML tasarımındaki tokenlar ile birebir & Koyu Tema Uyumlu)
   static const Color cNavy = Color(0xFF010E3C);
+  // 🌙 Koyu tema uyumlu dinamik metin & yüzey renkleri
+  Color get cInk => KktcTemaServisi().isKoyu(context) ? const Color(0xFFF1F5F9) : cNavy;
+  Color get cSurface => KktcTemaServisi().isKoyu(context) ? const Color(0xFF151D30) : Colors.white;
+  Color get cSoftSurface => KktcTemaServisi().isKoyu(context) ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
+  Color get cMuted => KktcTemaServisi().isKoyu(context) ? const Color(0xFF94A3B8) : cSlate;
+  Color get cLine => KktcTemaServisi().isKoyu(context) ? const Color(0xFF243048) : const Color(0xFFE2E8F0);
   static const Color cSlate = Color(0xFF747675);
   Color get cSoft => KktcTemaServisi().isKoyu(context) ? const Color(0xFF243048) : const Color(0xFFE3E3E3);
   Color get cBg => KktcTemaServisi().isKoyu(context) ? const Color(0xFF0F172A) : const Color(0xFFF4F5F7);
@@ -292,26 +298,26 @@ class _KktcETrafikDashboardSayfasiState
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: cSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           title,
-          style: const TextStyle(
-            color: cNavy,
+          style: TextStyle(
+            color: cInk,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
         content: Text(
           message,
-          style: const TextStyle(color: cSlate, fontSize: 14),
+          style: TextStyle(color: cMuted, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
+            child: Text(
               'Tamam',
-              style: TextStyle(color: cNavy, fontWeight: FontWeight.bold),
+              style: TextStyle(color: cInk, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -448,9 +454,9 @@ class _KktcETrafikDashboardSayfasiState
   Widget _buildDashboardLiveMapCard() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cSurface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: cLine),
         boxShadow: [
           BoxShadow(
             color: cNavy.withOpacity(0.06),
@@ -497,23 +503,23 @@ class _KktcETrafikDashboardSayfasiState
                             ),
                           ),
                           const SizedBox(width: 5),
-                          const Text(
+                          Text(
                             'CANLI KKTC TRAFİK & RADAR',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.5,
-                              color: cSlate,
+                              color: cMuted,
                             ),
                           ),
                         ],
                       ),
-                      const Text(
+                      Text(
                         'Canlı Yol & Harita',
                         style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
-                          color: cNavy,
+                          color: cInk,
                         ),
                       ),
                     ],
@@ -533,17 +539,17 @@ class _KktcETrafikDashboardSayfasiState
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: cNavy.withOpacity(0.12)),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.fullscreen_rounded, size: 16, color: cNavy),
+                      Icon(Icons.fullscreen_rounded, size: 16, color: cInk),
                       SizedBox(width: 4),
                       Text(
                         'Tam Ekran',
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w700,
-                          color: cNavy,
+                          color: cInk,
                         ),
                       ),
                     ],
@@ -632,7 +638,7 @@ class _KktcETrafikDashboardSayfasiState
                               ),
                             ],
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.camera_alt_rounded, size: 12, color: Color(0xFFE11D48)),
@@ -642,7 +648,7 @@ class _KktcETrafikDashboardSayfasiState
                                 style: TextStyle(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.w800,
-                                  color: cNavy,
+                                  color: cInk,
                                 ),
                               ),
                               SizedBox(width: 6),
@@ -655,7 +661,7 @@ class _KktcETrafikDashboardSayfasiState
                                 style: TextStyle(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.w800,
-                                  color: cNavy,
+                                  color: cInk,
                                 ),
                               ),
                             ],
@@ -702,7 +708,7 @@ class _KktcETrafikDashboardSayfasiState
               ),
             ],
           ),
-          child: Icon(icon, size: 16, color: iconColor ?? cNavy),
+          child: Icon(icon, size: 16, color: iconColor ?? cInk),
         ),
       ),
     );
@@ -739,8 +745,8 @@ class _KktcETrafikDashboardSayfasiState
             padding: EdgeInsets.only(bottom: bottomInset),
             child: Container(
               height: MediaQuery.of(ctx).size.height * 0.70,
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: cSurface,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Column(
@@ -759,15 +765,15 @@ class _KktcETrafikDashboardSayfasiState
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                     child: Row(
                       children: [
-                        const Icon(Icons.search_rounded, color: cNavy, size: 22),
+                        Icon(Icons.search_rounded, color: cInk, size: 22),
                         const SizedBox(width: 8),
-                        const Expanded(
+                        Expanded(
                           child: Text(
                             'Konum Ara',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
-                              color: cNavy,
+                              color: cInk,
                             ),
                           ),
                         ),
@@ -783,9 +789,9 @@ class _KktcETrafikDashboardSayfasiState
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
+                        color: cSoftSurface,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(color: cLine),
                       ),
                       child: TextField(
                         controller: aramaCtrl,
@@ -966,7 +972,7 @@ class _KktcETrafikDashboardSayfasiState
                                 ),
                                 trailing: Text(
                                   poi.mesafe,
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cNavy),
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: cInk),
                                 ),
                                 onTap: () {
                                   Navigator.pop(ctx);
@@ -1000,7 +1006,7 @@ class _KktcETrafikDashboardSayfasiState
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: cSurface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: cSoft),
             boxShadow: [
@@ -1013,13 +1019,13 @@ class _KktcETrafikDashboardSayfasiState
           ),
           child: Row(
             children: [
-              const Icon(Icons.search_rounded, size: 20, color: cSlate),
+              Icon(Icons.search_rounded, size: 20, color: cMuted),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Ceza, radar veya kanun maddesi ara...',
                   style: TextStyle(
-                    color: cSlate,
+                    color: cMuted,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
@@ -1032,12 +1038,12 @@ class _KktcETrafikDashboardSayfasiState
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: cSoft),
                 ),
-                child: const Text(
+                child: Text(
                   '2026',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
-                    color: cNavy,
+                    color: cInk,
                   ),
                 ),
               ),
@@ -1098,7 +1104,7 @@ class _KktcETrafikDashboardSayfasiState
               Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cSurface,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: Colors.black.withOpacity(0.08)),
                   boxShadow: [
@@ -1436,7 +1442,7 @@ class _KktcETrafikDashboardSayfasiState
               const SizedBox(height: 6),
               FloatingActionButton.small(
                 heroTag: 'map_poi_kktc',
-                backgroundColor: cNavy,
+                backgroundColor: cInk,
                 elevation: 4,
                 onPressed: () => _haritaOsmKey.currentState?.centerOnKktc(),
                 child: const Icon(Icons.center_focus_strong_rounded, color: cLime, size: 20),
@@ -1488,8 +1494,8 @@ class _KktcETrafikDashboardSayfasiState
 
             return Container(
               height: MediaQuery.of(context).size.height * 0.90,
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: cSurface,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: ClipRRect(
@@ -1527,7 +1533,7 @@ class _KktcETrafikDashboardSayfasiState
                             height: 52,
                             padding: const EdgeInsets.symmetric(horizontal: 14),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: cSurface,
                               borderRadius: BorderRadius.circular(26),
                               border: Border.all(color: Colors.black.withOpacity(0.08)),
                               boxShadow: [
@@ -1697,7 +1703,7 @@ class _KktcETrafikDashboardSayfasiState
                           const SizedBox(height: 6),
                           FloatingActionButton.small(
                             heroTag: 'yf_kktc',
-                            backgroundColor: cNavy,
+                            backgroundColor: cInk,
                             elevation: 4,
                             onPressed: () => _yolForumOsmKey.currentState?.centerOnKktc(),
                             child: const Icon(Icons.center_focus_strong_rounded, color: cLime, size: 20),
@@ -1730,7 +1736,7 @@ class _KktcETrafikDashboardSayfasiState
                                   width: 140,
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: cSurface,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(color: const Color(0xFF2563EB).withOpacity(0.3), width: 1.5),
                                     boxShadow: [
@@ -1772,7 +1778,7 @@ class _KktcETrafikDashboardSayfasiState
                                 width: 250,
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: cSurface,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(color: Colors.black.withOpacity(0.08)),
                                   boxShadow: [
@@ -1826,7 +1832,7 @@ class _KktcETrafikDashboardSayfasiState
                                               Container(
                                                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                                                 decoration: BoxDecoration(
-                                                  color: const Color(0xFFF1F5F9),
+                                                  color: cSoftSurface,
                                                   borderRadius: BorderRadius.circular(4),
                                                 ),
                                                 child: Text(
@@ -1890,7 +1896,7 @@ class _KktcETrafikDashboardSayfasiState
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
             decoration: BoxDecoration(
-              color: isSelected ? renk : Colors.white,
+              color: isSelected ? renk : cSurface,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: isSelected ? renk : Colors.black.withOpacity(0.08),
@@ -1943,8 +1949,8 @@ class _KktcETrafikDashboardSayfasiState
           builder: (context, setModalState) {
             return Container(
               height: MediaQuery.of(context).size.height * 0.58,
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: cSurface,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 boxShadow: [
                   BoxShadow(
@@ -2062,9 +2068,9 @@ class _KktcETrafikDashboardSayfasiState
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
+                            color: cSoftSurface,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(color: cLine),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -2206,9 +2212,9 @@ class _KktcETrafikDashboardSayfasiState
                               return Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF8FAFC),
+                                  color: cSoftSurface,
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                  border: Border.all(color: cLine),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2291,7 +2297,7 @@ class _KktcETrafikDashboardSayfasiState
                       bottom: MediaQuery.of(context).viewInsets.bottom + 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cSurface,
                       border: Border(top: BorderSide(color: Colors.grey.shade200)),
                     ),
                     child: Row(
@@ -2301,9 +2307,9 @@ class _KktcETrafikDashboardSayfasiState
                             height: 40,
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
+                              color: cSoftSurface,
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border: Border.all(color: cLine),
                             ),
                             child: TextField(
                               controller: yorumController,
@@ -2402,8 +2408,8 @@ class _KktcETrafikDashboardSayfasiState
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom + 16,
               ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: cSurface,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 boxShadow: [
                   BoxShadow(
@@ -2700,7 +2706,7 @@ class _KktcETrafikDashboardSayfasiState
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
+                                  color: cSoftSurface,
                                   borderRadius: BorderRadius.circular(15),
                                   border: Border.all(color: const Color(0xFFCBD5E1)),
                                 ),
@@ -2732,7 +2738,7 @@ class _KktcETrafikDashboardSayfasiState
                       height: 42,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
+                        color: cSoftSurface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: const Color(0xFFCBD5E1)),
                       ),
@@ -2765,7 +2771,7 @@ class _KktcETrafikDashboardSayfasiState
                       height: 42,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
+                        color: cSoftSurface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: const Color(0xFFCBD5E1)),
                       ),
@@ -2883,7 +2889,7 @@ class _KktcETrafikDashboardSayfasiState
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
         decoration: BoxDecoration(
-          color: isSelected ? tip.acikRenk : const Color(0xFFF8FAFC),
+          color: isSelected ? tip.acikRenk : cSoftSurface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? tip.anaRenk : const Color(0xFFE2E8F0),
@@ -2905,7 +2911,7 @@ class _KktcETrafikDashboardSayfasiState
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: isSelected ? tip.anaRenk : Colors.white,
+                color: isSelected ? tip.anaRenk : cSurface,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isSelected ? Colors.white : tip.kenarRenk,
@@ -2961,7 +2967,7 @@ class _KktcETrafikDashboardSayfasiState
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 6),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cSurface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: color.withOpacity(0.35), width: 1.2),
           boxShadow: [
@@ -3038,7 +3044,7 @@ class _KktcETrafikDashboardSayfasiState
     final fiyatlar = _akaryakitServisi.fiyatlar;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cSurface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.black.withOpacity(0.08)),
         boxShadow: [
@@ -3068,7 +3074,7 @@ class _KktcETrafikDashboardSayfasiState
                 ),
               ),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -3077,7 +3083,7 @@ class _KktcETrafikDashboardSayfasiState
                       style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w800,
-                        color: cNavy,
+                        color: cInk,
                         letterSpacing: 0.3,
                       ),
                     ),
@@ -3085,7 +3091,7 @@ class _KktcETrafikDashboardSayfasiState
                       'Bakanlar Kurulu / Resmi Gazete Azami Tavan Tarifesi',
                       style: TextStyle(
                         fontSize: 9,
-                        color: cSlate,
+                        color: cMuted,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -3093,10 +3099,10 @@ class _KktcETrafikDashboardSayfasiState
                 ),
               ),
               if (_akaryakitServisi.yukleniyor)
-                const SizedBox(
+                SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: cNavy),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: cInk),
                 )
               else
                 InkWell(
@@ -3184,7 +3190,7 @@ class _KktcETrafikDashboardSayfasiState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: vurgulu ? const Color(0xFF047857).withOpacity(0.1) : const Color(0xFFF1F5F9),
+        color: vurgulu ? const Color(0xFF047857).withOpacity(0.1) : cSoftSurface,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: vurgulu ? const Color(0xFF10B981).withOpacity(0.35) : const Color(0xFFE2E8F0),
@@ -3206,7 +3212,7 @@ class _KktcETrafikDashboardSayfasiState
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w900,
-              color: vurgulu ? const Color(0xFF065F46) : cNavy,
+              color: vurgulu ? const Color(0xFF065F46) : cInk,
             ),
           ),
         ],
@@ -3226,7 +3232,7 @@ class _KktcETrafikDashboardSayfasiState
     return Container(
       margin: const EdgeInsets.only(right: 7),
       child: Material(
-        color: isSelected ? cNavy : Colors.white,
+        color: isSelected ? cNavy : cSurface,
         borderRadius: BorderRadius.circular(99),
         elevation: isSelected ? 4 : 2,
         shadowColor: isSelected ? cNavy.withOpacity(0.4) : Colors.black.withOpacity(0.12),
@@ -3268,10 +3274,10 @@ class _KktcETrafikDashboardSayfasiState
         ),
         child: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
-            color: cNavy,
+            color: cInk,
           ),
         ),
       ),
@@ -3283,7 +3289,7 @@ class _KktcETrafikDashboardSayfasiState
     return Container(
       margin: const EdgeInsets.only(left: 0, right: 0, bottom: 0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cSurface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
@@ -3334,10 +3340,10 @@ class _KktcETrafikDashboardSayfasiState
                         children: [
                           Text(
                             poi.ad,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w800,
-                              color: cNavy,
+                              color: cInk,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -3379,7 +3385,7 @@ class _KktcETrafikDashboardSayfasiState
                         width: 30,
                         height: 30,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
+                          color: cSoftSurface,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Icons.close_rounded, size: 16, color: Colors.grey),
@@ -3413,12 +3419,12 @@ class _KktcETrafikDashboardSayfasiState
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'Akaryakıt',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: cNavy,
+                          color: cInk,
                         ),
                       ),
                       const SizedBox(width: 5),
@@ -3470,14 +3476,14 @@ class _KktcETrafikDashboardSayfasiState
                             color: cNavy.withValues(alpha: 0.06),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.refresh_rounded, size: 12, color: cNavy),
+                              Icon(Icons.refresh_rounded, size: 12, color: cInk),
                               SizedBox(width: 3),
                               Text(
                                 'Yenile',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: cNavy),
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: cInk),
                               ),
                             ],
                           ),
@@ -3518,7 +3524,7 @@ class _KktcETrafikDashboardSayfasiState
                                 e.key,
                                 style: TextStyle(
                                   fontSize: 9.5,
-                                  color: isMotorin ? const Color(0xFF047857) : cNavy,
+                                  color: isMotorin ? const Color(0xFF047857) : cInk,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -3526,7 +3532,7 @@ class _KktcETrafikDashboardSayfasiState
                                 e.value,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: isMotorin ? const Color(0xFF065F46) : cNavy,
+                                  color: isMotorin ? const Color(0xFF065F46) : cInk,
                                   fontWeight: FontWeight.w900,
                                 ),
                               ),
@@ -3547,9 +3553,9 @@ class _KktcETrafikDashboardSayfasiState
                     children: poi.olanaklar.map((o) => Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: cSoftSurface,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade200),
+                        border: Border.all(color: cLine),
                       ),
                       child: Text(
                         o,
@@ -3638,9 +3644,9 @@ class _KktcETrafikDashboardSayfasiState
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
+                          color: cSoftSurface,
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: cLine),
                         ),
                         child: const Center(
                           child: Icon(Icons.close_rounded, color: Colors.grey, size: 20),
@@ -3668,7 +3674,7 @@ class _KktcETrafikDashboardSayfasiState
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cSurface,
         shape: BoxShape.circle,
         border: Border.all(color: Colors.black.withOpacity(0.08)),
         boxShadow: [
@@ -3695,7 +3701,7 @@ class _KktcETrafikDashboardSayfasiState
   void _showHaritaKatmaniSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: cSurface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) {
         return SafeArea(
@@ -3705,9 +3711,9 @@ class _KktcETrafikDashboardSayfasiState
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Harita Katmanı Seçin',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: cNavy),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: cInk),
                 ),
                 const SizedBox(height: 14),
                 ListTile(
@@ -3787,9 +3793,9 @@ class _KktcETrafikDashboardSayfasiState
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cSurface,
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE8ECF2)),
+                      border: Border.all(color: cLine),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.04),
@@ -3798,7 +3804,7 @@ class _KktcETrafikDashboardSayfasiState
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: cNavy),
+                    child: Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: cInk),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -3816,24 +3822,24 @@ class _KktcETrafikDashboardSayfasiState
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Text(
+                        Text(
                           'KKTC CANLI TRAFİK',
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.8,
-                            color: cSlate,
+                            color: cMuted,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 2),
-                    const Text(
+                    Text(
                       'Radarlar & Kameralar',
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w800,
-                        color: cNavy,
+                        color: cInk,
                         letterSpacing: -0.3,
                       ),
                     ),
@@ -3852,7 +3858,7 @@ class _KktcETrafikDashboardSayfasiState
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cSurface,
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
                     color: _sesliUyariAcik ? const Color(0xFFD1FAE5) : const Color(0xFFE2E8F0),
@@ -3871,7 +3877,7 @@ class _KktcETrafikDashboardSayfasiState
                     Icon(
                       _sesliUyariAcik ? Icons.volume_up_rounded : Icons.volume_off_rounded,
                       size: 16,
-                      color: _sesliUyariAcik ? const Color(0xFF059669) : cSlate,
+                      color: _sesliUyariAcik ? const Color(0xFF059669) : cMuted,
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -3879,7 +3885,7 @@ class _KktcETrafikDashboardSayfasiState
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
-                        color: _sesliUyariAcik ? const Color(0xFF059669) : cSlate,
+                        color: _sesliUyariAcik ? const Color(0xFF059669) : cMuted,
                       ),
                     ),
                   ],
@@ -3918,9 +3924,9 @@ class _KktcETrafikDashboardSayfasiState
                   ],
                 ),
                 const SizedBox(width: 6),
-                const Text(
+                Text(
                   'Hassas GPS Sinyali Aktif',
-                  style: TextStyle(fontSize: 12, color: cSlate, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 12, color: cMuted, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -3951,9 +3957,9 @@ class _KktcETrafikDashboardSayfasiState
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cSurface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE8ECF2)),
+        border: Border.all(color: cLine),
         boxShadow: [
           BoxShadow(
             color: cNavy.withOpacity(0.04),
@@ -3976,12 +3982,12 @@ class _KktcETrafikDashboardSayfasiState
                     Icon(
                       _radarHaritaModu == 1 ? Icons.public_rounded : Icons.near_me_rounded,
                       size: 16,
-                      color: _radarHaritaModu == 1 ? const Color(0xFF10B981) : cNavy,
+                      color: _radarHaritaModu == 1 ? const Color(0xFF10B981) : cInk,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       _radarHaritaModu == 1 ? 'Canlı OpenStreetMap & GPS' : 'Lefkoşa - Girne Çevre Yolu',
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5, color: cNavy),
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5, color: cInk),
                     ),
                   ],
                 ),
@@ -3989,9 +3995,9 @@ class _KktcETrafikDashboardSayfasiState
                 Container(
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
+                    color: cSoftSurface,
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: cLine),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -4013,7 +4019,7 @@ class _KktcETrafikDashboardSayfasiState
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: _radarHaritaModu == 1 ? Colors.white : cSlate,
+                              color: _radarHaritaModu == 1 ? Colors.white : cMuted,
                             ),
                           ),
                         ),
@@ -4035,7 +4041,7 @@ class _KktcETrafikDashboardSayfasiState
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: _radarHaritaModu == 0 ? Colors.white : cSlate,
+                              color: _radarHaritaModu == 0 ? Colors.white : cMuted,
                             ),
                           ),
                         ),
@@ -4242,7 +4248,7 @@ class _KktcETrafikDashboardSayfasiState
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.92),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                                border: Border.all(color: cLine),
                                 boxShadow: [
                                   BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 6, offset: const Offset(0, 2)),
                                 ],
@@ -4250,30 +4256,30 @@ class _KktcETrafikDashboardSayfasiState
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'HIZINIZ',
                                     style: TextStyle(
                                       fontSize: 8.5,
                                       fontWeight: FontWeight.w900,
-                                      color: cSlate,
+                                      color: cMuted,
                                       letterSpacing: 0.5,
                                     ),
                                   ),
                                   Row(
                                     crossAxisAlignment: CrossAxisAlignment.baseline,
                                     textBaseline: TextBaseline.alphabetic,
-                                    children: const [
+                                    children: [
                                       Text(
                                         '68',
                                         style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w900,
-                                          color: cNavy,
+                                          color: cInk,
                                           height: 1,
                                         ),
                                       ),
                                       SizedBox(width: 2),
-                                      Text('km/s', style: TextStyle(fontSize: 9, color: cSlate, fontWeight: FontWeight.bold)),
+                                      Text('km/s', style: TextStyle(fontSize: 9, color: cMuted, fontWeight: FontWeight.bold)),
                                     ],
                                   ),
                                 ],
@@ -4288,7 +4294,7 @@ class _KktcETrafikDashboardSayfasiState
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: cSurface,
                             shape: BoxShape.circle,
                             border: Border.all(color: const Color(0xFFEF4444), width: 3.5),
                             boxShadow: [
@@ -4301,7 +4307,7 @@ class _KktcETrafikDashboardSayfasiState
                               const Text('LİMİT', style: TextStyle(fontSize: 7.5, fontWeight: FontWeight.w900, color: Color(0xFF334155), height: 1)),
                               Text(
                                 '${(_seciliRadarKamerasi ?? kktcRadarListesi.first).hizLimiti}',
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: cNavy, height: 1.1),
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: cInk, height: 1.1),
                               ),
                             ],
                           ),
@@ -4341,13 +4347,13 @@ class _KktcETrafikDashboardSayfasiState
                             _seciliRadarKamerasi != null
                                 ? 'Seçili: ${_seciliRadarKamerasi!.ad}'
                                 : 'En Yakın: Gönyeli Çemberi',
-                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5, color: cNavy),
+                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5, color: cInk),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             'Kamera: ${(_seciliRadarKamerasi ?? kktcRadarListesi.first).mesafe} • Limit: ${(_seciliRadarKamerasi ?? kktcRadarListesi.first).hizLimiti} km/s',
-                            style: const TextStyle(fontSize: 11, color: cSlate),
+                            style: TextStyle(fontSize: 11, color: cMuted),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -4472,7 +4478,7 @@ class _KktcETrafikDashboardSayfasiState
               BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 1)),
             ],
           ),
-          child: Icon(icon, size: 16, color: cNavy),
+          child: Icon(icon, size: 16, color: cInk),
         ),
       ),
     );
@@ -4507,7 +4513,7 @@ class _KktcETrafikDashboardSayfasiState
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? cNavy : Colors.white,
+                  color: isSelected ? cNavy : cSurface,
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
                     color: isSelected ? cNavy : const Color(0xFFE8ECF2),
@@ -4527,7 +4533,7 @@ class _KktcETrafikDashboardSayfasiState
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                    color: isSelected ? Colors.white : cNavy,
+                    color: isSelected ? Colors.white : cInk,
                   ),
                 ),
               ),
@@ -4710,10 +4716,10 @@ class _KktcETrafikDashboardSayfasiState
                 const SizedBox(width: 6),
                 Text(
                   _radarFiltreIndex == 5 ? 'MOBİL ÇEVİRME NOKTALARI' : 'GÜZERGAHTAKİ SABİT RADARLAR',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
-                    color: cSlate,
+                    color: cMuted,
                     letterSpacing: 0.6,
                   ),
                 ),
@@ -4721,7 +4727,7 @@ class _KktcETrafikDashboardSayfasiState
             ),
             Text(
               '${displayedRadars.length} Kayıt',
-              style: const TextStyle(fontSize: 11, color: cSlate, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 11, color: cMuted, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -4786,7 +4792,7 @@ class _KktcETrafikDashboardSayfasiState
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cSurface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isWarning ? const Color(0xFFFCD34D) : const Color(0xFFE8ECF2),
@@ -4807,7 +4813,7 @@ class _KktcETrafikDashboardSayfasiState
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: hizKutuRengi ?? (isWarning ? const Color(0xFFFEF3C7) : const Color(0xFFF1F5F9)),
+                color: hizKutuRengi ?? (isWarning ? const Color(0xFFFEF3C7) : cSoftSurface),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: isWarning ? const Color(0xFFFDE68A) : const Color(0xFFE2E8F0),
@@ -4821,7 +4827,7 @@ class _KktcETrafikDashboardSayfasiState
                     style: TextStyle(
                       fontSize: 8.5,
                       fontWeight: FontWeight.w900,
-                      color: hizYaziRengi ?? (isWarning ? const Color(0xFFB45309) : cSlate),
+                      color: hizYaziRengi ?? (isWarning ? const Color(0xFFB45309) : cMuted),
                       height: 1,
                     ),
                   ),
@@ -4831,7 +4837,7 @@ class _KktcETrafikDashboardSayfasiState
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
-                      color: hizYaziRengi ?? (isWarning ? const Color(0xFF92400E) : cNavy),
+                      color: hizYaziRengi ?? (isWarning ? const Color(0xFF92400E) : cInk),
                       height: 1,
                     ),
                   ),
@@ -4850,7 +4856,7 @@ class _KktcETrafikDashboardSayfasiState
                       Expanded(
                         child: Text(
                           radarAdi,
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: cNavy),
+                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: cInk),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -4859,7 +4865,7 @@ class _KktcETrafikDashboardSayfasiState
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                         decoration: BoxDecoration(
-                          color: isPulsingDistance ? const Color(0xFFFEE2E8) : const Color(0xFFF1F5F9),
+                          color: isPulsingDistance ? const Color(0xFFFEE2E8) : cSoftSurface,
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
@@ -4867,7 +4873,7 @@ class _KktcETrafikDashboardSayfasiState
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
-                            color: isPulsingDistance ? const Color(0xFFB91C1C) : cSlate,
+                            color: isPulsingDistance ? const Color(0xFFB91C1C) : cMuted,
                           ),
                         ),
                       ),
@@ -4876,7 +4882,7 @@ class _KktcETrafikDashboardSayfasiState
                   const SizedBox(height: 3),
                   Text(
                     guzergah,
-                    style: const TextStyle(fontSize: 11, color: cSlate),
+                    style: TextStyle(fontSize: 11, color: cMuted),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -4894,7 +4900,7 @@ class _KktcETrafikDashboardSayfasiState
                       const SizedBox(width: 6),
                       Text(
                         'Tolerans: $tolerans',
-                        style: const TextStyle(fontSize: 10, color: cSlate),
+                        style: TextStyle(fontSize: 10, color: cMuted),
                       ),
                     ],
                   ),
@@ -4934,9 +4940,9 @@ class _KktcETrafikDashboardSayfasiState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cSurface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE8ECF2)),
+        border: Border.all(color: cLine),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -4963,19 +4969,19 @@ class _KktcETrafikDashboardSayfasiState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'KKTC RADAR HIZ TOLERANS & CEZA BİLGİSİ',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
-                    color: cNavy,
+                    color: cInk,
                     letterSpacing: 0.4,
                   ),
                 ),
                 const SizedBox(height: 5),
-                const Text(
+                Text(
                   'Sabit hız radarlarında yasal hız limitine +%10 tolerans uygulanır. Hız aşımı cezaları KKTC brüt asgari ücret katsayısına ve aşım oranına göre (5 ila 25 ceza puanı) işlenmektedir.',
-                  style: TextStyle(fontSize: 11.5, color: cSlate, height: 1.4),
+                  style: TextStyle(fontSize: 11.5, color: cMuted, height: 1.4),
                 ),
                 const SizedBox(height: 8),
                 InkWell(
@@ -5011,7 +5017,7 @@ class _KktcETrafikDashboardSayfasiState
     HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: cSurface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(22),
@@ -5025,7 +5031,7 @@ class _KktcETrafikDashboardSayfasiState
                 Expanded(
                   child: Text(
                     radarAdi,
-                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: cNavy),
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: cInk),
                   ),
                 ),
                 IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close)),
@@ -5113,8 +5119,8 @@ class _KktcETrafikDashboardSayfasiState
               width: double.infinity,
               child: OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: cNavy,
-                  side: const BorderSide(color: cNavy, width: 1.5),
+                  foregroundColor: cInk,
+                  side: BorderSide(color: cInk, width: 1.5),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
@@ -5149,11 +5155,11 @@ class _KktcETrafikDashboardSayfasiState
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: cSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
+        title: Text(
           'KKTC Hız Cezaları Tarifesi',
-          style: TextStyle(fontWeight: FontWeight.w800, color: cNavy, fontSize: 17),
+          style: TextStyle(fontWeight: FontWeight.w800, color: cInk, fontSize: 17),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -5165,16 +5171,16 @@ class _KktcETrafikDashboardSayfasiState
             const Divider(height: 16),
             _buildInfoRow('41 km/s ve Üzeri:', '₺7.400,00 (25 Puan)'),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               '* Yasal hız limitinin %10\'una kadar tolerans tanınır. 15 gün içerisinde ödenen cezalarda %30 indirim uygulanır.',
-              style: TextStyle(fontSize: 11.5, color: cSlate),
+              style: TextStyle(fontSize: 11.5, color: cMuted),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Anladım', style: TextStyle(fontWeight: FontWeight.bold, color: cNavy)),
+            child: Text('Anladım', style: TextStyle(fontWeight: FontWeight.bold, color: cInk)),
           ),
         ],
       ),
@@ -5191,7 +5197,7 @@ class _KktcETrafikDashboardSayfasiState
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: cSurface,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: cSoft),
             boxShadow: [
@@ -5212,29 +5218,29 @@ class _KktcETrafikDashboardSayfasiState
                   color: cNavy.withOpacity(0.06),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.lock_rounded,
                   size: 32,
-                  color: cNavy,
+                  color: cInk,
                 ),
               ),
               const SizedBox(height: 18),
-              const Text(
+              Text(
                 'Giriş Yapılması Gerekiyor',
                 style: TextStyle(
                   fontSize: 19,
                   fontWeight: FontWeight.w900,
-                  color: cNavy,
+                  color: cInk,
                   letterSpacing: -0.3,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Kişisel radar cezalarınızı, seyrüsefer harçlarınızı, fenni muayene ve araç sigorta dökümlerinizi görüntülemek için KKTC Kimlik veya Ehliyet numaranız ile giriş yapmalısınız.',
                 style: TextStyle(
                   fontSize: 13,
-                  color: cSlate,
+                  color: cMuted,
                   height: 1.45,
                 ),
                 textAlign: TextAlign.center,
@@ -5277,12 +5283,12 @@ class _KktcETrafikDashboardSayfasiState
                 onPressed: () {
                   setState(() => _selectedTabIndex = 0);
                 },
-                child: const Text(
+                child: Text(
                   'Ana Panele Geri Dön',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: cSlate,
+                    color: cMuted,
                   ),
                 ),
               ),
@@ -5304,12 +5310,12 @@ class _KktcETrafikDashboardSayfasiState
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Cezalar & Sigorta',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
-                    color: cNavy,
+                    color: cInk,
                     letterSpacing: -0.5,
                   ),
                 ),
@@ -5320,7 +5326,7 @@ class _KktcETrafikDashboardSayfasiState
                       : (_cezaSigortaSubTab == 1
                           ? 'Seyrüsefer Harcı & Ruhsat Durumu'
                           : 'Poliçeler & Fenni Muayene'),
-                  style: const TextStyle(fontSize: 12, color: cSlate),
+                  style: TextStyle(fontSize: 12, color: cMuted),
                 ),
               ],
             ),
@@ -5408,7 +5414,7 @@ class _KktcETrafikDashboardSayfasiState
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 8.5, horizontal: 2),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
+            color: isSelected ? cSurface : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             boxShadow: isSelected
                 ? [
@@ -5427,7 +5433,7 @@ class _KktcETrafikDashboardSayfasiState
               Icon(
                 icon,
                 size: 13.5,
-                color: isSelected ? cNavy : cSlate,
+                color: isSelected ? cInk : cMuted,
               ),
               const SizedBox(width: 3.5),
               Flexible(
@@ -5438,7 +5444,7 @@ class _KktcETrafikDashboardSayfasiState
                   style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                    color: isSelected ? cNavy : cSlate,
+                    color: isSelected ? cInk : cMuted,
                   ),
                 ),
               ),
@@ -5520,7 +5526,7 @@ class _KktcETrafikDashboardSayfasiState
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: cLime,
-                        foregroundColor: cNavy,
+                        foregroundColor: cInk,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -5601,30 +5607,30 @@ class _KktcETrafikDashboardSayfasiState
                           ),
                         ),
                       ),
-                      const Text(
+                      Text(
                         '18 Mayıs 2024 • 14:22',
-                        style: TextStyle(fontSize: 11, color: cSlate),
+                        style: TextStyle(fontSize: 11, color: cMuted),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  const Text(
+                  Text(
                     'Gönyeli Çemberi Radarı',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: cNavy,
+                      color: cInk,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     'Tespit Edilen Hız: 78 km/s (Yasal Limit: 65 km/s)',
-                    style: TextStyle(fontSize: 12.5, color: cSlate),
+                    style: TextStyle(fontSize: 12.5, color: cMuted),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     'Ceza Puanı: +10 Puan • Tebliğ No: PGM-2024-8841',
-                    style: TextStyle(fontSize: 11.5, color: cSlate),
+                    style: TextStyle(fontSize: 11.5, color: cMuted),
                   ),
                   const SizedBox(height: 12),
 
@@ -5690,10 +5696,10 @@ class _KktcETrafikDashboardSayfasiState
                                         color: cLime,
                                         borderRadius: BorderRadius.circular(4),
                                       ),
-                                      child: const Text(
+                                      child: Text(
                                         'KRİPTOLU DELİL',
                                         style: TextStyle(
-                                          color: cNavy,
+                                          color: cInk,
                                           fontSize: 8.5,
                                           fontWeight: FontWeight.w900,
                                         ),
@@ -5739,15 +5745,15 @@ class _KktcETrafikDashboardSayfasiState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       RichText(
-                        text: const TextSpan(
-                          style: TextStyle(fontSize: 12, color: cSlate),
+                        text: TextSpan(
+                          style: TextStyle(fontSize: 12, color: cMuted),
                           children: [
                             TextSpan(text: 'Tutar: '),
                             TextSpan(
                               text: '₺1.850,00',
                               style: TextStyle(
                                 fontFamily: 'monospace',
-                                color: cNavy,
+                                color: cInk,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w900,
                               ),
@@ -5759,8 +5765,8 @@ class _KktcETrafikDashboardSayfasiState
                         children: [
                           OutlinedButton.icon(
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: cNavy,
-                              side: const BorderSide(color: cNavy),
+                              foregroundColor: cInk,
+                              side: BorderSide(color: cInk),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                             ),
@@ -5846,12 +5852,12 @@ class _KktcETrafikDashboardSayfasiState
         const SizedBox(height: 20),
 
         // Ödenmiş Geçmiş Cezalar
-        const Text(
+        Text(
           'Ödenmiş Geçmiş Cezalar',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w800,
-            color: cNavy,
+            color: cInk,
           ),
         ),
         const SizedBox(height: 10),
@@ -5880,15 +5886,15 @@ class _KktcETrafikDashboardSayfasiState
                   const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Haspolat Çevre Yolu Radarı',
-                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: cNavy),
+                        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: cInk),
                       ),
                       SizedBox(height: 2),
                       Text(
                         '24 Ocak 2024 • #KKTC-2024-110294',
-                        style: TextStyle(fontSize: 11, color: cSlate),
+                        style: TextStyle(fontSize: 11, color: cMuted),
                       ),
                     ],
                   ),
@@ -5897,12 +5903,12 @@ class _KktcETrafikDashboardSayfasiState
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
+                  Text(
                     '₺1.200,00',
                     style: TextStyle(
                       fontFamily: 'monospace',
                       fontWeight: FontWeight.w900,
-                      color: cNavy,
+                      color: cInk,
                       fontSize: 13,
                     ),
                   ),
@@ -5932,7 +5938,7 @@ class _KktcETrafikDashboardSayfasiState
                         ),
                       );
                     },
-                    child: const Text('Makbuz', style: TextStyle(fontSize: 11, color: cNavy, fontWeight: FontWeight.bold)),
+                    child: Text('Makbuz', style: TextStyle(fontSize: 11, color: cInk, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -5949,7 +5955,7 @@ class _KktcETrafikDashboardSayfasiState
               padding: const EdgeInsets.symmetric(vertical: 12),
               side: const BorderSide(color: Color(0xFFCBD5E1)),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              foregroundColor: cNavy,
+              foregroundColor: cInk,
             ),
             onPressed: () {
               Navigator.push(
@@ -5996,22 +6002,22 @@ class _KktcETrafikDashboardSayfasiState
                         color: cNavy.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.directions_car_rounded, color: cNavy, size: 20),
+                      child: Icon(Icons.directions_car_rounded, color: cInk, size: 20),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             'RZ 123 • BMW 3.20i M-Sport',
-                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: cNavy),
+                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: cInk),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             'Şasi: WBA319084 • 2022 Model',
-                            style: TextStyle(fontSize: 10.5, color: cSlate),
+                            style: TextStyle(fontSize: 10.5, color: cMuted),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -6059,9 +6065,9 @@ class _KktcETrafikDashboardSayfasiState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Seyrüsefer Harcı Durumu',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cNavy),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cInk),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -6085,7 +6091,7 @@ class _KktcETrafikDashboardSayfasiState
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
+                  color: cSoftSurface,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Column(
@@ -6126,8 +6132,8 @@ class _KktcETrafikDashboardSayfasiState
                   const SizedBox(width: 8),
                   OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: cNavy,
-                      side: const BorderSide(color: cNavy),
+                      foregroundColor: cInk,
+                      side: BorderSide(color: cInk),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
                     ),
@@ -6166,12 +6172,12 @@ class _KktcETrafikDashboardSayfasiState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Dijital Araç Ruhsatı (Koçan)',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cNavy),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cInk),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.open_in_new_rounded, size: 18, color: cNavy),
+                    icon: Icon(Icons.open_in_new_rounded, size: 18, color: cInk),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -6188,9 +6194,9 @@ class _KktcETrafikDashboardSayfasiState
                 ],
               ),
               const SizedBox(height: 6),
-              const Text(
+              Text(
                 'KKTC Bayındırlık ve Ulaştırma Bakanlığı Trafik Dairesi onaylı resmi e-Ruhsat belgenizi barkodlu olarak görüntüleyebilirsiniz.',
-                style: TextStyle(fontSize: 12, color: cSlate),
+                style: TextStyle(fontSize: 12, color: cMuted),
               ),
             ],
           ),
@@ -6238,17 +6244,17 @@ class _KktcETrafikDashboardSayfasiState
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           'Zorunlu Trafik Sigortası',
-                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: cNavy),
+                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: cInk),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         SizedBox(height: 2),
                         Text(
                           'Dağlı Sigorta A.Ş. • #DGL-2026-TRF-9921',
-                          style: TextStyle(fontSize: 10.5, color: cSlate),
+                          style: TextStyle(fontSize: 10.5, color: cMuted),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -6270,9 +6276,9 @@ class _KktcETrafikDashboardSayfasiState
                 ],
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Poliçenizin son geçerlilik tarihi 14 Ekim 2026\'dır. Cezai duruma düşmemek için süresi dolmadan acenteniz ile yenileyiniz.',
-                style: TextStyle(fontSize: 12, color: cSlate),
+                style: TextStyle(fontSize: 12, color: cMuted),
               ),
               const SizedBox(height: 14),
               Row(
@@ -6324,17 +6330,17 @@ class _KktcETrafikDashboardSayfasiState
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           'Genişletilmiş Kasko',
-                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: cNavy),
+                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: cInk),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         SizedBox(height: 2),
                         Text(
                           'Kıbrıs Sigorta Koop. • #KSK-4102',
-                          style: TextStyle(fontSize: 10.5, color: cSlate),
+                          style: TextStyle(fontSize: 10.5, color: cMuted),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -6356,9 +6362,9 @@ class _KktcETrafikDashboardSayfasiState
                 ],
               ),
               const SizedBox(height: 10),
-              const Text(
+              Text(
                 'Tam Kapsamlı (Çarpma, Yangın, Çalınma, Ferdi Kaza, 7/24 Yol Yardım Dahil).',
-                style: TextStyle(fontSize: 12, color: cSlate),
+                style: TextStyle(fontSize: 12, color: cMuted),
               ),
             ],
           ),
@@ -6379,35 +6385,35 @@ class _KktcETrafikDashboardSayfasiState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Araç Fenni Muayene Takvimi',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cNavy),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: cInk),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
+                      color: cSoftSurface,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
+                    child: Text(
                       '48 GÜN KALDI',
-                      style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: cNavy),
+                      style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: cInk),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Son Muayene: 09 Mayıs 2026 • İstasyon: Lefkoşa Sanayi Muayene Şubesi',
-                style: TextStyle(fontSize: 12, color: cSlate),
+                style: TextStyle(fontSize: 12, color: cMuted),
               ),
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: cNavy,
-                    side: const BorderSide(color: cNavy),
+                    foregroundColor: cInk,
+                    side: BorderSide(color: cInk),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                   ),
@@ -6427,13 +6433,13 @@ class _KktcETrafikDashboardSayfasiState
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: const TextStyle(fontSize: 12.5, color: cSlate)),
+        Text(title, style: TextStyle(fontSize: 12.5, color: cMuted)),
         Text(
           val,
           style: TextStyle(
             fontSize: 13,
             fontWeight: isBold ? FontWeight.w900 : FontWeight.w700,
-            color: isBold ? cNavy : const Color(0xFF1E293B),
+            color: isBold ? cInk : const Color(0xFF1E293B),
             fontFamily: isBold ? 'monospace' : null,
           ),
         ),
@@ -6459,8 +6465,8 @@ class _KktcETrafikDashboardSayfasiState
         builder: (modalContext, setModalState) {
           return Container(
             height: MediaQuery.of(context).size.height * 0.88,
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: cSurface,
               borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: Column(
@@ -6482,7 +6488,7 @@ class _KktcETrafikDashboardSayfasiState
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
@@ -6490,18 +6496,18 @@ class _KktcETrafikDashboardSayfasiState
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
-                              color: cNavy,
+                              color: cInk,
                             ),
                           ),
                           Text(
                             'Tebliğ No: PGM-2024-8841 • KKTC Polis Gn. Md.',
-                            style: TextStyle(fontSize: 11, color: cSlate),
+                            style: TextStyle(fontSize: 11, color: cMuted),
                           ),
                         ],
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.close_rounded, color: cSlate),
+                        icon: Icon(Icons.close_rounded, color: cMuted),
                       ),
                     ],
                   ),
@@ -6576,10 +6582,10 @@ class _KktcETrafikDashboardSayfasiState
                                               color: cLime,
                                               borderRadius: BorderRadius.circular(6),
                                             ),
-                                            child: const Text(
+                                            child: Text(
                                               'KRİPTOLU DELİL',
                                               style: TextStyle(
-                                                color: cNavy,
+                                                color: cInk,
                                                 fontSize: 9,
                                                 fontWeight: FontWeight.w900,
                                               ),
@@ -6622,9 +6628,9 @@ class _KktcETrafikDashboardSayfasiState
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
+                            color: cSoftSurface,
                             borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(color: cLine),
                           ),
                           child: Column(
                             children: [
@@ -6660,9 +6666,9 @@ class _KktcETrafikDashboardSayfasiState
                         const SizedBox(height: 16),
 
                         // Ödeme Kartı Seçici
-                        const Text(
+                        Text(
                           'Ödeme Yöntemi Seçin',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: cNavy),
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: cInk),
                         ),
                         const SizedBox(height: 8),
 
@@ -6688,7 +6694,7 @@ class _KktcETrafikDashboardSayfasiState
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: cSurface,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.06),
@@ -6763,7 +6769,7 @@ class _KktcETrafikDashboardSayfasiState
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+          color: isSelected ? const Color(0xFFF0FDF4) : cSoftSurface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? cEmerald : const Color(0xFFCBD5E1),
@@ -6777,7 +6783,7 @@ class _KktcETrafikDashboardSayfasiState
               children: [
                 Icon(
                   isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-                  color: isSelected ? cEmerald : cSlate,
+                  color: isSelected ? cEmerald : cMuted,
                   size: 18,
                 ),
                 const SizedBox(width: 10),
@@ -6789,18 +6795,18 @@ class _KktcETrafikDashboardSayfasiState
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                        color: cNavy,
+                        color: cInk,
                       ),
                     ),
                     Text(
                       subtitle,
-                      style: const TextStyle(fontSize: 11, color: cSlate),
+                      style: TextStyle(fontSize: 11, color: cMuted),
                     ),
                   ],
                 ),
               ],
             ),
-            const Icon(Icons.credit_card_rounded, color: cNavy, size: 20),
+            Icon(Icons.credit_card_rounded, color: cInk, size: 20),
           ],
         ),
       ),
@@ -6811,7 +6817,7 @@ class _KktcETrafikDashboardSayfasiState
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: cSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -6826,19 +6832,19 @@ class _KktcETrafikDashboardSayfasiState
               child: const Icon(Icons.check_rounded, color: cEmerald, size: 36),
             ),
             const SizedBox(height: 14),
-            const Text(
+            Text(
               'Ödeme Başarıyla Alındı!',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
-                color: cNavy,
+                color: cInk,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'PGM-2024-8841 numaralı ceza tutarı (₺1.295,00) tahsil edilerek resmi kamu veri tabanından düşülmüştür.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12.5, color: cSlate),
+              style: TextStyle(fontSize: 12.5, color: cMuted),
             ),
             const SizedBox(height: 18),
             SizedBox(
@@ -6887,8 +6893,8 @@ class _KktcETrafikDashboardSayfasiState
         builder: (modalContext, setModalState) {
           return Container(
             height: MediaQuery.of(context).size.height * 0.78,
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: cSurface,
               borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
             ),
             child: Column(
@@ -6907,19 +6913,19 @@ class _KktcETrafikDashboardSayfasiState
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Seyrüsefer Harcı Erken Yenileme',
-                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: cNavy),
+                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: cInk),
                           ),
-                          Text('Bayındırlık ve Ulaştırma Bakanlığı • RZ 123', style: TextStyle(fontSize: 11, color: cSlate)),
+                          Text('Bayındırlık ve Ulaştırma Bakanlığı • RZ 123', style: TextStyle(fontSize: 11, color: cMuted)),
                         ],
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.close_rounded, color: cSlate),
+                        icon: Icon(Icons.close_rounded, color: cMuted),
                       ),
                     ],
                   ),
@@ -6932,9 +6938,9 @@ class _KktcETrafikDashboardSayfasiState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Yenileme Dönemi Seçin',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: cNavy),
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: cInk),
                         ),
                         const SizedBox(height: 10),
 
@@ -6943,7 +6949,7 @@ class _KktcETrafikDashboardSayfasiState
                           child: Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: selectedDonem == 0 ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+                              color: selectedDonem == 0 ? const Color(0xFFF0FDF4) : cSoftSurface,
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: selectedDonem == 0 ? cEmerald : const Color(0xFFCBD5E1),
@@ -6957,22 +6963,22 @@ class _KktcETrafikDashboardSayfasiState
                                   children: [
                                     Icon(
                                       selectedDonem == 0 ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-                                      color: selectedDonem == 0 ? cEmerald : cSlate,
+                                      color: selectedDonem == 0 ? cEmerald : cMuted,
                                       size: 18,
                                     ),
                                     const SizedBox(width: 10),
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: const [
-                                        Text('1 Yıllık Tam Dönem (2027)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cNavy)),
+                                      children: [
+                                        Text('1 Yıllık Tam Dönem (2027)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cInk)),
                                         Text('Erken ödemede %10 kamu indirimi', style: TextStyle(fontSize: 11, color: cEmerald)),
                                       ],
                                     ),
                                   ],
                                 ),
-                                const Text(
+                                Text(
                                   '₺3.105,00',
-                                  style: TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w900, color: cNavy, fontSize: 14),
+                                  style: TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w900, color: cInk, fontSize: 14),
                                 ),
                               ],
                             ),
@@ -6985,7 +6991,7 @@ class _KktcETrafikDashboardSayfasiState
                           child: Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: selectedDonem == 1 ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+                              color: selectedDonem == 1 ? const Color(0xFFF0FDF4) : cSoftSurface,
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: selectedDonem == 1 ? cEmerald : const Color(0xFFCBD5E1),
@@ -6999,22 +7005,22 @@ class _KktcETrafikDashboardSayfasiState
                                   children: [
                                     Icon(
                                       selectedDonem == 1 ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-                                      color: selectedDonem == 1 ? cEmerald : cSlate,
+                                      color: selectedDonem == 1 ? cEmerald : cMuted,
                                       size: 18,
                                     ),
                                     const SizedBox(width: 10),
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: const [
-                                        Text('6 Aylık Yarı Dönem', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cNavy)),
-                                        Text('Erken yenileme harcı', style: TextStyle(fontSize: 11, color: cSlate)),
+                                      children: [
+                                        Text('6 Aylık Yarı Dönem', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: cInk)),
+                                        Text('Erken yenileme harcı', style: TextStyle(fontSize: 11, color: cMuted)),
                                       ],
                                     ),
                                   ],
                                 ),
-                                const Text(
+                                Text(
                                   '₺1.665,00',
-                                  style: TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w900, color: cNavy, fontSize: 14),
+                                  style: TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w900, color: cInk, fontSize: 14),
                                 ),
                               ],
                             ),
@@ -7022,7 +7028,7 @@ class _KktcETrafikDashboardSayfasiState
                         ),
                         const SizedBox(height: 18),
 
-                        const Text('Ödeme Kartı: Garanti BBVA Bonus (•••• 4412)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: cSlate)),
+                        Text('Ödeme Kartı: Garanti BBVA Bonus (•••• 4412)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: cMuted)),
                       ],
                     ),
                   ),
@@ -7093,7 +7099,7 @@ class _KktcETrafikDashboardSayfasiState
     HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: cSurface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(22),
@@ -7104,9 +7110,9 @@ class _KktcETrafikDashboardSayfasiState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Zorunlu Trafik Sigortası Detayı',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: cNavy),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: cInk),
                 ),
                 IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close)),
               ],
@@ -7153,7 +7159,7 @@ class _KktcETrafikDashboardSayfasiState
     HapticFeedback.lightImpact();
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: cSurface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(22),
@@ -7164,17 +7170,17 @@ class _KktcETrafikDashboardSayfasiState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Online Fenni Muayene Randevusu',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: cNavy),
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: cInk),
                 ),
                 IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close)),
               ],
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Lefkoşa Sanayi Polis Muayene Şubesi için müsait saatler taranıyor.',
-              style: TextStyle(fontSize: 12, color: cSlate),
+              style: TextStyle(fontSize: 12, color: cMuted),
             ),
             const SizedBox(height: 14),
             _buildInfoRow('Seçili İstasyon:', 'Lefkoşa Sanayi Muayene Şubesi'),
@@ -7280,12 +7286,12 @@ class _KktcETrafikDashboardSayfasiState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 14),
-        const Text(
+        Text(
           'Dijital Sürücü Belgesi & Profil',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w800,
-            color: cNavy,
+            color: cInk,
           ),
         ),
         const SizedBox(height: 14),
@@ -7334,12 +7340,12 @@ class _KktcETrafikDashboardSayfasiState
                       color: cLime,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
+                    child: Text(
                       'ONAYLI',
                       style: TextStyle(
                         fontSize: 9.5,
                         fontWeight: FontWeight.w900,
-                        color: cNavy,
+                        color: cInk,
                       ),
                     ),
                   ),
@@ -7353,14 +7359,14 @@ class _KktcETrafikDashboardSayfasiState
                 height: 140,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cSurface,
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.qr_code_2_rounded,
                     size: 116,
-                    color: cNavy,
+                    color: cInk,
                   ),
                 ),
               ),
@@ -7398,16 +7404,16 @@ class _KktcETrafikDashboardSayfasiState
           child: Column(
             children: [
               ListTile(
-                leading: const Icon(Icons.file_download_outlined, color: cNavy),
+                leading: Icon(Icons.file_download_outlined, color: cInk),
                 title: const Text('Dijital Ehliyet PDF İndir', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
-                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: cSlate),
+                trailing: Icon(Icons.arrow_forward_ios_rounded, size: 14, color: cMuted),
                 onTap: () => _showInfoDialog(title: 'PDF İndirme', message: 'Resmi karekodlu ehliyet belgeniz cihaza indirildi.'),
               ),
               Divider(height: 1, color: cSoft),
               ListTile(
-                leading: const Icon(Icons.security_rounded, color: cNavy),
+                leading: Icon(Icons.security_rounded, color: cInk),
                 title: const Text('Polis Doğrulama Modu', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
-                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: cSlate),
+                trailing: Icon(Icons.arrow_forward_ios_rounded, size: 14, color: cMuted),
                 onTap: () => _showInfoDialog(title: 'Polis Denetim Modu', message: 'Karekod tam parlaklıkta ekrana yansıtılıyor.'),
               ),
               Divider(height: 1, color: cSoft),
@@ -7438,12 +7444,12 @@ class _KktcETrafikDashboardSayfasiState
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Çıkış Yapılsın mı?', style: TextStyle(fontWeight: FontWeight.w800, color: cNavy)),
+        title: Text('Çıkış Yapılsın mı?', style: TextStyle(fontWeight: FontWeight.w800, color: cInk)),
         content: const Text('Oturumunuz kapatılacak ve misafir moduna geçilecektir.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('İptal', style: TextStyle(color: cSlate)),
+            child: Text('İptal', style: TextStyle(color: cMuted)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -7487,7 +7493,7 @@ class _KktcETrafikDashboardSayfasiState
         filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
           decoration: BoxDecoration(
-            color: (koyuMu ? const Color(0xFF0D1424) : Colors.white).withValues(alpha: 0.97),
+            color: (koyuMu ? const Color(0xFF0D1424) : cSurface).withValues(alpha: 0.97),
             border: Border(
               bottom: BorderSide(
                 color: koyuMu ? const Color(0xFF1E293B) : cSoft.withValues(alpha: 0.7),
@@ -7553,9 +7559,9 @@ class _KktcETrafikDashboardSayfasiState
                                 children: [
                                   Text(
                                     _girisYapildiMi ? 'KKTC e-TRAFİK' : 'KKTC e-TRAFİK • MİSAFİR',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
-                                      color: cNavy,
+                                      color: cInk,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -7578,7 +7584,7 @@ class _KktcETrafikDashboardSayfasiState
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
-                                  color: koyuMu ? Colors.white : cNavy,
+                                  color: koyuMu ? Colors.white : cInk,
                                   letterSpacing: -0.3,
                                 ),
                               ),
@@ -7707,7 +7713,7 @@ class _KktcETrafikDashboardSayfasiState
           width: 37,
           height: 37,
           decoration: BoxDecoration(
-            color: koyuMu ? const Color(0xFF16203B) : Colors.white,
+            color: koyuMu ? const Color(0xFF16203B) : cSurface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: koyuMu ? const Color(0xFF263354) : cSoft),
             boxShadow: [
@@ -7721,7 +7727,7 @@ class _KktcETrafikDashboardSayfasiState
           child: Stack(
             alignment: Alignment.center,
             children: [
-              Icon(icon, size: 20, color: koyuMu ? const Color(0xFF38BDF8) : cNavy),
+              Icon(icon, size: 20, color: koyuMu ? const Color(0xFF38BDF8) : cInk),
               if (showDot)
                 Positioned(
                   top: 8,
@@ -7804,10 +7810,10 @@ class _KktcETrafikDashboardSayfasiState
                           const SizedBox(width: 6),
                           Text(
                             _girisYapildiMi ? 'EHLİYET SAĞLIK PUANI' : 'EHLİYET SAĞLIK PUANI (KİLİTLİ)',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w700,
-                              color: cSlate,
+                              color: cMuted,
                               letterSpacing: 0.4,
                             ),
                           ),
@@ -7817,10 +7823,10 @@ class _KktcETrafikDashboardSayfasiState
                     const SizedBox(height: 6),
                     Text(
                       _girisYapildiMi ? 'Güvenli Sürücü Seviyesi' : 'Puanınızı Görmek İçin Giriş Yapın',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
-                        color: cNavy,
+                        color: cInk,
                         letterSpacing: -0.2,
                       ),
                     ),
@@ -7829,38 +7835,38 @@ class _KktcETrafikDashboardSayfasiState
                       Row(
                         children: [
                           RichText(
-                            text: const TextSpan(
-                              style: TextStyle(fontSize: 11.5, color: cSlate),
+                            text: TextSpan(
+                              style: TextStyle(fontSize: 11.5, color: cMuted),
                               children: [
                                 TextSpan(text: 'Toplam Ceza: '),
                                 TextSpan(
                                   text: '15 Puan',
                                   style: TextStyle(
-                                    color: cNavy,
+                                    color: cInk,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.symmetric(horizontal: 6),
-                            child: Text('•', style: TextStyle(color: cSlate, fontSize: 11)),
+                            child: Text('•', style: TextStyle(color: cMuted, fontSize: 11)),
                           ),
-                          const Text(
+                          Text(
                             'Sınıf: A2, B, D',
-                            style: TextStyle(fontSize: 11.5, color: cSlate),
+                            style: TextStyle(fontSize: 11.5, color: cMuted),
                           ),
                         ],
                       )
                     else
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.lock_outline_rounded, size: 13, color: cSlate),
+                          Icon(Icons.lock_outline_rounded, size: 13, color: cMuted),
                           SizedBox(width: 4),
                           Text(
                             'Ceza ve ehliyet sınıfı dökümü için tıklayın',
-                            style: TextStyle(fontSize: 11.5, color: cSlate, fontWeight: FontWeight.w500),
+                            style: TextStyle(fontSize: 11.5, color: cMuted, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
@@ -7946,10 +7952,10 @@ class _KktcETrafikDashboardSayfasiState
               _girisYapildiMi
                   ? 'KAYITLI ARAÇLARIM (${_vehicles.length})'
                   : 'KAYITLI ARAÇLARIM (GİRİŞ GEREKLİ)',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w800,
-                color: cSlate,
+                color: cMuted,
                 letterSpacing: 0.6,
               ),
             ),
@@ -7965,12 +7971,12 @@ class _KktcETrafikDashboardSayfasiState
                   },
                 );
               },
-              child: const Text(
+              child: Text(
                 'Tümünü Yönet',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: cNavy,
+                  color: cInk,
                 ),
               ),
             ),
@@ -8058,7 +8064,7 @@ class _KktcETrafikDashboardSayfasiState
                 child: Icon(
                   Icons.directions_car_rounded,
                   size: 19,
-                  color: isSelected && _girisYapildiMi ? Colors.white : cSlate,
+                  color: isSelected && _girisYapildiMi ? Colors.white : cMuted,
                 ),
               ),
               const SizedBox(width: 10),
@@ -8074,7 +8080,7 @@ class _KktcETrafikDashboardSayfasiState
                           fontFamily: 'monospace',
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
-                          color: isSelected && _girisYapildiMi ? Colors.white : cNavy,
+                          color: isSelected && _girisYapildiMi ? Colors.white : cInk,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -8087,12 +8093,12 @@ class _KktcETrafikDashboardSayfasiState
                             color: cLime,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
+                          child: Text(
                             'AKTİF',
                             style: TextStyle(
                               fontSize: 8.5,
                               fontWeight: FontWeight.w900,
-                              color: cNavy,
+                              color: cInk,
                             ),
                           ),
                         ),
@@ -8104,7 +8110,7 @@ class _KktcETrafikDashboardSayfasiState
                     _girisYapildiMi ? model : 'Giriş Yapın',
                     style: TextStyle(
                       fontSize: 11,
-                      color: isSelected && _girisYapildiMi ? Colors.white.withOpacity(0.8) : cSlate,
+                      color: isSelected && _girisYapildiMi ? Colors.white.withOpacity(0.8) : cMuted,
                     ),
                   ),
                 ],
@@ -8142,16 +8148,16 @@ class _KktcETrafikDashboardSayfasiState
               style: BorderStyle.solid,
             ),
           ),
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.add_circle_outline_rounded, size: 19, color: cSlate),
+              Icon(Icons.add_circle_outline_rounded, size: 19, color: cMuted),
               SizedBox(width: 6),
               Text(
                 'Araç Ekle',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: cSlate,
+                  color: cMuted,
                 ),
               ),
             ],
@@ -8168,12 +8174,12 @@ class _KktcETrafikDashboardSayfasiState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'HIZLI İŞLEMLER & DURUM',
           style: TextStyle(
             fontSize: 11.5,
             fontWeight: FontWeight.w800,
-            color: cSlate,
+            color: cMuted,
             letterSpacing: 0.6,
           ),
         ),
@@ -8230,8 +8236,8 @@ class _KktcETrafikDashboardSayfasiState
                     fontSize: 9.5,
                     fontWeight: FontWeight.w700,
                     color: _girisYapildiMi
-                        ? (_seyruseferYenilendi ? cEmerald : cNavy)
-                        : cSlate,
+                        ? (_seyruseferYenilendi ? cEmerald : cInk)
+                        : cMuted,
                   ),
                 ),
               ),
@@ -8268,7 +8274,7 @@ class _KktcETrafikDashboardSayfasiState
                   style: TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w900,
-                    color: _girisYapildiMi ? cNavy : cSlate,
+                    color: _girisYapildiMi ? cInk : cMuted,
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -8679,7 +8685,7 @@ class _KktcETrafikDashboardSayfasiState
                       color: cBg,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(icon, size: 21, color: cNavy),
+                    child: Icon(icon, size: 21, color: cInk),
                   ),
                   badgeWidget,
                 ],
@@ -8693,10 +8699,10 @@ class _KktcETrafikDashboardSayfasiState
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w800,
-                      color: cNavy,
+                      color: cInk,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -8705,9 +8711,9 @@ class _KktcETrafikDashboardSayfasiState
                       subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: cSlate,
+                        color: cMuted,
                         fontWeight: FontWeight.w400,
                       ),
                     )
@@ -8721,9 +8727,9 @@ class _KktcETrafikDashboardSayfasiState
                             bottomLabel,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 10.5,
-                              color: cSlate,
+                              color: cMuted,
                             ),
                           ),
                         ),
@@ -8732,11 +8738,11 @@ class _KktcETrafikDashboardSayfasiState
                           bottomValue,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'monospace',
                             fontSize: 11.5,
                             fontWeight: FontWeight.w800,
-                            color: cNavy,
+                            color: cInk,
                           ),
                         ),
                       ],
@@ -8786,12 +8792,12 @@ class _KktcETrafikDashboardSayfasiState
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'CEZA & İHLAL SORGULAMA',
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w800,
-                        color: cNavy,
+                        color: cInk,
                         letterSpacing: 0.6,
                       ),
                     ),
@@ -8803,12 +8809,12 @@ class _KktcETrafikDashboardSayfasiState
                     color: cSoft,
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text(
+                  child: Text(
                     'MİSAFİR MODU',
                     style: TextStyle(
                       fontSize: 9.5,
                       fontWeight: FontWeight.w700,
-                      color: cSlate,
+                      color: cMuted,
                     ),
                   ),
                 ),
@@ -8827,7 +8833,7 @@ class _KktcETrafikDashboardSayfasiState
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cSurface,
                       borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
@@ -8837,14 +8843,14 @@ class _KktcETrafikDashboardSayfasiState
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.lock_outline_rounded,
                       size: 20,
-                      color: cNavy,
+                      color: cInk,
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -8853,7 +8859,7 @@ class _KktcETrafikDashboardSayfasiState
                           style: TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w800,
-                            color: cNavy,
+                            color: cInk,
                           ),
                         ),
                         SizedBox(height: 2),
@@ -8861,7 +8867,7 @@ class _KktcETrafikDashboardSayfasiState
                           'Adınıza kayıtlı araçların cezalarını görmek için giriş yapın.',
                           style: TextStyle(
                             fontSize: 11,
-                            color: cSlate,
+                            color: cMuted,
                           ),
                         ),
                       ],
@@ -8958,23 +8964,23 @@ class _KktcETrafikDashboardSayfasiState
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'SON İHLAL BİLDİRİMİ',
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w800,
-                      color: cNavy,
+                      color: cInk,
                       letterSpacing: 0.6,
                     ),
                   ),
                 ],
               ),
-              const Text(
+              Text(
                 '18 Mayıs 2024',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: cSlate,
+                  color: cMuted,
                 ),
               ),
             ],
@@ -8997,7 +9003,7 @@ class _KktcETrafikDashboardSayfasiState
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: cSurface,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
@@ -9007,14 +9013,14 @@ class _KktcETrafikDashboardSayfasiState
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.speed_rounded,
                         size: 20,
-                        color: cNavy,
+                        color: cInk,
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
@@ -9022,7 +9028,7 @@ class _KktcETrafikDashboardSayfasiState
                           style: TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w800,
-                            color: cNavy,
+                            color: cInk,
                           ),
                         ),
                         SizedBox(height: 2),
@@ -9030,14 +9036,14 @@ class _KktcETrafikDashboardSayfasiState
                           '78 km/s (Limit: 65 km/s)',
                           style: TextStyle(
                             fontSize: 11,
-                            color: cSlate,
+                            color: cMuted,
                           ),
                         ),
                       ],
                     ),
                   ],
                 ),
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
@@ -9046,7 +9052,7 @@ class _KktcETrafikDashboardSayfasiState
                         fontFamily: 'monospace',
                         fontSize: 12.5,
                         fontWeight: FontWeight.w800,
-                        color: cNavy,
+                        color: cInk,
                       ),
                     ),
                     SizedBox(height: 2),
@@ -9054,7 +9060,7 @@ class _KktcETrafikDashboardSayfasiState
                       'Son 15 gün',
                       style: TextStyle(
                         fontSize: 10,
-                        color: cSlate,
+                        color: cMuted,
                       ),
                     ),
                   ],
@@ -9069,15 +9075,15 @@ class _KktcETrafikDashboardSayfasiState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               RichText(
-                text: const TextSpan(
-                  style: TextStyle(fontSize: 12, color: cSlate),
+                text: TextSpan(
+                  style: TextStyle(fontSize: 12, color: cMuted),
                   children: [
                     TextSpan(text: 'Plaka: '),
                     TextSpan(
                       text: 'RZ 123',
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        color: cNavy,
+                        color: cInk,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -9396,10 +9402,10 @@ class _KktcETrafikDashboardSayfasiState
               const SizedBox(height: 2),
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 9,
                   fontWeight: FontWeight.w800,
-                  color: cNavy,
+                  color: cInk,
                   height: 1.1,
                 ),
               ),

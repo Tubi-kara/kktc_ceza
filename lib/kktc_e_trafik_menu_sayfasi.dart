@@ -39,6 +39,12 @@ class KktcETrafikMenuSayfasi extends StatefulWidget {
 class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
   // Tasarım Renk Tokenları
   static const Color cNavy = Color(0xFF010E3C);
+  // 🌙 Koyu tema uyumlu dinamik metin & yüzey renkleri
+  Color get cInk => KktcTemaServisi().isKoyu(context) ? const Color(0xFFF1F5F9) : cNavy;
+  Color get cSurface => KktcTemaServisi().isKoyu(context) ? const Color(0xFF151D30) : Colors.white;
+  Color get cSoftSurface => KktcTemaServisi().isKoyu(context) ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
+  Color get cMuted => KktcTemaServisi().isKoyu(context) ? const Color(0xFF94A3B8) : cSlate;
+  Color get cLine => KktcTemaServisi().isKoyu(context) ? const Color(0xFF243048) : const Color(0xFFE2E8F0);
   static const Color cSlate = Color(0xFF747675);
   static const Color cAccent = Color(0xFFD1C929);
   static const Color cAccentLight = Color(0xFFFAF9E5);
@@ -52,24 +58,24 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         context: context,
         builder: (ctx) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.lock_rounded, color: cNavy, size: 22),
+              Icon(Icons.lock_rounded, color: cInk, size: 22),
               SizedBox(width: 8),
               Text(
                 'Giriş Yapmalısınız',
-                style: TextStyle(fontWeight: FontWeight.w800, color: cNavy, fontSize: 17),
+                style: TextStyle(fontWeight: FontWeight.w800, color: cInk, fontSize: 17),
               ),
             ],
           ),
           content: Text(
             '$islemAdi için KKTC Kimlik veya Ehliyet numaranız ile sisteme giriş yapmalısınız.',
-            style: const TextStyle(fontSize: 13.5, color: cSlate, height: 1.4),
+            style: TextStyle(fontSize: 13.5, color: cMuted, height: 1.4),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Vazgeç', style: TextStyle(color: cSlate)),
+              child: Text('Vazgeç', style: TextStyle(color: cMuted)),
             ),
             ElevatedButton.icon(
               onPressed: () {
@@ -191,7 +197,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close_rounded, color: koyuMu ? Colors.white70 : cSlate),
+                      icon: Icon(Icons.close_rounded, color: koyuMu ? Colors.white70 : cMuted),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -314,7 +320,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                   model,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: koyuMu ? Colors.white : cNavy,
+                    color: koyuMu ? Colors.white : cInk,
                     fontSize: 14,
                   ),
                 ),
@@ -322,7 +328,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                   'Şasi: $chassis',
                   style: TextStyle(
                     fontSize: 11,
-                    color: koyuMu ? const Color(0xFF94A3B8) : cSlate,
+                    color: koyuMu ? const Color(0xFF94A3B8) : cMuted,
                   ),
                 ),
               ],
@@ -362,28 +368,28 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               color: const Color(0xFFE0E7FF).withOpacity(0.5),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Column(
+            child: Column(
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Araç Plaka:', style: TextStyle(color: cSlate)),
-                    Text('RZ 123 (BMW 3.20i)', style: TextStyle(fontWeight: FontWeight.bold, color: cNavy)),
+                    Text('Araç Plaka:', style: TextStyle(color: cMuted)),
+                    Text('RZ 123 (BMW 3.20i)', style: TextStyle(fontWeight: FontWeight.bold, color: cInk)),
                   ],
                 ),
                 SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Dönem:', style: TextStyle(color: cSlate)),
-                    Text('2026 / 2. Dönem', style: TextStyle(fontWeight: FontWeight.bold, color: cNavy)),
+                    Text('Dönem:', style: TextStyle(color: cMuted)),
+                    Text('2026 / 2. Dönem', style: TextStyle(fontWeight: FontWeight.bold, color: cInk)),
                   ],
                 ),
                 SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Son Geçerlilik:', style: TextStyle(color: cSlate)),
+                    Text('Son Geçerlilik:', style: TextStyle(color: cMuted)),
                     Text('26 Aralık 2026 (86 Gün)', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF059669))),
                   ],
                 ),
@@ -391,25 +397,25 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Harç Tutarı:', style: TextStyle(color: cSlate)),
-                    Text('₺3.450,00', style: TextStyle(fontWeight: FontWeight.w900, color: cNavy, fontSize: 16)),
+                    Text('Harç Tutarı:', style: TextStyle(color: cMuted)),
+                    Text('₺3.450,00', style: TextStyle(fontWeight: FontWeight.w900, color: cInk, fontSize: 16)),
                   ],
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Belgeniz resmi kamu veri tabanında güncel ve geçerlidir. Erken yenilemede %10 indirim uygulanmaktadır.',
-            style: TextStyle(fontSize: 12, color: cSlate),
+            style: TextStyle(fontSize: 12, color: cMuted),
           ),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                foregroundColor: cNavy,
-                side: const BorderSide(color: cNavy),
+                foregroundColor: cInk,
+                side: BorderSide(color: cInk),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 10),
               ),
@@ -445,31 +451,31 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: cSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        title: const Text(
+        title: Text(
           'Seyrüsefer Harcı Tahsilatı',
-          style: TextStyle(fontWeight: FontWeight.w900, color: cNavy, fontSize: 17),
+          style: TextStyle(fontWeight: FontWeight.w900, color: cInk, fontSize: 17),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'RZ 123 (BMW 3.20i) için 2027 1. Dönem erken yenileme harcı (%10 indirimle ₺3.105,00) tahsil edilecektir.',
-              style: TextStyle(fontSize: 13, color: cSlate),
+              style: TextStyle(fontSize: 13, color: cMuted),
             ),
             const SizedBox(height: 14),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
+                color: cSoftSurface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: cLine),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.credit_card_rounded, color: cNavy, size: 20),
+                  Icon(Icons.credit_card_rounded, color: cInk, size: 20),
                   SizedBox(width: 8),
                   Text('Garanti Bonus (•••• 4412)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
                 ],
@@ -480,7 +486,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Vazgeç', style: TextStyle(color: cSlate)),
+            child: Text('Vazgeç', style: TextStyle(color: cMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -523,12 +529,12 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               color: const Color(0xFFFEF3C7).withOpacity(0.5),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Column(
+            child: Column(
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Kalan Süre:', style: TextStyle(color: cSlate)),
+                    Text('Kalan Süre:', style: TextStyle(color: cMuted)),
                     Text('48 Gün Kaldı', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFFD97706))),
                   ],
                 ),
@@ -536,25 +542,25 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Son Muayene Tarihi:', style: TextStyle(color: cSlate)),
-                    Text('09 Mayıs 2026', style: TextStyle(fontWeight: FontWeight.bold, color: cNavy)),
+                    Text('Son Muayene Tarihi:', style: TextStyle(color: cMuted)),
+                    Text('09 Mayıs 2026', style: TextStyle(fontWeight: FontWeight.bold, color: cInk)),
                   ],
                 ),
                 SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('İstasyon:', style: TextStyle(color: cSlate)),
-                    Text('Lefkoşa Polis Muayene Şube', style: TextStyle(fontWeight: FontWeight.bold, color: cNavy)),
+                    Text('İstasyon:', style: TextStyle(color: cMuted)),
+                    Text('Lefkoşa Polis Muayene Şube', style: TextStyle(fontWeight: FontWeight.bold, color: cInk)),
                   ],
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Fenni muayenesiz araç kullanmanın cezası ₺1.850,00 ve 5 ceza puanıdır. Randevunuzu önceden oluşturun.',
-            style: TextStyle(fontSize: 12, color: cSlate),
+            style: TextStyle(fontSize: 12, color: cMuted),
           ),
         ],
       ),
@@ -581,28 +587,28 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFF10B981).withOpacity(0.4)),
             ),
-            child: const Column(
+            child: Column(
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Sigorta Şirketi:', style: TextStyle(color: cSlate)),
-                    Text('Kıbrıs Sigorta Kooperatifi', style: TextStyle(fontWeight: FontWeight.bold, color: cNavy)),
+                    Text('Sigorta Şirketi:', style: TextStyle(color: cMuted)),
+                    Text('Kıbrıs Sigorta Kooperatifi', style: TextStyle(fontWeight: FontWeight.bold, color: cInk)),
                   ],
                 ),
                 SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Poliçe No:', style: TextStyle(color: cSlate)),
-                    Text('KSK-2026-TRF-4819', style: TextStyle(fontWeight: FontWeight.bold, color: cNavy)),
+                    Text('Poliçe No:', style: TextStyle(color: cMuted)),
+                    Text('KSK-2026-TRF-4819', style: TextStyle(fontWeight: FontWeight.bold, color: cInk)),
                   ],
                 ),
                 SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Durum:', style: TextStyle(color: cSlate)),
+                    Text('Durum:', style: TextStyle(color: cMuted)),
                     Text('Poliçe Aktif (317 Gün Kaldı)', style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF059669))),
                   ],
                 ),
@@ -610,17 +616,17 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'Bu poliçe KKTC Sigortalar Birliği ve PGM Trafik veri tabanı ile tam senkronizedir.',
-            style: TextStyle(fontSize: 12, color: cSlate),
+            style: TextStyle(fontSize: 12, color: cMuted),
           ),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                foregroundColor: cNavy,
-                side: const BorderSide(color: cNavy),
+                foregroundColor: cInk,
+                side: BorderSide(color: cInk),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 10),
               ),
@@ -713,11 +719,11 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
             ),
           ),
           const SizedBox(height: 14),
-          const Text(
+          Text(
             'Tebliğ No: PGM-TRF-2024-8841\nCihaz: Sensys Gatso T-Series Sabit Hız Radarı\nDijital İmza: SHA256: 8a91b...c491f (Onaylı Adli Delil)',
             style: TextStyle(
               fontSize: 11.5,
-              color: cSlate,
+              color: cMuted,
               height: 1.5,
               fontFamily: 'monospace',
             ),
@@ -756,7 +762,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               ),
               child: Text(
                 KktcTemaServisi().temaAdi,
-                style: TextStyle(color: koyuMu ? const Color(0xFF38BDF8) : cNavy, fontWeight: FontWeight.bold, fontSize: 11.5),
+                style: TextStyle(color: koyuMu ? const Color(0xFF38BDF8) : cInk, fontWeight: FontWeight.bold, fontSize: 11.5),
               ),
             ),
             onTap: () {
@@ -781,7 +787,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
             subtitle: Text('İnternetsiz GPS sesli uyarıları', style: TextStyle(color: subColor)),
             trailing: Switch(
               value: true,
-              activeColor: koyuMu ? const Color(0xFF38BDF8) : cNavy,
+              activeColor: koyuMu ? const Color(0xFF38BDF8) : cInk,
               onChanged: (v) {},
             ),
           ),
@@ -879,30 +885,30 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: cSurface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Row(
+        title: Row(
           children: [
             Icon(Icons.logout_rounded, color: cDanger),
             SizedBox(width: 8),
             Text(
               'Çıkış Yapılsın mı?',
               style: TextStyle(
-                color: cNavy,
+                color: cInk,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
             ),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Oturumunuz kapatılacak ve güvenli e-Trafik giriş sayfasına yönlendirileceksiniz.',
-          style: TextStyle(color: cSlate, fontSize: 13.5),
+          style: TextStyle(color: cMuted, fontSize: 13.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Vazgeç', style: TextStyle(color: cSlate)),
+            child: Text('Vazgeç', style: TextStyle(color: cMuted)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -1293,7 +1299,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w900,
-                      color: koyuMu ? Colors.white : cNavy,
+                      color: koyuMu ? Colors.white : cInk,
                       letterSpacing: 0.6,
                     ),
                   ),
@@ -1302,7 +1308,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     style: TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w500,
-                      color: koyuMu ? const Color(0xFF94A3B8) : cSlate,
+                      color: koyuMu ? const Color(0xFF94A3B8) : cMuted,
                     ),
                   ),
                 ],
@@ -1331,7 +1337,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: koyuMu ? const Color(0xFF151D30) : Colors.white,
+                color: koyuMu ? const Color(0xFF151D30) : cSurface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: koyuMu ? const Color(0xFF243048) : Colors.grey.shade200),
                 boxShadow: [
@@ -1345,7 +1351,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               child: Icon(
                 Icons.qr_code_2_rounded,
                 size: 20,
-                color: koyuMu ? Colors.white : cNavy,
+                color: koyuMu ? Colors.white : cInk,
               ),
             ),
           ),
@@ -1401,7 +1407,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                   child: Center(
                     child: Icon(
                       Icons.person_outline_rounded,
-                      color: koyuMu ? const Color(0xFF60A5FA) : cNavy,
+                      color: koyuMu ? const Color(0xFF60A5FA) : cInk,
                       size: 22,
                     ),
                   ),
@@ -1428,7 +1434,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                             decoration: BoxDecoration(
-                              color: koyuMu ? const Color(0xFF1E293B) : Colors.grey.shade100,
+                              color: koyuMu ? const Color(0xFF1E293B) : cSoftSurface,
                               borderRadius: BorderRadius.circular(999),
                               border: Border.all(color: koyuMu ? const Color(0xFF334155) : Colors.grey.shade300),
                             ),
@@ -1639,7 +1645,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                                 decoration: BoxDecoration(
-                                  color: koyuMu ? const Color(0xFF1E293B) : Colors.grey.shade100,
+                                  color: koyuMu ? const Color(0xFF1E293B) : cSoftSurface,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
@@ -1675,7 +1681,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: koyuMu ? const Color(0xFF1E293B) : Colors.grey.shade50,
+                  color: koyuMu ? const Color(0xFF1E293B) : cSoftSurface,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -1719,7 +1725,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w800,
-                  color: koyuMu ? const Color(0xFF94A3B8) : cSlate,
+                  color: koyuMu ? const Color(0xFF94A3B8) : cMuted,
                   letterSpacing: 0.8,
                 ),
               ),
@@ -1756,9 +1762,24 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
   }) {
     final bool koyuMu = KktcTemaServisi().isKoyu(context);
     final Color itemCardBg = koyuMu ? const Color(0xFF151D30) : Colors.white;
-    final Color itemCardBorder = koyuMu ? const Color(0xFF243048) : (borderColor ?? Colors.grey.shade100);
+    final Color itemCardBorder = koyuMu
+        ? (gradientBackground != null ? iconColor.withOpacity(0.35) : const Color(0xFF243048))
+        : (borderColor ?? Colors.grey.shade100);
     final Color itemTitleColor = koyuMu ? Colors.white : cNavy;
-    final Color itemSubtitleColor = subtitleColor ?? (koyuMu ? const Color(0xFF94A3B8) : cSlate);
+    // Koyu modda renkli alt yazıları biraz açarak kontrastı artır
+    final Color itemSubtitleColor = subtitleColor != null
+        ? (koyuMu ? Color.lerp(subtitleColor, Colors.white, 0.3)! : subtitleColor)
+        : (koyuMu ? const Color(0xFF94A3B8) : cSlate);
+    // Açık renkli gradyanlar koyu modda ikon renginden türeyen koyu gradyana dönüşür
+    final Gradient? itemGradient = gradientBackground == null
+        ? null
+        : (koyuMu
+            ? LinearGradient(
+                colors: [iconColor.withOpacity(0.22), itemCardBg],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              )
+            : gradientBackground);
     final Color itemChevronBg = koyuMu ? const Color(0xFF1E293B) : Colors.grey.shade50;
     final Color itemChevronIcon = koyuMu ? const Color(0xFF64748B) : const Color(0xFF9CA3AF);
     final Color itemIconBg = koyuMu ? iconColor.withOpacity(0.18) : iconBgColor;
@@ -1774,8 +1795,8 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         child: Container(
           padding: const EdgeInsets.all(13.5),
           decoration: BoxDecoration(
-            color: gradientBackground == null ? itemCardBg : null,
-            gradient: gradientBackground,
+            color: itemGradient == null ? itemCardBg : null,
+            gradient: itemGradient,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: itemCardBorder,
