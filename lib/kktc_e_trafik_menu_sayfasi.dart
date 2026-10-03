@@ -953,36 +953,39 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 1. ÜST HEADER (Brand Title Bar & Hızlı QR)
-        _buildTopHeader(),
-        const SizedBox(height: 12),
+    return ListenableBuilder(
+      listenable: KktcDilServisi(),
+      builder: (context, _) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. ÜST HEADER (Brand Title Bar & Hızlı QR)
+            _buildTopHeader(),
+            const SizedBox(height: 12),
 
-        // 2. KULLANICI PROFİL KARTI (AD Rozet Avatar & Ehliyet Puanı)
-        _buildProfileCard(),
-        const SizedBox(height: 20),
+            // 2. KULLANICI PROFİL KARTI (AD Rozet Avatar & Ehliyet Puanı)
+            _buildProfileCard(),
+            const SizedBox(height: 20),
 
         // 3. KATEGORİ 1: ARAÇ & BELGE İŞLEMLERİ
         _buildCategorySection(
           indicatorColor: const Color(0xFF10B981),
-          title: 'ARAÇ & BELGE İŞLEMLERİ',
+          title: dil('ARAÇ & BELGE İŞLEMLERİ', 'VEHICLES & DOCUMENTS'),
           items: [
             _buildMenuItem(
               iconBgColor: const Color(0xFFE0F2FE),
               iconColor: const Color(0xFF0284C7),
               icon: Icons.directions_car_filled_rounded,
-              title: 'Kayıtlı Araçlarım',
-              subtitle: widget.girisYapildiMi ? 'BMW 3.20i & Mercedes C200' : 'Giriş yaparak sorgulayın',
+              title: dil('Kayıtlı Araçlarım', 'My Registered Vehicles'),
+              subtitle: widget.girisYapildiMi ? 'BMW 3.20i & Mercedes C200' : dil('Giriş yaparak sorgulayın', 'Sign in to inquire'),
               onTap: _openAraclarimSheet,
             ),
             _buildMenuItem(
               iconBgColor: const Color(0xFFE0E7FF),
               iconColor: const Color(0xFF4F46E5),
               icon: Icons.description_rounded,
-              title: 'Seyrüsefer & Ruhsat Yenileme',
-              subtitle: widget.girisYapildiMi ? 'Tüm belgeler güncel' : 'Giriş yaparak sorgulayın',
+              title: dil('Seyrüsefer & Ruhsat Yenileme', 'Road Tax & Registration Renewal'),
+              subtitle: widget.girisYapildiMi ? dil('Tüm belgeler güncel', 'All documents are up to date') : dil('Giriş yaparak sorgulayın', 'Sign in to inquire'),
               subtitleColor: widget.girisYapildiMi ? const Color(0xFF059669) : cSlate,
               onTap: _openSeyruseferSheet,
             ),
@@ -990,16 +993,16 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               iconBgColor: const Color(0xFFFEF3C7),
               iconColor: const Color(0xFFD97706),
               icon: Icons.calendar_month_rounded,
-              title: 'Araç Fenni Muayene Takvimi',
-              subtitle: widget.girisYapildiMi ? 'Kalan süre: 48 gün (09.05.2026)' : 'Giriş yaparak sorgulayın',
+              title: dil('Araç Fenni Muayene Takvimi', 'Vehicle Inspection Schedule'),
+              subtitle: widget.girisYapildiMi ? dil('Kalan süre: 48 gün (09.05.2026)', '48 days left (09.05.2026)') : dil('Giriş yaparak sorgulayın', 'Sign in to inquire'),
               onTap: _openMuayeneSheet,
             ),
             _buildMenuItem(
               iconBgColor: const Color(0xFFECFDF5),
               iconColor: const Color(0xFF059669),
               icon: Icons.verified_user_rounded,
-              title: 'Sigorta & Kasko Poliçeleri',
-              subtitle: widget.girisYapildiMi ? 'Kıbrıs Sigorta Kooperatifi • Aktif' : 'Giriş yaparak sorgulayın',
+              title: dil('Sigorta & Kasko Poliçeleri', 'Insurance & Motor Policies'),
+              subtitle: widget.girisYapildiMi ? dil('Kıbrıs Sigorta Kooperatifi • Aktif', 'Cyprus Insurance Coop • Active') : dil('Giriş yaparak sorgulayın', 'Sign in to inquire'),
               onTap: _openSigortaSheet,
             ),
           ],
@@ -1009,14 +1012,14 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         // 4. KATEGORİ 2: RADAR & GÜZERGAH
         _buildCategorySection(
           indicatorColor: const Color(0xFFF59E0B),
-          title: 'RADAR & GÜZERGAH',
+          title: dil('RADAR & GÜZERGAH', 'RADAR & ROUTES'),
           items: [
             _buildMenuItem(
               iconBgColor: const Color(0xFFCCFBF1),
               iconColor: const Color(0xFF0F766E),
               icon: Icons.map_rounded,
-              title: 'Haritalar & Canlı Radarlar',
-              subtitle: 'Google Maps tarzı canlı tam ekran harita',
+              title: dil('Haritalar & Canlı Radarlar', 'Maps & Live Radars'),
+              subtitle: dil('Google Maps tarzı canlı tam ekran harita', 'Full-screen live radar navigation map'),
               subtitleColor: const Color(0xFF059669),
               onTap: () {
                 if (widget.onOpenRadars != null) {
@@ -1025,7 +1028,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const RadarHaritasiSayfasi(turkceMi: true),
+                      builder: (context) => RadarHaritasiSayfasi(turkceMi: KktcDilServisi().turkceMi),
                     ),
                   );
                 }
@@ -1052,16 +1055,16 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               ),
               iconBgColor: const Color(0xFFFEE2E2),
               iconColor: const Color(0xFFDC2626),
-              title: 'Hız Limitleri & Sabit Kameralar',
-              subtitle: '142 Sabit Hız & Işık Kamerası',
+              title: dil('Hız Limitleri & Sabit Kameralar', 'Speed Limits & Fixed Cameras'),
+              subtitle: dil('142 Sabit Hız & Işık Kamerası', '142 Fixed Speed & Red Light Cameras'),
               onTap: widget.onOpenRadars,
             ),
             _buildMenuItem(
               iconBgColor: const Color(0xFFF3E8FF),
               iconColor: const Color(0xFF9333EA),
               icon: Icons.alt_route_rounded,
-              title: 'Navigasyon & Rota Planlayıcı',
-              subtitle: 'Canlı radar uyarıları ile sürüş',
+              title: dil('Navigasyon & Rota Planlayıcı', 'Navigation & Route Planner'),
+              subtitle: dil('Canlı radar uyarıları ile sürüş', 'Drive with live speed alerts'),
               onTap: () {
                 Navigator.push(
                   context,
@@ -1081,20 +1084,20 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         // 5. KATEGORİ 3: CEZA & HUKUKİ İŞLEMLER
         _buildCategorySection(
           indicatorColor: const Color(0xFFF43F5E),
-          title: 'CEZA & HUKUKİ İŞLEMLER',
+          title: dil('CEZA & HUKUKİ İŞLEMLER', 'FINES & LEGAL INQUIRIES'),
           items: [
             _buildMenuItem(
               iconBgColor: const Color(0xFFFFE4E6),
               iconColor: const Color(0xFFE11D48),
               icon: Icons.receipt_long_rounded,
-              title: 'Trafik Cezalarım & Ödeme',
-              subtitle: widget.girisYapildiMi ? '1 Adet Bekleyen Ceza Bildirimi' : 'Giriş yaparak sorgulayın',
+              title: dil('Trafik Cezalarım & Ödeme', 'My Traffic Fines & Payment'),
+              subtitle: widget.girisYapildiMi ? dil('1 Adet Bekleyen Ceza Bildirimi', '1 Pending Fine Notice') : dil('Giriş yaparak sorgulayın', 'Sign in to inquire'),
               subtitleColor: widget.girisYapildiMi ? const Color(0xFFE11D48) : cSlate,
-              trailingBadgeText: widget.girisYapildiMi ? '1 Ödenmemiş' : 'Giriş Gerekli',
+              trailingBadgeText: widget.girisYapildiMi ? dil('1 Ödenmemiş', '1 Unpaid') : dil('Giriş Gerekli', 'Login Required'),
               trailingBadgeBg: widget.girisYapildiMi ? const Color(0xFFFFE4E6) : Colors.grey.shade100,
               trailingBadgeTextColor: widget.girisYapildiMi ? const Color(0xFFBE123C) : cSlate,
               onTap: () {
-                if (!_girisGerekliKontrol('Trafik cezalarınızı ve ödeme kayıtlarınızı görüntülemek')) return;
+                if (!_girisGerekliKontrol(dil('Trafik cezalarınızı ve ödeme kayıtlarınızı görüntülemek', 'Viewing your traffic fines and payments'))) return;
                 if (widget.onOpenFines != null) widget.onOpenFines!();
               },
             ),
@@ -1102,21 +1105,21 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               iconBgColor: const Color(0xFFE0E7FF),
               iconColor: const Color(0xFF4338CA),
               icon: Icons.photo_camera_rounded,
-              title: 'Radar Fotoğrafı & Kanıt İnceleme',
-              subtitle: 'Kamera ihlal görüntüsü ve telemetri',
+              title: dil('Radar Fotoğrafı & Kanıt İnceleme', 'Radar Photo & Evidence Review'),
+              subtitle: dil('Kamera ihlal görüntüsü ve telemetri', 'Camera violation capture & telemetry'),
               onTap: _openRadarFotografKanitModal,
             ),
             _buildMenuItem(
               iconBgColor: const Color(0xFFF1F5F9),
               iconColor: cSlate,
               icon: Icons.article_rounded,
-              title: 'İtiraz & Dilekçe İşlemleri',
-              subtitle: 'Hakem Kurulu online başvuru',
+              title: dil('İtiraz & Dilekçe İşlemleri', 'Objections & Petitions'),
+              subtitle: dil('Hakem Kurulu online başvuru', 'Traffic arbitration board online request'),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ItirazSayfasi(turkceMi: true),
+                    builder: (context) => ItirazSayfasi(turkceMi: KktcDilServisi().turkceMi),
                   ),
                 );
               },
@@ -1128,14 +1131,14 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         // 6. KATEGORİ 4: POLİS & KAMU İLETİŞİMİ
         _buildCategorySection(
           indicatorColor: const Color(0xFF2563EB),
-          title: 'POLİS & KAMU İLETİŞİMİ',
+          title: dil('POLİS & KAMU İLETİŞİMİ', 'POLICE & PUBLIC SERVICES'),
           items: [
             _buildMenuItem(
               iconBgColor: const Color(0xFFEF4444).withOpacity(0.15),
               iconColor: const Color(0xFFEF4444),
               icon: Icons.car_repair_rounded,
-              title: '7/24 KKTC Yol Yardımı & Çekici',
-              subtitle: 'Acil oto çekici, akü & kurtarma hattı',
+              title: dil('7/24 KKTC Yol Yardımı & Çekici', '24/7 TRNC Roadside & Towing'),
+              subtitle: dil('Acil oto çekici, akü & kurtarma hattı', 'Emergency vehicle recovery & towing'),
               subtitleColor: const Color(0xFFDC2626),
               gradientBackground: const LinearGradient(
                 colors: [Color(0xFFFEF2F2), Colors.white],
@@ -1154,21 +1157,21 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               iconBgColor: const Color(0xFFFEE2E2),
               iconColor: const Color(0xFFDC2626),
               icon: Icons.phone_in_talk_rounded,
-              title: 'Acil Trafik İhbar & 155 Polis İmdat',
-              subtitle: '7/24 Kesintisiz Hat',
+              title: dil('Acil Trafik İhbar & 155 Polis İmdat', 'Emergency Traffic & 155 Police'),
+              subtitle: dil('7/24 Kesintisiz Hat', '24/7 Non-stop Hotline'),
               onTap: _ara155,
             ),
             _buildMenuItem(
               iconBgColor: const Color(0xFFE0F2FE),
               iconColor: const Color(0xFF0369A1),
               icon: Icons.menu_book_rounded,
-              title: 'Trafik Dairesi & İletişim Rehberi',
-              subtitle: 'Kaza anında yapılacaklar & şubeler',
+              title: dil('Trafik Dairesi & İletişim Rehberi', 'Traffic Department & Guide'),
+              subtitle: dil('Kaza anında yapılacaklar & şubeler', 'Accident emergency steps & offices'),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const YardimRehberiSayfasi(turkceMi: true),
+                    builder: (context) => YardimRehberiSayfasi(turkceMi: KktcDilServisi().turkceMi),
                   ),
                 );
               },
@@ -1177,22 +1180,22 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         ),
         const SizedBox(height: 22),
 
-        // 7. KATEGORİ 5: GÜVENLİK & SİSTEM İŞLEMLERİ (Önceki Gelişmiş Özellikler)
+        // 7. KATEGORİ 5: GÜVENLİK & SİSTEM İŞLEMLERİ
         _buildCategorySection(
           indicatorColor: const Color(0xFF4F46E5),
-          title: 'GÜVENLİK & SİSTEM İŞLEMLERİ',
+          title: dil('GÜVENLİK & SİSTEM İŞLEMLERİ', 'SECURITY & SYSTEM'),
           items: [
             _buildMenuItem(
               iconBgColor: const Color(0xFFEDE9FE),
               iconColor: const Color(0xFF7C3AED),
               icon: Icons.notifications_active_rounded,
-              title: 'Bildirim & Radar Ayarları',
-              subtitle: 'Hız aşımı ve ceza uyarı tercihleri',
+              title: dil('Bildirim & Radar Ayarları', 'Notification & Radar Settings'),
+              subtitle: dil('Hız aşımı ve ceza uyarı tercihleri', 'Speed excess & fine alert preferences'),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const BildirimAyarlariSayfasi(turkceMi: true),
+                    builder: (context) => BildirimAyarlariSayfasi(turkceMi: KktcDilServisi().turkceMi),
                   ),
                 );
               },
@@ -1201,16 +1204,16 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               iconBgColor: const Color(0xFFE0E7FF),
               iconColor: const Color(0xFF4338CA),
               icon: Icons.receipt_rounded,
-              title: 'Ödeme Dekontları & Makbuz Arşivi',
-              subtitle: 'Geçmiş ödemelerin resmi makbuzları',
+              title: dil('Ödeme Dekontları & Makbuz Arşivi', 'Payment Receipts & Official Archive'),
+              subtitle: dil('Geçmiş ödemelerin resmi makbuzları', 'Official tax receipts of past payments'),
               onTap: () {
-                if (!_girisGerekliKontrol('Geçmiş ödeme dekontları ve makbuz arşivinizi görüntülemek')) return;
+                if (!_girisGerekliKontrol(dil('Geçmiş ödeme dekontları ve makbuz arşivinizi görüntülemek', 'Viewing your past payment receipts archive'))) return;
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => DekontlarSayfasi(
                       dekontlar: _dekontlar,
-                      turkceMi: true,
+                      turkceMi: KktcDilServisi().turkceMi,
                     ),
                   ),
                 );
@@ -1220,15 +1223,15 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               iconBgColor: const Color(0xFFFEF3C7),
               iconColor: const Color(0xFFD97706),
               icon: Icons.manage_search_rounded,
-              title: 'Hızlı Arama & 2026 Ceza Cetveli',
-              subtitle: 'Asgari ücrete endeksli resmi cezalar',
+              title: dil('Hızlı Arama & 2026 Ceza Cetveli', 'Quick Search & 2026 Penalty Table'),
+              subtitle: dil('Asgari ücrete endeksli resmi cezalar', 'Official fines indexed to minimum wage'),
               onTap: () {
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
                   builder: (context) => HizliAramaModalSayfasi(
-                    turkceMi: true,
+                    turkceMi: KktcDilServisi().turkceMi,
                     onHedefeGit: (hedefId) {},
                   ),
                 );
@@ -1238,8 +1241,8 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               iconBgColor: const Color(0xFFCFFAFE),
               iconColor: const Color(0xFF0891B2),
               icon: Icons.sync_rounded,
-              title: 'Mevzuat & Veri Eşitleme',
-              subtitle: 'KKTC resmi sunucuları ile güncel tut',
+              title: dil('Mevzuat & Veri Eşitleme', 'Legislation & Data Sync'),
+              subtitle: dil('KKTC resmi sunucuları ile güncel tut', 'Keep synced with TRNC official servers'),
               onTap: () {
                 GuncellemeServisi.manuelKontrolEt(context, true);
               },
@@ -1255,7 +1258,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         // 9. ALT BİLGİ / TELİF
         Center(
           child: Text(
-            'KKTC Trafik Dairesi Çevrimiçi Portalı v2.4.0',
+            dil('KKTC Trafik Dairesi Çevrimiçi Portalı v2.4.0', 'TRNC Traffic Department Online Portal v2.4.0'),
             style: TextStyle(
               fontSize: 11,
               color: Colors.grey.shade400,
@@ -1265,6 +1268,8 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
         ),
         const SizedBox(height: 16),
       ],
+    );
+      },
     );
   }
 
@@ -1324,7 +1329,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     ),
                   ),
                   Text(
-                    'Bayındırlık ve Ulaştırma Bakanlığı',
+                    dil('Bayındırlık ve Ulaştırma Bakanlığı', 'Ministry of Public Works and Transportation'),
                     style: TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w500,
@@ -1341,14 +1346,14 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              if (!_girisGerekliKontrol('Karekodlu resmi dijital sürücü belgesi oluşturmak')) return;
+              if (!_girisGerekliKontrol(dil('Karekodlu resmi dijital sürücü belgesi oluşturmak', 'Creating QR digital driver license'))) return;
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => BarkodluBelgeSayfasi(
                     kullanici: widget.kullaniciAdi,
                     puan: 85,
-                    turkceMi: true,
+                    turkceMi: KktcDilServisi().turkceMi,
                   ),
                 ),
               );
@@ -1444,7 +1449,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                         runSpacing: 2,
                         children: [
                           Text(
-                            'Misafir Kullanıcı',
+                            dil('Misafir Kullanıcı', 'Guest User'),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w800,
@@ -1459,7 +1464,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                               border: Border.all(color: koyuMu ? const Color(0xFF334155) : Colors.grey.shade300),
                             ),
                             child: Text(
-                              'Giriş Yapılmadı',
+                              dil('Giriş Yapılmadı', 'Not Signed In'),
                               style: TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
@@ -1471,7 +1476,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        'Cezalar ve araç dökümü için tıklayın',
+                        dil('Cezalar ve araç dökümü için tıklayın', 'Tap to view fines and vehicles'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -1481,16 +1486,16 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.login_rounded, size: 12, color: Color(0xFF10B981)),
-                          SizedBox(width: 4),
+                          const Icon(Icons.login_rounded, size: 12, color: Color(0xFF10B981)),
+                          const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              'Kimlik / Ehliyet ile Giriş Yap',
+                              dil('Kimlik / Ehliyet ile Giriş Yap', 'Sign In with ID / Driving License'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 10.5,
                                 color: Color(0xFF10B981),
                                 fontWeight: FontWeight.w700,
@@ -1509,19 +1514,19 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     color: koyuMu ? const Color(0xFF2563EB) : cNavy,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Giriş',
-                        style: TextStyle(
+                        dil('Giriş', 'Sign In'),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11.5,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      SizedBox(width: 4),
-                      Icon(Icons.arrow_forward_rounded, size: 13, color: Colors.white),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_forward_rounded, size: 13, color: Colors.white),
                     ],
                   ),
                 ),
@@ -1640,7 +1645,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                                   border: Border.all(color: koyuMu ? const Color(0xFFEAB308).withOpacity(0.5) : cAccent.withOpacity(0.4)),
                                 ),
                                 child: Text(
-                                  '85/100 Puan',
+                                  dil('85/100 Puan', '85/100 Pts'),
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w800,
@@ -1652,7 +1657,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            'KKTC Ehliyet: 123456',
+                            dil('KKTC Ehliyet: 123456', 'TRNC License: 123456'),
                             style: TextStyle(
                               fontSize: 12,
                               color: subColor,
@@ -1669,7 +1674,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  'Sınıf A2, B, D',
+                                  dil('Sınıf A2, B, D', 'Class A2, B, D'),
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -1680,8 +1685,8 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                               const SizedBox(width: 6),
                               Text('•', style: TextStyle(color: subColor, fontSize: 11)),
                               const SizedBox(width: 6),
-                              const Text(
-                                'Geçerli Sürücü',
+                              Text(
+                                dil('Geçerli Sürücü', 'Valid Driver'),
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: Color(0xFF10B981),
@@ -1961,7 +1966,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     Icon(Icons.settings_outlined, size: 19, color: iconColor),
                     const SizedBox(width: 8),
                     Text(
-                      'Ayarlar',
+                      dil('Ayarlar', 'Settings'),
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
@@ -2023,7 +2028,7 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      widget.girisYapildiMi ? 'Çıkış Yap' : 'Giriş Yap',
+                      widget.girisYapildiMi ? dil('Çıkış Yap', 'Sign Out') : dil('Giriş Yap', 'Sign In'),
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,

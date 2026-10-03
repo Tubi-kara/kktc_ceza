@@ -330,7 +330,7 @@ class _KktcETrafikDashboardSayfasiState
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: KktcTemaServisi(),
+      listenable: Listenable.merge([KktcTemaServisi(), KktcDilServisi()]),
       builder: (context, _) {
         final tema = KktcTemaServisi();
         final bool koyuMu = tema.isKoyu(context);
@@ -434,7 +434,7 @@ class _KktcETrafikDashboardSayfasiState
         const SizedBox(height: 10),
 
         // 2. Resmi KKTC Kamu Ağı ve Sunucu Durum Şeridi (Canlı Bağlantı)
-        const KamuSunucuDurumSeridi(turkceMi: true),
+        KamuSunucuDurumSeridi(turkceMi: KktcDilServisi().turkceMi),
         const SizedBox(height: 12),
 
         // 3. 🗺️ CANLI KKTC TRAFİK & RADAR HARİTASI (Doğrudan Ana Ekranda)
@@ -506,7 +506,7 @@ class _KktcETrafikDashboardSayfasiState
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            'CANLI KKTC TRAFİK & RADAR',
+                            dil('CANLI KKTC TRAFİK & RADAR', 'LIVE TRNC TRAFFIC & RADAR'),
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
@@ -517,7 +517,7 @@ class _KktcETrafikDashboardSayfasiState
                         ],
                       ),
                       Text(
-                        'Canlı Yol & Harita',
+                        dil('Canlı Yol & Harita', 'Live Traffic & Map'),
                         style: TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
@@ -547,7 +547,7 @@ class _KktcETrafikDashboardSayfasiState
                       Icon(Icons.fullscreen_rounded, size: 16, color: cInk),
                       SizedBox(width: 4),
                       Text(
-                        'Tam Ekran',
+                        dil('Tam Ekran', 'Full Screen'),
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w700,
@@ -834,7 +834,7 @@ class _KktcETrafikDashboardSayfasiState
                       children: [
                         _buildSearchFilterChip(
                           icon: Icons.home_rounded,
-                          label: 'Evim',
+                          label: dil('Evim', 'Home'),
                           color: const Color(0xFF10B981),
                           onTap: () {
                             Navigator.pop(ctx);
@@ -862,7 +862,7 @@ class _KktcETrafikDashboardSayfasiState
                         const SizedBox(width: 6),
                         _buildSearchFilterChip(
                           icon: Icons.work_rounded,
-                          label: 'İşim',
+                          label: dil('İşim', 'Work'),
                           color: const Color(0xFF2563EB),
                           onTap: () {
                             Navigator.pop(ctx);
@@ -1025,7 +1025,7 @@ class _KktcETrafikDashboardSayfasiState
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Ceza, radar veya kanun maddesi ara...',
+                  dil('Ceza, radar veya kanun maddesi ara...', 'Search fine, radar or law article...'),
                   style: TextStyle(
                     color: cMuted,
                     fontSize: 13,
@@ -1190,7 +1190,7 @@ class _KktcETrafikDashboardSayfasiState
                   Expanded(
                     child: _buildQuickNavButton(
                       icon: Icons.home_rounded,
-                      label: 'Evim',
+                      label: dil('Evim', 'Home'),
                       color: const Color(0xFF10B981),
                       onTap: () {
                         HapticFeedback.heavyImpact();
@@ -1218,7 +1218,7 @@ class _KktcETrafikDashboardSayfasiState
                   Expanded(
                     child: _buildQuickNavButton(
                       icon: Icons.work_rounded,
-                      label: 'İşim',
+                      label: dil('İşim', 'Work'),
                       color: const Color(0xFF2563EB),
                       onTap: () {
                         HapticFeedback.heavyImpact();
@@ -1566,7 +1566,7 @@ class _KktcETrafikDashboardSayfasiState
                                       Row(
                                         children: [
                                           Text(
-                                            'KKTC Yol Forumu',
+                                            dil('KKTC Yol Forumu', 'TRNC Road Forum'),
                                             style: TextStyle(
                                               fontSize: 13.5,
                                               fontWeight: FontWeight.w800,
@@ -1578,7 +1578,7 @@ class _KktcETrafikDashboardSayfasiState
                                         ],
                                       ),
                                       Text(
-                                        '${filtrelenmisBildirimler.length} aktif yol olayı bildirildi',
+                                        dil('${filtrelenmisBildirimler.length} aktif yol olayı bildirildi', '${filtrelenmisBildirimler.length} active road reports'),
                                         style: TextStyle(
                                           fontSize: 10.5,
                                           color: cMuted,
@@ -1609,7 +1609,7 @@ class _KktcETrafikDashboardSayfasiState
                                         Icon(Icons.add_location_alt_rounded, size: 14, color: Colors.white),
                                         SizedBox(width: 4),
                                         Text(
-                                          '+ Bildir',
+                                          dil('+ Bildir', '+ Report'),
                                           style: TextStyle(
                                             fontSize: 11.5,
                                             fontWeight: FontWeight.w800,
@@ -1639,28 +1639,28 @@ class _KktcETrafikDashboardSayfasiState
                               children: [
                                 _buildYolFiltreChip(
                                   id: 'tumu',
-                                  label: 'Tümü (${_yolBildirimleri.length})',
+                                  label: dil('Tümü (${_yolBildirimleri.length})', 'All (${_yolBildirimleri.length})'),
                                   icon: Icons.alt_route_rounded,
                                   renk: isKoyu ? const Color(0xFF2563EB) : const Color(0xFF0F172A),
                                   onSelect: () => setSheetState(() => _seciliYolFiltresi = 'tumu'),
                                 ),
                                 _buildYolFiltreChip(
                                   id: 'cevirme',
-                                  label: '🚓 Çevirme (${_yolBildirimleri.where((b) => b.tip == YolForumTipi.cevirme).length})',
+                                  label: dil('🚓 Çevirme (${_yolBildirimleri.where((b) => b.tip == YolForumTipi.cevirme).length})', '🚓 Police (${_yolBildirimleri.where((b) => b.tip == YolForumTipi.cevirme).length})'),
                                   icon: Icons.local_police_rounded,
                                   renk: const Color(0xFF2563EB),
                                   onSelect: () => setSheetState(() => _seciliYolFiltresi = 'cevirme'),
                                 ),
                                 _buildYolFiltreChip(
                                   id: 'kaza',
-                                  label: '💥 Kaza (${_yolBildirimleri.where((b) => b.tip == YolForumTipi.kaza).length})',
+                                  label: dil('💥 Kaza (${_yolBildirimleri.where((b) => b.tip == YolForumTipi.kaza).length})', '💥 Accident (${_yolBildirimleri.where((b) => b.tip == YolForumTipi.kaza).length})'),
                                   icon: Icons.car_crash_rounded,
                                   renk: const Color(0xFFEF4444),
                                   onSelect: () => setSheetState(() => _seciliYolFiltresi = 'kaza'),
                                 ),
                                 _buildYolFiltreChip(
                                   id: 'calisma',
-                                  label: '🚧 Çalışma (${_yolBildirimleri.where((b) => b.tip == YolForumTipi.calisma).length})',
+                                  label: dil('🚧 Çalışma (${_yolBildirimleri.where((b) => b.tip == YolForumTipi.calisma).length})', '🚧 Work (${_yolBildirimleri.where((b) => b.tip == YolForumTipi.calisma).length})'),
                                   icon: Icons.construction_rounded,
                                   renk: const Color(0xFFF59E0B),
                                   onSelect: () => setSheetState(() => _seciliYolFiltresi = 'calisma'),
@@ -3085,7 +3085,7 @@ class _KktcETrafikDashboardSayfasiState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'KKTC RESMİ AKARYAKIT TARİFESİ',
+                      dil('KKTC RESMİ AKARYAKIT TARİFESİ', 'TRNC OFFICIAL FUEL TARIFF'),
                       style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w800,
@@ -5232,7 +5232,7 @@ class _KktcETrafikDashboardSayfasiState
               ),
               const SizedBox(height: 18),
               Text(
-                'Giriş Yapılması Gerekiyor',
+                dil('Giriş Yapılması Gerekiyor', 'Authentication Required'),
                 style: TextStyle(
                   fontSize: 19,
                   fontWeight: FontWeight.w900,
@@ -5243,7 +5243,7 @@ class _KktcETrafikDashboardSayfasiState
               ),
               const SizedBox(height: 8),
               Text(
-                'Kişisel radar cezalarınızı, seyrüsefer harçlarınızı, fenni muayene ve araç sigorta dökümlerinizi görüntülemek için KKTC Kimlik veya Ehliyet numaranız ile giriş yapmalısınız.',
+                dil('Kişisel radar cezalarınızı, seyrüsefer harçlarınızı, fenni muayene ve araç sigorta dökümlerinizi görüntülemek için KKTC Kimlik veya Ehliyet numaranız ile giriş yapmalısınız.', 'To view your personal radar fines, road tax fees, vehicle inspections and insurance policies, please log in with your TRNC ID or Driver License.'),
                 style: TextStyle(
                   fontSize: 13,
                   color: cMuted,
@@ -5267,7 +5267,7 @@ class _KktcETrafikDashboardSayfasiState
                   },
                   icon: const Icon(Icons.login_rounded, size: 18, color: cLime),
                   label: const Text(
-                    'Kimlik / Ehliyet ile Giriş Yap',
+                    dil('Kimlik / Ehliyet ile Giriş Yap', 'Sign In with ID / Driving License'),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
@@ -5290,7 +5290,7 @@ class _KktcETrafikDashboardSayfasiState
                   setState(() => _selectedTabIndex = 0);
                 },
                 child: Text(
-                  'Ana Panele Geri Dön',
+                  dil('Ana Panele Geri Dön', 'Back to Dashboard'),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -5317,7 +5317,7 @@ class _KktcETrafikDashboardSayfasiState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Cezalar & Sigorta',
+                  dil('Cezalar & Sigorta', 'Fines & Insurance'),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
@@ -5328,10 +5328,10 @@ class _KktcETrafikDashboardSayfasiState
                 const SizedBox(height: 2),
                 Text(
                   _cezaSigortaSubTab == 0
-                      ? 'Radar & Trafik İhlal Takibi'
+                      ? dil('Radar & Trafik İhlal Takibi', 'Radar & Violation Tracking')
                       : (_cezaSigortaSubTab == 1
-                          ? 'Seyrüsefer Harcı & Ruhsat Durumu'
-                          : 'Poliçeler & Fenni Muayene'),
+                          ? dil('Seyrüsefer Harcı & Ruhsat Durumu', 'Road Tax & Registration Status')
+                          : dil('Poliçeler & Fenni Muayene', 'Insurance & Inspections')),
                   style: TextStyle(fontSize: 12, color: cMuted),
                 ),
               ],
@@ -5370,7 +5370,7 @@ class _KktcETrafikDashboardSayfasiState
           child: Row(
             children: [
               _buildSubTabItem(
-                title: 'Cezalarım',
+                title: dil('Cezalarım', 'My Fines'),
                 badgeText: _cezaOdendi ? null : '1',
                 index: 0,
                 icon: Icons.receipt_long_rounded,
@@ -7564,7 +7564,7 @@ class _KktcETrafikDashboardSayfasiState
                               Row(
                                 children: [
                                   Text(
-                                    _girisYapildiMi ? 'KKTC e-TRAFİK' : 'KKTC e-TRAFİK • MİSAFİR',
+                                    _girisYapildiMi ? 'KKTC e-TRAFİK' : dil('KKTC e-TRAFİK • MİSAFİR', 'TRNC e-TRAFFIC • GUEST'),
                                     style: TextStyle(
                                       fontSize: 11,
                                       color: cInk,
@@ -7584,7 +7584,7 @@ class _KktcETrafikDashboardSayfasiState
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                _girisYapildiMi ? 'Merhaba, $_kullaniciAdi' : 'Hoş Geldiniz',
+                                _girisYapildiMi ? dil('Merhaba, $_kullaniciAdi', 'Hello, $_kullaniciAdi') : dil('Hoş Geldiniz', 'Welcome'),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -7607,6 +7607,8 @@ class _KktcETrafikDashboardSayfasiState
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        _buildHeaderLanguageButton(),
+                        const SizedBox(width: 6),
                         _buildHeaderIconButton(
                           icon: koyuMu ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
                           onTap: () => tema.showTemaSecimDialog(context),
@@ -7640,8 +7642,8 @@ class _KktcETrafikDashboardSayfasiState
                                   Icon(Icons.login_rounded, size: 15, color: cLime),
                                   SizedBox(width: 5),
                                   Text(
-                                    'Giriş Yap',
-                                    style: TextStyle(
+                                    dil('Giriş Yap', 'Sign In'),
+                                    style: const TextStyle(
                                       fontSize: 12.5,
                                       fontWeight: FontWeight.w800,
                                       color: Colors.white,
@@ -7659,6 +7661,8 @@ class _KktcETrafikDashboardSayfasiState
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        _buildHeaderLanguageButton(),
+                        const SizedBox(width: 6),
                         _buildHeaderIconButton(
                           icon: koyuMu ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
                           onTap: () => tema.showTemaSecimDialog(context),
@@ -7695,6 +7699,55 @@ class _KktcETrafikDashboardSayfasiState
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+    Widget _buildHeaderLanguageButton() {
+    final koyuMu = KktcTemaServisi().isKoyu(context);
+    final bool isEn = KktcDilServisi().isEnglish;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          KktcDilServisi().showDilSecimDialog(context);
+        },
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          height: 37,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: koyuMu ? const Color(0xFF16203B) : cSurface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: koyuMu ? const Color(0xFF263354) : cSoft),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: koyuMu ? 0.25 : 0.03),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                isEn ? '🇬🇧' : '🇹🇷',
+                style: const TextStyle(fontSize: 13),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                isEn ? 'EN' : 'TR',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w800,
+                  color: koyuMu ? const Color(0xFF38BDF8) : cInk,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -7815,7 +7868,7 @@ class _KktcETrafikDashboardSayfasiState
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            _girisYapildiMi ? 'EHLİYET SAĞLIK PUANI' : 'EHLİYET SAĞLIK PUANI (KİLİTLİ)',
+                            _girisYapildiMi ? dil('EHLİYET SAĞLIK PUANI', 'DRIVER LICENSE SCORE') : dil('EHLİYET SAĞLIK PUANI (KİLİTLİ)', 'LICENSE SCORE (LOCKED)'),
                             style: TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.w700,
@@ -7828,7 +7881,7 @@ class _KktcETrafikDashboardSayfasiState
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      _girisYapildiMi ? 'Güvenli Sürücü Seviyesi' : 'Puanınızı Görmek İçin Giriş Yapın',
+                      _girisYapildiMi ? dil('Güvenli Sürücü Seviyesi', 'Safe Driver Level') : dil('Puanınızı Görmek İçin Giriş Yapın', 'Sign In to View Score'),
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
@@ -7844,9 +7897,9 @@ class _KktcETrafikDashboardSayfasiState
                             text: TextSpan(
                               style: TextStyle(fontSize: 11.5, color: cMuted),
                               children: [
-                                TextSpan(text: 'Toplam Ceza: '),
+                                TextSpan(text: dil('Toplam Ceza: ', 'Penalty: ')),
                                 TextSpan(
-                                  text: '15 Puan',
+                                  text: dil('15 Puan', '15 Points'),
                                   style: TextStyle(
                                     color: cInk,
                                     fontWeight: FontWeight.w700,
@@ -7860,7 +7913,7 @@ class _KktcETrafikDashboardSayfasiState
                             child: Text('•', style: TextStyle(color: cMuted, fontSize: 11)),
                           ),
                           Text(
-                            'Sınıf: A2, B, D',
+                            dil('Sınıf: A2, B, D', 'Class: A2, B, D'),
                             style: TextStyle(fontSize: 11.5, color: cMuted),
                           ),
                         ],
@@ -7871,7 +7924,7 @@ class _KktcETrafikDashboardSayfasiState
                           Icon(Icons.lock_outline_rounded, size: 13, color: cMuted),
                           SizedBox(width: 4),
                           Text(
-                            'Ceza ve ehliyet sınıfı dökümü için tıklayın',
+                            dil('Ceza ve ehliyet sınıfı dökümü için tıklayın', 'Tap for penalty and license breakdown'),
                             style: TextStyle(fontSize: 11.5, color: cMuted, fontWeight: FontWeight.w500),
                           ),
                         ],
@@ -7926,7 +7979,7 @@ class _KktcETrafikDashboardSayfasiState
                           Icon(Icons.lock_rounded, color: cLime, size: 22),
                           SizedBox(height: 2),
                           Text(
-                            'GİRİŞ',
+                            dil('GİRİŞ', 'SIGN IN'),
                             style: TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
@@ -7955,9 +8008,7 @@ class _KktcETrafikDashboardSayfasiState
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              _girisYapildiMi
-                  ? 'KAYITLI ARAÇLARIM (${_vehicles.length})'
-                  : 'KAYITLI ARAÇLARIM (GİRİŞ GEREKLİ)',
+              _girisYapildiMi ? dil('KAYITLI ARAÇLARIM (${_vehicles.length})', 'MY VEHICLES (${_vehicles.length})') : dil('KAYITLI ARAÇLARIM (GİRİŞ GEREKLİ)', 'MY VEHICLES (LOGIN REQUIRED)'),
               style: TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w800,
@@ -7978,7 +8029,7 @@ class _KktcETrafikDashboardSayfasiState
                 );
               },
               child: Text(
-                'Tümünü Yönet',
+                dil('Tümünü Yönet', 'Manage All'),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -8100,7 +8151,7 @@ class _KktcETrafikDashboardSayfasiState
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            'AKTİF',
+                            dil('AKTİF', 'ACTIVE'),
                             style: TextStyle(
                               fontSize: 8.5,
                               fontWeight: FontWeight.w900,
@@ -8113,7 +8164,7 @@ class _KktcETrafikDashboardSayfasiState
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _girisYapildiMi ? model : 'Giriş Yapın',
+                    _girisYapildiMi ? model : dil('Giriş Yapın', 'Sign In'),
                     style: TextStyle(
                       fontSize: 11,
                       color: isSelected && _girisYapildiMi ? Colors.white.withOpacity(0.8) : cMuted,
@@ -8159,7 +8210,7 @@ class _KktcETrafikDashboardSayfasiState
               Icon(Icons.add_circle_outline_rounded, size: 19, color: cMuted),
               SizedBox(width: 6),
               Text(
-                'Araç Ekle',
+                dil('Araç Ekle', 'Add Vehicle'),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -8181,7 +8232,7 @@ class _KktcETrafikDashboardSayfasiState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'HIZLI İŞLEMLER & DURUM',
+          dil('HIZLI İŞLEMLER & DURUM', 'QUICK ACTIONS & STATUS'),
           style: TextStyle(
             fontSize: 11.5,
             fontWeight: FontWeight.w800,
@@ -8209,7 +8260,7 @@ class _KktcETrafikDashboardSayfasiState
                   border: Border.all(color: const Color(0xFF93C5FD)),
                 ),
                 child: const Text(
-                  'CANLI BİLDİRİM',
+                  dil('CANLI BİLDİRİM', 'LIVE REPORTS'),
                   style: TextStyle(
                     fontSize: 8.5,
                     fontWeight: FontWeight.w900,
@@ -8218,8 +8269,8 @@ class _KktcETrafikDashboardSayfasiState
                   ),
                 ),
               ),
-              title: 'Yol Forum',
-              subtitle: 'Çevirme, Kaza & Yol Olayı',
+              title: dil('Yol Forum', 'Road Forum'),
+              subtitle: dil('Çevirme, Kaza & Yol Olayı', 'Checkpoints, Accidents & Events'),
               onTap: _openYolForumModal,
             ),
 
@@ -8236,7 +8287,7 @@ class _KktcETrafikDashboardSayfasiState
                 ),
                 child: Text(
                   _girisYapildiMi
-                      ? (_seyruseferYenilendi ? 'Güncel' : '86 Gün Kaldı')
+                      ? (_seyruseferYenilendi ? dil('Güncel', 'Up to date') : dil('86 Gün Kaldı', '86 Days Left'))
                       : 'GİRİŞ GEREKLİ',
                   style: TextStyle(
                     fontSize: 9.5,
@@ -8247,10 +8298,10 @@ class _KktcETrafikDashboardSayfasiState
                   ),
                 ),
               ),
-              title: 'Seyrüsefer & Sigorta',
+              title: dil('Seyrüsefer & Sigorta', 'Road Tax & Insurance'),
               subtitle: _girisYapildiMi
-                  ? (_seyruseferYenilendi ? '2027 Harcı Ödendi' : '2026/2. Dönem')
-                  : 'Araç Harç Durumu',
+                  ? (_seyruseferYenilendi ? dil('2027 Harcı Ödendi', '2027 Fee Paid') : dil('2026/2. Dönem', '2026 / Term 2'))
+                  : dil('Araç Harç Durumu', 'Vehicle Fee Status'),
               onTap: () {
                 _girisKontrolEt(
                   islemAdi: 'Seyrüsefer harcı ve sigorta poliçelerini görüntülemek',
@@ -8275,7 +8326,7 @@ class _KktcETrafikDashboardSayfasiState
                 ),
                 child: Text(
                   _girisYapildiMi
-                      ? (_cezaOdendi ? 'TEMİZ' : '1 ÖDENMEMİŞ')
+                      ? (_cezaOdendi ? dil('TEMİZ', 'CLEAR') : dil('1 ÖDENMEMİŞ', '1 UNPAID'))
                       : 'GİRİŞ GEREKLİ',
                   style: TextStyle(
                     fontSize: 9.5,
@@ -8285,9 +8336,9 @@ class _KktcETrafikDashboardSayfasiState
                   ),
                 ),
               ),
-              title: 'Cezalarım',
-              bottomLabel: _girisYapildiMi ? 'Toplam Borç' : 'Sorgula',
-              bottomValue: _girisYapildiMi ? (_cezaOdendi ? '₺0' : '₺1.850') : 'Giriş Yap',
+              title: dil('Cezalarım', 'My Fines'),
+              bottomLabel: _girisYapildiMi ? dil('Toplam Borç', 'Total Due') : dil('Sorgula', 'Inquire'),
+              bottomValue: _girisYapildiMi ? (_cezaOdendi ? '₺0' : '₺1.850') : dil('Giriş Yap', 'Sign In'),
               onTap: () {
                 _girisKontrolEt(
                   islemAdi: 'Trafik cezalarınızı görüntülemek ve ödemek',
@@ -8322,7 +8373,7 @@ class _KktcETrafikDashboardSayfasiState
                   ),
                 ),
               ),
-              title: '7/24 Yol Yardımı',
+              title: dil('7/24 Yol Yardımı', '24/7 Road Assistance'),
               subtitle: 'Çekici, Akü & Acil Destek',
               onTap: _showYolYardimBottomSheet,
             ),
@@ -8799,7 +8850,7 @@ class _KktcETrafikDashboardSayfasiState
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'CEZA & İHLAL SORGULAMA',
+                      dil('CEZA & İHLAL SORGULAMA', 'FINE & VIOLATION INQUIRY'),
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w800,
@@ -8816,7 +8867,7 @@ class _KktcETrafikDashboardSayfasiState
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
-                    'MİSAFİR MODU',
+                    dil('MİSAFİR MODU', 'GUEST MODE'),
                     style: TextStyle(
                       fontSize: 9.5,
                       fontWeight: FontWeight.w700,
@@ -8861,7 +8912,7 @@ class _KktcETrafikDashboardSayfasiState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Radar ve İhlal Bildirimleri',
+                          dil('Radar ve İhlal Bildirimleri', 'Radar & Violation Alerts'),
                           style: TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w800,
@@ -8870,7 +8921,7 @@ class _KktcETrafikDashboardSayfasiState
                         ),
                         SizedBox(height: 2),
                         Text(
-                          'Adınıza kayıtlı araçların cezalarını görmek için giriş yapın.',
+                          dil('Adınıza kayıtlı araçların cezalarını görmek için giriş yapın.', 'Log in to view fines registered to your vehicles.'),
                           style: TextStyle(
                             fontSize: 11,
                             color: cMuted,
@@ -8892,7 +8943,7 @@ class _KktcETrafikDashboardSayfasiState
                 },
                 icon: const Icon(Icons.login_rounded, size: 16, color: cLime),
                 label: const Text(
-                  'Kimlik / Ehliyet ile Giriş Yap',
+                  dil('Kimlik / Ehliyet ile Giriş Yap', 'Sign In with ID / Driving License'),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
@@ -8971,7 +9022,7 @@ class _KktcETrafikDashboardSayfasiState
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'SON İHLAL BİLDİRİMİ',
+                    dil('SON İHLAL BİLDİRİMİ', 'LATEST VIOLATION REPORT'),
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w800,
@@ -9180,13 +9231,13 @@ class _KktcETrafikDashboardSayfasiState
               _buildBottomNavItem(
                 index: 0,
                 icon: Icons.grid_view_rounded,
-                label: 'Panel',
+                label: dil('Panel', 'Dashboard'),
               ),
               // 2. Yol Tarifi (Tab 1 - Panelin Yanındaki Konum)
               _buildBottomNavItem(
                 index: 1,
                 icon: Icons.navigation_rounded,
-                label: 'Yol Tarifi',
+                label: dil('Yol Tarifi', 'Route'),
                 hasActiveYellowBadge: true,
                 onCustomTap: () {
                   setState(() {
@@ -9196,11 +9247,11 @@ class _KktcETrafikDashboardSayfasiState
               ),
               // 3. E-Denetim (Orta Yükseltilmiş Hızlı Buton)
               _buildCenterActionItem(
-                label: 'E-Denetim',
+                label: dil('E-Denetim', 'E-Pass'),
                 onTap: () {
                   HapticFeedback.heavyImpact();
                   _girisKontrolEt(
-                    islemAdi: 'E-Denetim barkodlu dijital belge oluşturmak',
+                    islemAdi: dil('E-Denetim barkodlu dijital belge oluşturmak', 'Creating E-Pass digital document'),
                     onGirisSonrasi: () {
                       Navigator.push(
                         context,
@@ -9208,7 +9259,7 @@ class _KktcETrafikDashboardSayfasiState
                           builder: (context) => BarkodluBelgeSayfasi(
                             kullanici: _kullaniciAdi,
                             puan: 85,
-                            turkceMi: true,
+                            turkceMi: KktcDilServisi().turkceMi,
                           ),
                         ),
                       );
@@ -9220,7 +9271,7 @@ class _KktcETrafikDashboardSayfasiState
               _buildBottomNavItem(
                 index: 3,
                 icon: Icons.receipt_long_rounded,
-                label: 'Cezalar & Sigorta',
+                label: dil('Cezalar', 'Fines'),
                 hasNotificationBadge: _girisYapildiMi && !_cezaOdendi,
                 onCustomTap: () {
                   setState(() {
@@ -9236,7 +9287,7 @@ class _KktcETrafikDashboardSayfasiState
               _buildBottomNavItem(
                 index: 4,
                 icon: Icons.menu_rounded,
-                label: 'Menü',
+                label: dil('Menü', 'Menu'),
                 isMenuPill: true,
               ),
             ],

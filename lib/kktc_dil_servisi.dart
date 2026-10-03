@@ -10,6 +10,11 @@ enum KktcDilModu {
   en,
 }
 
+/// Çoklu dil çeviri yardımcısı (Türkçe / İngilizce)
+String dil(String tr, String en) {
+  return KktcDilServisi().isEnglish ? en : tr;
+}
+
 /// KKTC e-Trafik Dil Yönetim Servisi (Singleton)
 class KktcDilServisi extends ChangeNotifier {
   static final KktcDilServisi _instance = KktcDilServisi._internal();
