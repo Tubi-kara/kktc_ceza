@@ -54,8 +54,6 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
 
   // Giriş Buton Durumu: 0: Normal, 1: Yükleniyor, 2: Başarılı
   int _submitState = 0;
-  // Biyometrik Durumu: 0: Normal, 1: Doğrulanıyor, 2: Doğrulandı
-  int _biometricState = 0;
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -216,34 +214,6 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
     );
   }
 
-  // Biyometrik Simülasyon
-  void _simulateBiometric() async {
-    HapticFeedback.mediumImpact();
-    setState(() {
-      _biometricState = 1; // Doğrulanıyor
-    });
-
-    await Future.delayed(const Duration(milliseconds: 1000));
-    if (!mounted) return;
-
-    setState(() {
-      _biometricState = 2; // Doğrulandı
-    });
-    HapticFeedback.heavyImpact();
-
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (!mounted) return;
-
-    setState(() {
-      _idController.text = 'D-849201';
-      _passwordController.text = '••••••••••••';
-      _biometricState = 0;
-    });
-
-    // Otomatik giriş
-    _handleLogin();
-  }
-
   // 📅 Ehliyet Son Kullanma Tarihi Seçici (Takvim)
   Future<void> _selectLicenseExpiryDate() async {
     HapticFeedback.lightImpact();
@@ -281,6 +251,8 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
   // 📱 SMS Telefon Doğrulama Modalı (OTP Akışı)
   void _showSmsVerificationSheet({
     required String phone,
+    String? licenseNo,
+    bool isLogin = false,
     required VoidCallback onVerified,
   }) {
     HapticFeedback.mediumImpact();
@@ -427,8 +399,12 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
                     const SizedBox(height: 6),
                     Text(
                       _isEnglish
-                          ? 'Enter the 4-digit code sent to $phone'
-                          : '$phone numaralı telefonunuza gönderilen 4 haneli SMS kodunu girin.',
+                          ? (licenseNo != null
+                              ? 'Enter the 4-digit SMS code sent to $phone registered to Driving License $licenseNo.'
+                              : 'Enter the 4-digit code sent to $phone')
+                          : (licenseNo != null
+                              ? '$licenseNo numaralı ehliyetinize kayıtlı $phone numaralı telefonunuza gönderilen 4 haneli SMS kodunu girin.'
+                              : '$phone numaralı telefonunuza gönderilen 4 haneli SMS kodunu girin.'),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: cText.withOpacity(0.70),
@@ -576,7 +552,9 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
                                   const Icon(Icons.check_circle_rounded, size: 18),
                                   const SizedBox(width: 8),
                                   Text(
-                                    _isEnglish ? 'Verify & Sign In' : 'Doğrula ve Giriş Yap',
+                                    isLogin
+                                        ? (_isEnglish ? 'Verify & Sign In' : 'Doğrula ve Giriş Yap')
+                                        : (_isEnglish ? 'Verify & Complete Register' : 'Doğrula ve Kaydı Tamamla'),
                                     style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13.5),
                                   ),
                                 ],
@@ -595,15 +573,16 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
     });
   }
 
-  // Giriş Yap Butonu (Ehliyet No & Şifre ile)
+  // Giriş Yap Butonu (Ehliyet No & Şifre ile SMS Doğrulamalı)
   void _handleLogin() async {
     if (_submitState != 0) return;
 
-    if (_idController.text.trim().isEmpty) {
+    final licenseNo = _idController.text.trim();
+    if (licenseNo.isEmpty) {
       _showSnackBar(
         _isEnglish
             ? 'Please enter your Driving License Number'
-            : 'Lütfen Sürüş Ehliyet Numaranızı girin (Örn: D-849201)',
+            : 'Lütfen Ehliyet Numaranızı girin',
       );
       _idFocusNode.requestFocus();
       return;
@@ -618,25 +597,47 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
     }
 
     FocusScope.of(context).unfocus();
-    setState(() => _submitState = 1); // Loading
 
-    await Future.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
-
-    setState(() => _submitState = 2); // Success
-    HapticFeedback.vibrate();
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (!mounted) return;
-
-    if (widget.onLoginSuccess != null) {
-      widget.onLoginSuccess!();
-    } else {
-      _showSnackBar(
-        _isEnglish ? 'Login successful!' : 'Ehliyet doğrulandı! Giriş başarılı!',
-        isSuccess: true,
-      );
+    // Sürüş ehliyet numarasına kayıtlı KKTC telefon numarasını çözümle
+    String maskedPhone = '0533 *** ** 42';
+    final digits = licenseNo.replaceAll(RegExp(r'[^0-9]'), '');
+    if (licenseNo.toUpperCase().contains('849201') || licenseNo.contains('Ahmet')) {
+      maskedPhone = '0533 *** ** 20';
+    } else if (licenseNo.toUpperCase().contains('554210') || licenseNo.contains('Can')) {
+      maskedPhone = '0548 *** ** 10';
+    } else if (licenseNo.toUpperCase().contains('109283') || licenseNo.contains('Mehmet')) {
+      maskedPhone = '0542 *** ** 83';
+    } else if (digits.length >= 2) {
+      final last2 = digits.substring(digits.length - 2);
+      maskedPhone = '0533 *** ** $last2';
     }
+
+    // 📱 EHLİYETE KAYITLI TELEFON NUMARASINA SMS GÖNDER & ONAYLA
+    _showSmsVerificationSheet(
+      phone: maskedPhone,
+      licenseNo: licenseNo,
+      isLogin: true,
+      onVerified: () async {
+        setState(() => _submitState = 1); // Loading
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (!mounted) return;
+
+        setState(() => _submitState = 2); // Success
+        HapticFeedback.vibrate();
+
+        _showSnackBar(
+          _isEnglish ? 'SMS Verified! Welcome.' : 'SMS kodu doğrulandı! Giriş başarılı.',
+          isSuccess: true,
+        );
+
+        await Future.delayed(const Duration(milliseconds: 400));
+        if (!mounted) return;
+
+        if (widget.onLoginSuccess != null) {
+          widget.onLoginSuccess!();
+        }
+      },
+    );
   }
 
   // Kayıt Ol Butonu (Ehliyet No, Son Kullanma Tarihi, Telefon SMS ile)
@@ -660,7 +661,7 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
       _showSnackBar(
         _isEnglish
             ? 'Please enter your Driving License Number'
-            : 'Lütfen Sürüş Ehliyet Numaranızı girin (Örn: D-849201)',
+            : 'Lütfen Ehliyet Numaranızı girin',
       );
       return;
     }
@@ -737,17 +738,6 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
     );
   }
 
-  // Çağrı 155 Başlatma
-  Future<void> _callTrafficHelp() async {
-    final Uri telUri = Uri.parse('tel:155');
-    if (await canLaunchUrl(telUri)) {
-      await launchUrl(telUri);
-    } else {
-      _showSnackBar(
-        _isEnglish ? 'Call failed: 155' : 'Arama başlatılamadı: 155',
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -819,10 +809,6 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
 
                         // Modern Cam Efektli Form Kartı (Giriş veya Kayıt)
                         _isLoginTab ? _buildLoginFormCard() : _buildRegisterFormCard(),
-                        const SizedBox(height: 24),
-
-                        // Alt Güvenlik & İletişim Bilgisi
-                        _buildSecurityFooter(),
                       ],
                     ),
                   ),
@@ -1170,27 +1156,24 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
             children: [
               // Sürüş Ehliyet No Alanı (Giriş)
               _buildFieldLabel(
-                label: _isEnglish
-                    ? 'DRIVING LICENSE NUMBER'
-                    : 'SÜRÜŞ EHLİYET NUMARASI',
-                tag: _isEnglish ? 'REQUIRED' : 'ZORUNLU',
+                label: _isEnglish ? 'Driving License No' : 'Ehliyet No',
               ),
               const SizedBox(height: 6),
               _buildInputField(
                 controller: _idController,
                 focusNode: _idFocusNode,
-                hintText: _isEnglish ? 'E.g. D-849201 or License No' : 'Örn: D-849201 veya Ehliyet No',
+                hintText: _isEnglish ? 'Driving License No' : 'Ehliyet No',
                 icon: Icons.badge_outlined,
                 isHighlighted: _isIdHighlighted,
               ),
               const SizedBox(height: 16),
 
-              // Şifre / PIN Kodu Alanı
+              // Şifre Alanı
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _isEnglish ? 'Password / PIN Code' : 'Şifre / PIN Kodu',
+                    _isEnglish ? 'Password' : 'Şifre',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -1221,7 +1204,7 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
               _buildInputField(
                 controller: _passwordController,
                 focusNode: _passwordFocusNode,
-                hintText: '••••••••••••',
+                hintText: _isEnglish ? 'Password' : 'Şifre',
                 icon: Icons.lock_outline_rounded,
                 isPassword: true,
                 obscureText: _obscurePassword,
@@ -1256,18 +1239,15 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
               ),
               const SizedBox(height: 14),
 
-              // Ana Aksiyon Butonu: Güvenli Giriş Yap
+              // Ana Aksiyon Butonu: Güvenli Giriş Yap (SMS Korumalı)
               _buildSubmitButton(
-                label: _isEnglish ? 'Secure Sign In' : 'Ehliyet No ile Giriş Yap',
+                label: _isEnglish ? 'Sign In with SMS Code' : 'SMS Kodu ile Giriş Yap',
                 onTap: _handleLogin,
               ),
-              const SizedBox(height: 16),
-
-              Divider(color: Colors.white.withOpacity(0.10), thickness: 1, height: 1),
               const SizedBox(height: 14),
 
-              // Biyometrik & Hızlı Demo Şeridi
-              _buildQuickActionsRow(),
+              // Hızlı Demo Şeridi (Biyometrik kaldırıldı)
+              _buildQuickDemoRow(),
             ],
           ),
         ),
@@ -1302,39 +1282,36 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
             children: [
               // 1. Ad Soyad
               _buildFieldLabel(
-                label: _isEnglish ? 'Full Name' : 'Ad Soyad',
-                tag: _isEnglish ? 'REQUIRED' : 'ZORUNLU',
+                label: _isEnglish ? 'Full Name*' : 'Ad Soyad*',
               ),
               const SizedBox(height: 6),
               _buildInputField(
                 controller: _regNameController,
-                hintText: _isEnglish ? 'E.g. Ahmet Demir' : 'Örn: Ahmet Demir',
+                hintText: _isEnglish ? 'Full Name' : 'Ad Soyad',
                 icon: Icons.person_rounded,
               ),
               const SizedBox(height: 14),
 
               // 2. Sürüş Ehliyet Numarası (Zorunlu)
               _buildFieldLabel(
-                label: _isEnglish ? 'DRIVING LICENSE NUMBER' : 'SÜRÜŞ EHLİYET NUMARASI',
-                tag: _isEnglish ? 'REQUIRED' : 'ZORUNLU',
+                label: _isEnglish ? 'Driving License No*' : 'Ehliyet No*',
               ),
               const SizedBox(height: 6),
               _buildInputField(
                 controller: _regLicenseNoController,
-                hintText: _isEnglish ? 'E.g. D-849201' : 'Örn: D-849201',
+                hintText: _isEnglish ? 'Driving License No' : 'Ehliyet No',
                 icon: Icons.badge_rounded,
               ),
               const SizedBox(height: 14),
 
               // 3. Ehliyet Son Kullanma Tarihi (Takvim Seçimli)
               _buildFieldLabel(
-                label: _isEnglish ? 'LICENSE EXPIRY DATE' : 'EHLİYET SON KULLANMA TARİHİ',
-                tag: _isEnglish ? 'SELECT DATE' : 'TAKVİMDEN SEÇİN',
+                label: _isEnglish ? 'License Expiry Date*' : 'Ehliyet Son Kullanma Tarihi*',
               ),
               const SizedBox(height: 6),
               _buildInputField(
                 controller: _regLicenseExpiryController,
-                hintText: _isEnglish ? 'Select Date (E.g. 15.06.2030)' : 'Tarih Seçin (Örn: 15.06.2030)',
+                hintText: _isEnglish ? 'Select Date' : 'Tarih Seçin',
                 icon: Icons.calendar_month_rounded,
                 readOnly: true,
                 onTap: _selectLicenseExpiryDate,
@@ -1347,13 +1324,12 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
 
               // 4. Cep Telefonu Numarası (SMS Doğrulaması)
               _buildFieldLabel(
-                label: _isEnglish ? 'Mobile Phone Number' : 'Cep Telefonu Numarası',
-                tag: _isEnglish ? 'SMS OTP' : 'SMS ONAYLI',
+                label: _isEnglish ? 'Mobile Phone*' : 'Cep Telefonu*',
               ),
               const SizedBox(height: 6),
               _buildInputField(
                 controller: _regPhoneController,
-                hintText: '0533 800 00 00 / 0548 000 00 00',
+                hintText: '0533 000 00 00',
                 icon: Icons.phone_iphone_rounded,
                 keyboardType: TextInputType.phone,
               ),
@@ -1361,13 +1337,12 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
 
               // 5. Şifre Belirleyin
               _buildFieldLabel(
-                label: _isEnglish ? 'Create Password' : 'Şifre Belirleyin',
-                tag: _isEnglish ? 'MIN 6 CHARS' : 'EN AZ 6 KARAKTER',
+                label: _isEnglish ? 'Password*' : 'Şifre Belirleyin*',
               ),
               const SizedBox(height: 6),
               _buildInputField(
                 controller: _regPasswordController,
-                hintText: '••••••••••••',
+                hintText: _isEnglish ? 'Password' : 'Şifre',
                 icon: Icons.lock_outline_rounded,
                 isPassword: true,
                 obscureText: _regObscurePassword,
@@ -1387,27 +1362,45 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
     );
   }
 
-  Widget _buildFieldLabel({required String label, required String tag}) {
+  Widget _buildFieldLabel({required String label, String? tag}) {
+    final bool hasAsterisk = label.endsWith('*');
+    final String baseLabel = hasAsterisk ? label.substring(0, label.length - 1) : label;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
-            color: cText.withOpacity(0.85),
+        RichText(
+          text: TextSpan(
+            text: baseLabel,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: cText.withOpacity(0.9),
+              fontFamily: 'sans-serif',
+            ),
+            children: [
+              if (hasAsterisk)
+                const TextSpan(
+                  text: ' *',
+                  style: TextStyle(
+                    color: Color(0xFFEF4444),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                  ),
+                ),
+            ],
           ),
         ),
-        Text(
-          tag,
-          style: TextStyle(
-            fontSize: 9.5,
-            fontWeight: FontWeight.w800,
-            color: cAccent.withOpacity(0.9),
-            letterSpacing: 0.5,
+        if (tag != null && tag.isNotEmpty)
+          Text(
+            tag,
+            style: TextStyle(
+              fontSize: 9.5,
+              fontWeight: FontWeight.w800,
+              color: cAccent.withOpacity(0.9),
+              letterSpacing: 0.5,
+            ),
           ),
-        ),
       ],
     );
   }
@@ -1534,144 +1527,38 @@ class _KktcETrafikGirisSayfasiState extends State<KktcETrafikGirisSayfasi>
     );
   }
 
-  // Biyometrik & Hızlı Demo Şeridi
-  Widget _buildQuickActionsRow() {
-    return Row(
-      children: [
-        // Biyometrik Giriş Butonu
-        Expanded(
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _simulateBiometric,
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 11),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withOpacity(0.08)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      _biometricState == 2 ? Icons.check_circle_rounded : Icons.fingerprint_rounded,
-                      color: _biometricState == 2 ? const Color(0xFF10B981) : cAccent,
-                      size: 19,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      _biometricState == 1
-                          ? (_isEnglish ? 'Verifying...' : 'Doğrulanıyor...')
-                          : (_biometricState == 2
-                              ? (_isEnglish ? 'Verified' : 'Doğrulandı')
-                              : (_isEnglish ? 'Biometric' : 'Biyometrik Giriş')),
-                      style: TextStyle(
-                        color: _biometricState == 2 ? const Color(0xFF10B981) : cText,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+  // Hızlı Demo Şeridi
+  Widget _buildQuickDemoRow() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _showDemoProfilesSheet,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 11),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.04),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.white.withOpacity(0.08)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.bolt_rounded, color: cAccent, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                _isEnglish ? 'Quick Demo License Profile' : 'Hızlı Demo Ehliyet Profili Seç',
+                style: const TextStyle(
+                  color: cText,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
+            ],
           ),
         ),
-        const SizedBox(width: 10),
-
-        // Hızlı Demo Butonu
-        Expanded(
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _showDemoProfilesSheet,
-              borderRadius: BorderRadius.circular(14),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 11),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withOpacity(0.08)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.bolt_rounded, color: cAccent, size: 19),
-                    const SizedBox(width: 6),
-                    Text(
-                      _isEnglish ? 'Quick Demo' : 'Hızlı Demo',
-                      style: const TextStyle(
-                        color: cText,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Alt Güvenlik & İletişim Bilgisi
-  Widget _buildSecurityFooter() {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.lock_rounded, color: cAccent, size: 13),
-            const SizedBox(width: 6),
-            Text(
-              _isEnglish
-                  ? '256-Bit SSL • KKTC Public Network Secure Login'
-                  : '256-Bit SSL • KKTC Kamu Ağı Güvenli Giriş',
-              style: TextStyle(
-                color: cText.withOpacity(0.60),
-                fontSize: 11.5,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () => _showSnackBar('KKTC e-Trafik Yardım Masası: destek@trafik.gov.ct.tr'),
-              child: Text(
-                _isEnglish ? 'Help Desk' : 'Yardım Masası',
-                style: TextStyle(
-                  color: cText.withOpacity(0.5),
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text('•', style: TextStyle(color: cText.withOpacity(0.3))),
-            ),
-            GestureDetector(
-              onTap: _callTrafficHelp,
-              child: const Text(
-                'Trafik Çağrı: 155',
-                style: TextStyle(
-                  color: cAccent,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
 }

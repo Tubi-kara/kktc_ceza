@@ -12,6 +12,8 @@ import 'guncelleme_servisi.dart';
 import 'yol_tarifi_sayfasi.dart';
 import 'canli_gps_servisi.dart';
 import 'kktc_akaryakit_servisi.dart';
+import 'yol_forum_modeli.dart';
+import 'package:geolocator/geolocator.dart';
 import 'main.dart' show BarkodluBelgeSayfasi, ItirazSayfasi, DekontlarSayfasi;
 
 /// KKTC e-Trafik Modern Dashboard (Kullanıcı Paneli)
@@ -123,14 +125,27 @@ class _KktcETrafikDashboardSayfasiState
   // Harita Modu: 1 = Canlı OpenStreetMap (Varsayılan), 0 = Taktiksel Vektör
   int _radarHaritaModu = 1;
   RadarKamerasi? _seciliRadarKamerasi;
-  int _canliHiz = 62;
   final GlobalKey<KktcOpenStreetMapTileViewState> _osmKey = GlobalKey<KktcOpenStreetMapTileViewState>();
 
   // 🗺️ HARİTALAR SEKMESİ - POI DURUMLARI
   final GlobalKey<KktcOpenStreetMapTileViewState> _haritaOsmKey = GlobalKey<KktcOpenStreetMapTileViewState>();
-  String _seciliPoiKategori = 'tumu'; // 'tumu', 'benzin', 'tamir', 'otopark', 'hastane'
+  final GlobalKey<KktcOpenStreetMapTileViewState> _dashboardMapKey = GlobalKey<KktcOpenStreetMapTileViewState>();
+  String _seciliPoiKategori = 'tumu'; // 'tumu', 'avm', 'plaj', 'universite', 'havalimani', 'benzin', 'tamir', 'otopark', 'hastane'
+  // 🏠 HIZLI GÜNLÜK NAVİGASYON (EV & İŞ)
+  String _evimAdres = 'Evim (Gönyeli / Lefkoşa)';
+  double _evimLat = 35.2130;
+  double _evimLon = 33.3120;
+  String _isimAdres = 'İşim (Dereboyu / Lefkoşa)';
+  double _isimLat = 35.1915;
+  double _isimLon = 33.3480;
   KktcHaritaPoi? _seciliPoi;
   final KktcAkaryakitServisi _akaryakitServisi = KktcAkaryakitServisi();
+
+  // 🚦 YOL FORUMU DURUMLARI (Topluluk Bildirimleri, Çevirme, Kaza, Çalışma)
+  List<YolForumBildirimi> _yolBildirimleri = getKktcBaslangicYolBildirimleri();
+  YolForumBildirimi? _seciliYolBildirimi;
+  String _seciliYolFiltresi = 'tumu'; // 'tumu', 'cevirme', 'kaza', 'calisma'
+  final GlobalKey<KktcOpenStreetMapTileViewState> _yolForumOsmKey = GlobalKey<KktcOpenStreetMapTileViewState>();
 
   // 🚗 ARAÇ MODU
   final CanliGpsServisi _gps = CanliGpsServisi();
@@ -369,7 +384,7 @@ class _KktcETrafikDashboardSayfasiState
                 ),
               ),
 
-            // Üst Header / Karşılama Barı (Sadece Panel ve Ceza sekmelerinde gösterilir)
+            // Üst Header / Karşılama Barı (Sadece Panel ve Cezalar sekmelerinde gösterilir)
             if (_selectedTabIndex == 0 || _selectedTabIndex == 3)
               Positioned(
                 top: 0,
@@ -403,22 +418,282 @@ class _KktcETrafikDashboardSayfasiState
         const KamuSunucuDurumSeridi(turkceMi: true),
         const SizedBox(height: 12),
 
-        // 3. Ehliyet & Sağlık Skoru Özet Kartı
-        _buildDriverScoreCard(),
-        const SizedBox(height: 20),
+        // 3. 🗺️ CANLI KKTC TRAFİK & RADAR HARİTASI (Doğrudan Ana Ekranda)
+        _buildDashboardLiveMapCard(),
+        const SizedBox(height: 18),
 
-        // 4. Kayıtlı Araç Seçici (Yatay Kaydırma)
-        _buildVehicleSelector(),
-        const SizedBox(height: 20),
-
-        // 5. 2x2 Ferah Hızlı Erişim Grid Kartları
+        // 4. 2x2 Ferah Hızlı Erişim Grid Kartları
         _buildQuickActionGrid(),
         const SizedBox(height: 20),
 
-        // 6. Son Durum / Canlı Uyarı Kartı
+        // 5. Son Durum / Canlı Uyarı Kartı
         _buildLiveViolationCard(),
         const SizedBox(height: 12),
       ],
+    );
+  }
+
+  // 🗺️ ANA PANEL CANLI İNTERAKTİF HARİTA KARTI
+  Widget _buildDashboardLiveMapCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: cNavy.withOpacity(0.06),
+            blurRadius: 18,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Başlık Satırı
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0284C7).withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.map_rounded,
+                      color: Color(0xFF0284C7),
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: const BoxDecoration(
+                              color: cEmerald,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          const Text(
+                            'CANLI KKTC TRAFİK & RADAR',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                              color: cSlate,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Text(
+                        'Canlı Yol & Harita',
+                        style: TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
+                          color: cNavy,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              InkWell(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _selectedTabIndex = 1);
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: cNavy.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: cNavy.withOpacity(0.12)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.fullscreen_rounded, size: 16, color: cNavy),
+                      SizedBox(width: 4),
+                      Text(
+                        'Tam Ekran',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: cNavy,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Harita Çerçevesi (OpenStreetMap Tile View)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              height: 240,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8EEF5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFCBD5E1).withOpacity(0.6)),
+              ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: KktcOpenStreetMapTileView(
+                      key: _dashboardMapKey,
+                      radarlar: kktcRadarListesi,
+                      seciliRadar: null,
+                      turkceMi: true,
+                      radarlariGoster: true,
+                      poiNoktalari: kktcHaritaPoiListesi,
+                      gosterUstBar: false,
+                      onRadarSelected: (radar) {
+                        HapticFeedback.lightImpact();
+                        _showRadarDetailSheet(
+                          radarAdi: radar.ad,
+                          hiz: radar.hizLimiti.toString(),
+                          mesafe: radar.mesafe,
+                          tolerans: '${(radar.hizLimiti * 1.1).round()} km/s',
+                          guzergah: radar.yon,
+                          kameraTipi: radar.tur,
+                          lat: radar.lat,
+                          lon: radar.lon,
+                        );
+                      },
+                      onPoiSelected: (poi) {
+                        HapticFeedback.lightImpact();
+                        setState(() {
+                          _seciliPoi = poi;
+                          _selectedTabIndex = 1;
+                        });
+                      },
+                    ),
+                  ),
+
+                  // Sağ Üst: Konumuma Git
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: _buildMiniMapBtn(
+                      icon: Icons.my_location_rounded,
+                      tooltip: 'Konumuma Odaklan',
+                      iconColor: const Color(0xFF0284C7),
+                      onTap: () => _dashboardMapKey.currentState?.centerOnUserOrKktc(),
+                    ),
+                  ),
+
+                  // Sol Alt: Canlı Durum Rozeti
+                  Positioned(
+                    bottom: 8,
+                    left: 8,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.92),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.white),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.camera_alt_rounded, size: 12, color: Color(0xFFE11D48)),
+                              SizedBox(width: 4),
+                              Text(
+                                '28 Radar',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: cNavy,
+                                ),
+                              ),
+                              SizedBox(width: 6),
+                              Text('•', style: TextStyle(color: Colors.grey, fontSize: 10)),
+                              SizedBox(width: 6),
+                              Icon(Icons.local_gas_station_rounded, size: 12, color: Color(0xFF0284C7)),
+                              SizedBox(width: 4),
+                              Text(
+                                '22 İstasyon',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: cNavy,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniMapBtn({
+    required IconData icon,
+    required String tooltip,
+    Color? iconColor,
+    required VoidCallback onTap,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(99),
+        child: Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.94),
+            shape: BoxShape.circle,
+            border: Border.all(color: const Color(0xFFCBD5E1)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.10),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Icon(icon, size: 16, color: iconColor ?? cNavy),
+        ),
+      ),
     );
   }
 
@@ -505,7 +780,7 @@ class _KktcETrafikDashboardSayfasiState
                         controller: aramaCtrl,
                         autofocus: false,
                         decoration: const InputDecoration(
-                          hintText: 'Benzinlik, hastane, otopark...',
+                          hintText: 'Evim, İşim, AVM, Plaj, Benzinlik, Üniversite ara...',
                           hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -520,11 +795,124 @@ class _KktcETrafikDashboardSayfasiState
                                     .where((p) =>
                                         p.ad.toLowerCase().contains(q) ||
                                         p.adres.toLowerCase().contains(q) ||
-                                        p.kategori.toLowerCase().contains(q))
+                                        p.kategori.toLowerCase().contains(q) ||
+                                        p.marka.toLowerCase().contains(q) ||
+                                        p.sehir.toLowerCase().contains(q))
                                     .toList();
                           });
                         },
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Hızlı Kısayollar
+                  SizedBox(
+                    height: 32,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      physics: const BouncingScrollPhysics(),
+                      children: [
+                        _buildSearchFilterChip(
+                          icon: Icons.home_rounded,
+                          label: 'Evim',
+                          color: const Color(0xFF10B981),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => YolTarifiSayfasi(
+                                  turkceMi: true,
+                                  varisNoktasi: RotaNoktasi(
+                                    id: 'evim',
+                                    ad: _evimAdres,
+                                    adEn: _evimAdres,
+                                    kisaAd: 'Evim',
+                                    bolge: 'Lefkoşa',
+                                    lat: _evimLat,
+                                    lon: _evimLon,
+                                    ikon: Icons.home_rounded,
+                                  ),
+                                  otomatikNavigasyonBaslat: true,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        _buildSearchFilterChip(
+                          icon: Icons.work_rounded,
+                          label: 'İşim',
+                          color: const Color(0xFF2563EB),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => YolTarifiSayfasi(
+                                  turkceMi: true,
+                                  varisNoktasi: RotaNoktasi(
+                                    id: 'isim',
+                                    ad: _isimAdres,
+                                    adEn: _isimAdres,
+                                    kisaAd: 'İşim',
+                                    bolge: 'Lefkoşa',
+                                    lat: _isimLat,
+                                    lon: _isimLon,
+                                    ikon: Icons.work_rounded,
+                                  ),
+                                  otomatikNavigasyonBaslat: true,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        _buildSearchFilterChip(
+                          icon: Icons.shopping_bag_rounded,
+                          label: '🛍️ AVM',
+                          color: const Color(0xFF8B5CF6),
+                          onTap: () {
+                            setModalState(() {
+                              sonuclar = kktcHaritaPoiListesi.where((p) => p.kategori == 'avm').toList();
+                            });
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        _buildSearchFilterChip(
+                          icon: Icons.beach_access_rounded,
+                          label: '🏖️ Plaj',
+                          color: const Color(0xFF0EA5E9),
+                          onTap: () {
+                            setModalState(() {
+                              sonuclar = kktcHaritaPoiListesi.where((p) => p.kategori == 'plaj').toList();
+                            });
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        _buildSearchFilterChip(
+                          icon: Icons.local_gas_station_rounded,
+                          label: '⛽ Benzin',
+                          color: const Color(0xFFE11D48),
+                          onTap: () {
+                            setModalState(() {
+                              sonuclar = kktcHaritaPoiListesi.where((p) => p.kategori == 'benzin').toList();
+                            });
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        _buildSearchFilterChip(
+                          icon: Icons.school_rounded,
+                          label: '🎓 Üniversite',
+                          color: const Color(0xFFD97706),
+                          onTap: () {
+                            setModalState(() {
+                              sonuclar = kktcHaritaPoiListesi.where((p) => p.kategori == 'universite').toList();
+                            });
+                          },
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -652,8 +1040,11 @@ class _KktcETrafikDashboardSayfasiState
   // ===========================================================================
   // 🗺️ GOOGLE MAPS TARZI TAM EKRAN CANLI HARİTA (TAB 1: HARİTALAR)
   // ===========================================================================
+  // 🚦 YOL FORUMU TABI (TAB 3: ÇEVİRME, KAZA, ÇALIŞMA VE CANLI SÜRÜCÜ FORUMU)
+  // ===========================================================================
+  // 🗺️ GOOGLE MAPS TARZI TAM EKRAN CANLI HARİTA & YOL TARİFİ (TAB 1: YOL TARİFİ)
+  // ===========================================================================
   Widget _buildFullScreenHaritalarTab() {
-    // Seçili kategoriye göre POI filtrele
     final List<KktcHaritaPoi> gosterilecekPoiler = _seciliPoiKategori == 'tumu'
         ? []
         : kktcHaritaPoiListesi.where((p) => p.kategori == _seciliPoiKategori).toList();
@@ -670,16 +1061,21 @@ class _KktcETrafikDashboardSayfasiState
             turkceMi: true,
             radarlariGoster: false,
             gosterUstBar: false,
+            gosterZoomButonlari: false, // Kartlarla çakışmayı önlemek için sağda özel konumlandırılır
             poiNoktalari: gosterilecekPoiler,
             seciliPoi: _seciliPoi,
             onPoiSelected: (poi) {
               setState(() => _seciliPoi = poi);
               HapticFeedback.mediumImpact();
             },
+            yolBildirimleri: _yolBildirimleri,
+            onYolBildirimiSelected: (bildirim) {
+              _showYolBildirimiDetayBottomSheet(bildirim);
+            },
           ),
         ),
 
-        // 2. ÜST: ARAMA ÇUBUĞU
+        // 2. ÜST: ARAMA ÇUBUĞU VE YOL TARİFİ KISAYOLU
         Positioned(
           top: MediaQuery.of(context).padding.top + 8,
           left: 14,
@@ -687,7 +1083,7 @@ class _KktcETrafikDashboardSayfasiState
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Arama Kartı (Beyaz Glassmorphism, Yuvarlatılmış Köşeler)
+              // Arama Kartı (Beyaz Glassmorphism)
               Container(
                 height: 48,
                 decoration: BoxDecoration(
@@ -716,41 +1112,47 @@ class _KktcETrafikDashboardSayfasiState
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Benzinlik, otopark, hastane ara...',
+                              'Nereye gitmek istiyorsunuz? Yol tarifi ara...',
                               style: TextStyle(
                                 color: Colors.grey.shade600,
-                                fontSize: 13,
+                                fontSize: 12.5,
                                 fontWeight: FontWeight.w500,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          Container(
-                            width: 1,
-                            height: 20,
-                            color: Colors.grey.shade300,
-                            margin: const EdgeInsets.symmetric(horizontal: 6),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.my_location_rounded, color: Color(0xFF0284C7), size: 20),
-                            tooltip: 'Konumuma Git',
-                            onPressed: () => _haritaOsmKey.currentState?.centerOnUserOrKktc(),
-                          ),
-                          Container(
-                            width: 30,
-                            height: 30,
-                            decoration: const BoxDecoration(
-                              color: cNavy,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Center(
-                              child: Text(
-                                'TRNC',
-                                style: TextStyle(
-                                  color: cLime,
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.w900,
+                          // Hızlı Navigasyon / Yol Tarifi Başlat Butonu
+                          InkWell(
+                            onTap: () {
+                              HapticFeedback.heavyImpact();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const YolTarifiSayfasi(turkceMi: true),
                                 ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2563EB),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.directions_rounded, size: 14, color: Colors.white),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Yol Tarifi',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -761,9 +1163,118 @@ class _KktcETrafikDashboardSayfasiState
                 ),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
 
-              // 🗂️ POI KATEGORİ HAPLARI (GOOGLE MAPS TARZI)
+              // 🚗 HIZLI GÜNLÜK NAVİGASYON ŞERİDİ (EVİM, İŞİM, AVM, BENZİN)
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickNavButton(
+                      icon: Icons.home_rounded,
+                      label: 'Evim',
+                      color: const Color(0xFF10B981),
+                      onTap: () {
+                        HapticFeedback.heavyImpact();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => YolTarifiSayfasi(
+                              turkceMi: true,
+                              varisNoktasi: RotaNoktasi(
+                                id: 'evim',
+                                ad: _evimAdres,
+                                adEn: _evimAdres,
+                                kisaAd: 'Evim',
+                                bolge: 'Lefkoşa',
+                                lat: _evimLat,
+                                lon: _evimLon,
+                                ikon: Icons.home_rounded,
+                              ),
+                              otomatikNavigasyonBaslat: true,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: _buildQuickNavButton(
+                      icon: Icons.work_rounded,
+                      label: 'İşim',
+                      color: const Color(0xFF2563EB),
+                      onTap: () {
+                        HapticFeedback.heavyImpact();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => YolTarifiSayfasi(
+                              turkceMi: true,
+                              varisNoktasi: RotaNoktasi(
+                                id: 'isim',
+                                ad: _isimAdres,
+                                adEn: _isimAdres,
+                                kisaAd: 'İşim',
+                                bolge: 'Lefkoşa',
+                                lat: _isimLat,
+                                lon: _isimLon,
+                                ikon: Icons.work_rounded,
+                              ),
+                              otomatikNavigasyonBaslat: true,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: _buildQuickNavButton(
+                      icon: Icons.shopping_bag_rounded,
+                      label: 'AVM',
+                      color: const Color(0xFF8B5CF6),
+                      onTap: () {
+                        HapticFeedback.mediumImpact();
+                        setState(() {
+                          _seciliPoiKategori = 'avm';
+                          _seciliPoi = kktcHaritaPoiListesi.firstWhere(
+                            (p) => p.kategori == 'avm',
+                            orElse: () => kktcHaritaPoiListesi.first,
+                          );
+                        });
+                        if (_seciliPoi != null) {
+                          _haritaOsmKey.currentState?.flyToLocation(_seciliPoi!.lat, _seciliPoi!.lon, zoom: 13.5);
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: _buildQuickNavButton(
+                      icon: Icons.local_gas_station_rounded,
+                      label: 'Benzin',
+                      color: const Color(0xFFE11D48),
+                      onTap: () {
+                        HapticFeedback.mediumImpact();
+                        setState(() {
+                          _seciliPoiKategori = 'benzin';
+                          _seciliPoi = kktcHaritaPoiListesi.firstWhere(
+                            (p) => p.kategori == 'benzin',
+                            orElse: () => kktcHaritaPoiListesi.first,
+                          );
+                        });
+                        if (_seciliPoi != null) {
+                          _haritaOsmKey.currentState?.flyToLocation(_seciliPoi!.lat, _seciliPoi!.lon, zoom: 13.5);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 6),
+
+              // 🗂️ POI KATEGORİ HAPLARI
               SizedBox(
                 height: 36,
                 child: ListView(
@@ -783,6 +1294,30 @@ class _KktcETrafikDashboardSayfasiState
                       },
                     ),
                     _buildPoiCategoryChip(
+                      id: 'avm',
+                      label: '🛍️ AVM & Çarşı',
+                      icon: Icons.shopping_bag_rounded,
+                      onTap: () {
+                        setState(() {
+                          _seciliPoiKategori = 'avm';
+                          _seciliPoi = null;
+                        });
+                        _haritaOsmKey.currentState?.centerOnKktc();
+                      },
+                    ),
+                    _buildPoiCategoryChip(
+                      id: 'plaj',
+                      label: '🏖️ Plaj & Tatil',
+                      icon: Icons.beach_access_rounded,
+                      onTap: () {
+                        setState(() {
+                          _seciliPoiKategori = 'plaj';
+                          _seciliPoi = null;
+                        });
+                        _haritaOsmKey.currentState?.centerOnKktc();
+                      },
+                    ),
+                    _buildPoiCategoryChip(
                       id: 'benzin',
                       label: '⛽ Benzinlikler',
                       icon: Icons.local_gas_station_rounded,
@@ -791,17 +1326,43 @@ class _KktcETrafikDashboardSayfasiState
                           _seciliPoiKategori = 'benzin';
                           _seciliPoi = null;
                         });
+                        _haritaOsmKey.currentState?.centerOnKktc();
+                      },
+                    ),
+                    _buildPoiCategoryChip(
+                      id: 'universite',
+                      label: '🎓 Üniversiteler',
+                      icon: Icons.school_rounded,
+                      onTap: () {
+                        setState(() {
+                          _seciliPoiKategori = 'universite';
+                          _seciliPoi = null;
+                        });
+                        _haritaOsmKey.currentState?.centerOnKktc();
+                      },
+                    ),
+                    _buildPoiCategoryChip(
+                      id: 'havalimani',
+                      label: '✈️ Ulaşım & Liman',
+                      icon: Icons.flight_takeoff_rounded,
+                      onTap: () {
+                        setState(() {
+                          _seciliPoiKategori = 'havalimani';
+                          _seciliPoi = null;
+                        });
+                        _haritaOsmKey.currentState?.centerOnKktc();
                       },
                     ),
                     _buildPoiCategoryChip(
                       id: 'tamir',
-                      label: '🔧 Lastik & Tamir',
-                      icon: Icons.build_circle_rounded,
+                      label: '🔧 Tamir & Servis',
+                      icon: Icons.build_rounded,
                       onTap: () {
                         setState(() {
                           _seciliPoiKategori = 'tamir';
                           _seciliPoi = null;
                         });
+                        _haritaOsmKey.currentState?.centerOnKktc();
                       },
                     ),
                     _buildPoiCategoryChip(
@@ -813,174 +1374,979 @@ class _KktcETrafikDashboardSayfasiState
                           _seciliPoiKategori = 'otopark';
                           _seciliPoi = null;
                         });
+                        _haritaOsmKey.currentState?.centerOnKktc();
                       },
                     ),
                     _buildPoiCategoryChip(
                       id: 'hastane',
-                      label: '🏥 Hastaneler',
+                      label: '🏥 Acil & Hastane',
                       icon: Icons.local_hospital_rounded,
                       onTap: () {
                         setState(() {
                           _seciliPoiKategori = 'hastane';
                           _seciliPoi = null;
                         });
-                      },
-                    ),
-                    _buildPoiCategoryChip(
-                      id: '__yol',
-                      label: '🧭 Yol Tarifi',
-                      icon: Icons.directions_rounded,
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        final hedef = _seciliPoi?.toRotaNoktasi() ??
-                            _seciliRadarKamerasi?.toRotaNoktasi();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => YolTarifiSayfasi(
-                              turkceMi: true,
-                              varisNoktasi: hedef,
-                              otomatikNavigasyonBaslat: hedef != null,
-                            ),
-                          ),
-                        );
+                        _haritaOsmKey.currentState?.centerOnKktc();
                       },
                     ),
                   ],
                 ),
               ),
-
-              // ⛽ CANLI AKARYAKIT FİYATLARI BİLGİ ŞERİDİ (Benzinlikler seçiliyken)
-              if (_seciliPoiKategori == 'benzin') ...[
-                const SizedBox(height: 8),
-                _buildLiveAkaryakitFiyatBanner(),
-              ],
             ],
           ),
         ),
 
-        // 3. SAĞ: ZOOM KONTROL BUTONLARI
+        // 3. SAĞ ORTA: ZOOM + - VE KONUM BUTONLARI (KARTLARLA ASLA ÇAKIŞMAZ)
         Positioned(
           right: 14,
-          top: MediaQuery.of(context).padding.top + (_seciliPoiKategori == 'benzin' ? 185 : 108),
+          bottom: _seciliPoi != null ? 220 : 108,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildFloatingMapButton(
-                icon: Icons.layers_rounded,
-                tooltip: 'Harita Katmanı',
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  _showHaritaKatmaniSheet();
-                },
+              FloatingActionButton.small(
+                heroTag: 'map_zoom_in',
+                backgroundColor: Colors.white,
+                elevation: 4,
+                onPressed: () => _haritaOsmKey.currentState?.zoomIn(),
+                child: const Icon(Icons.add_rounded, color: Color(0xFF0F172A), size: 20),
               ),
-              const SizedBox(height: 10),
-              _buildFloatingMapButton(
-                icon: Icons.add_rounded,
-                tooltip: 'Yakınlaştır',
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  _haritaOsmKey.currentState?.zoomIn();
-                },
+              const SizedBox(height: 6),
+              FloatingActionButton.small(
+                heroTag: 'map_zoom_out',
+                backgroundColor: Colors.white,
+                elevation: 4,
+                onPressed: () => _haritaOsmKey.currentState?.zoomOut(),
+                child: const Icon(Icons.remove_rounded, color: Color(0xFF0F172A), size: 20),
               ),
-              const SizedBox(height: 8),
-              _buildFloatingMapButton(
-                icon: Icons.remove_rounded,
-                tooltip: 'Uzaklaştır',
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  _haritaOsmKey.currentState?.zoomOut();
-                },
+              const SizedBox(height: 6),
+              FloatingActionButton.small(
+                heroTag: 'map_poi_loc',
+                backgroundColor: Colors.white,
+                elevation: 4,
+                onPressed: () => _haritaOsmKey.currentState?.centerOnUserOrKktc(),
+                child: const Icon(Icons.my_location_rounded, color: Color(0xFF0284C7), size: 20),
               ),
-              const SizedBox(height: 10),
-              _buildFloatingMapButton(
-                icon: Icons.my_location_rounded,
-                tooltip: 'Canlı GPS Konumum',
-                iconColor: const Color(0xFF0284C7),
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  _haritaOsmKey.currentState?.centerOnUserOrKktc();
-                },
+              const SizedBox(height: 6),
+              FloatingActionButton.small(
+                heroTag: 'map_poi_kktc',
+                backgroundColor: cNavy,
+                elevation: 4,
+                onPressed: () => _haritaOsmKey.currentState?.centerOnKktc(),
+                child: const Icon(Icons.center_focus_strong_rounded, color: cLime, size: 20),
               ),
             ],
           ),
         ),
 
-        // 4. ŞEHIR HIZLI ATLAMA (sol altta, küçük)
+        // 4. ALT ŞERİT: RESMİ GAZETE AKARYAKIT TAVAN FİYATLARI ŞERİDİ
         Positioned(
-          bottom: _seciliPoi != null ? 220 : 14,
           left: 14,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildMiniCityJumpButton('🏛 Lefkoşa', () => _haritaOsmKey.currentState?.flyToLocation(35.1856, 33.3823, zoom: 12.0)),
-              const SizedBox(height: 6),
-              _buildMiniCityJumpButton('🏰 Girne', () => _haritaOsmKey.currentState?.flyToLocation(35.3387, 33.3175, zoom: 12.0)),
-              const SizedBox(height: 6),
-              _buildMiniCityJumpButton('⚓ Gazimağusa', () => _haritaOsmKey.currentState?.flyToLocation(35.1250, 33.9400, zoom: 12.0)),
-            ],
-          ),
+          right: 14,
+          bottom: 12,
+          child: _buildLiveAkaryakitFiyatBanner(),
         ),
 
-        // 5. ALT: SEÇİLİ POI DETAY KARTI (Google Maps tarzı alt panel)
+        // 5. ALT: SEÇİLİ POI BİLGİ KARTI ("Yol Tarifi Al" butonu ile)
         if (_seciliPoi != null)
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
+            left: 14,
+            right: 14,
+            bottom: 74,
             child: _buildPoiDetayKarti(_seciliPoi!),
           ),
+      ],
+    );
+  }
 
-        // 6. KATEGORİ YOKSA KARŞILAMA MESAJI
-        if (_seciliPoiKategori == 'tumu')
-          Positioned(
-            bottom: 28,
-            left: 20,
-            right: 20,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
+  // ===========================================================================
+  // 🚦 PANELDEKİ YOL FORUM KARTINA TIKLAYINCA AÇILAN CANLI FORUM SAYFASI
+  // ===========================================================================
+  void _openYolForumModal() {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalCtx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final List<YolForumBildirimi> filtrelenmisBildirimler = _seciliYolFiltresi == 'tumu'
+                ? _yolBildirimleri
+                : _yolBildirimleri.where((b) {
+                    if (_seciliYolFiltresi == 'cevirme') return b.tip == YolForumTipi.cevirme;
+                    if (_seciliYolFiltresi == 'kaza') return b.tip == YolForumTipi.kaza;
+                    if (_seciliYolFiltresi == 'calisma') return b.tip == YolForumTipi.calisma;
+                    return true;
+                  }).toList();
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.90,
+              decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                child: Stack(
+                  children: [
+                    // 1. Zemin Harita
+                    Positioned.fill(
+                      child: KktcOpenStreetMapTileView(
+                        key: _yolForumOsmKey,
+                        radarlar: const [],
+                        seciliRadar: null,
+                        onRadarSelected: (_) {},
+                        turkceMi: true,
+                        radarlariGoster: false,
+                        gosterUstBar: false,
+                        gosterZoomButonlari: false, // Alttaki kartlarla çakışma önlendi
+                        yolBildirimleri: filtrelenmisBildirimler,
+                        seciliYolBildirimi: _seciliYolBildirimi,
+                        onYolBildirimiSelected: (bildirim) {
+                          _showYolBildirimiDetayBottomSheet(bildirim);
+                        },
+                      ),
+                    ),
+
+                    // 2. Üst Bar: Başlık, "+ Bildir", Kapat
+                    Positioned(
+                      top: 12,
+                      left: 14,
+                      right: 14,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            height: 52,
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(26),
+                              border: Border.all(color: Colors.black.withOpacity(0.08)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.12),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2563EB).withOpacity(0.12),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.forum_rounded, color: Color(0xFF2563EB), size: 18),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Row(
+                                        children: [
+                                          Text(
+                                            'KKTC Yol Forumu',
+                                            style: TextStyle(
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFF0F172A),
+                                            ),
+                                          ),
+                                          SizedBox(width: 6),
+                                          Icon(Icons.fiber_manual_record, color: Color(0xFF10B981), size: 10),
+                                        ],
+                                      ),
+                                      Text(
+                                        '${filtrelenmisBildirimler.length} aktif yol olayı bildirildi',
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          color: Colors.grey.shade600,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // "+ Bildir" Butonu
+                                InkWell(
+                                  onTap: () {
+                                    HapticFeedback.heavyImpact();
+                                    _openYeniBildirimModali();
+                                  },
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                                      ),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.add_location_alt_rounded, size: 14, color: Colors.white),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          '+ Bildir',
+                                          style: TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w800,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                IconButton(
+                                  icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
+                                  onPressed: () => Navigator.pop(modalCtx),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Filtre Hapları
+                          SizedBox(
+                            height: 36,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              children: [
+                                _buildYolFiltreChip(
+                                  id: 'tumu',
+                                  label: 'Tümü (${_yolBildirimleri.length})',
+                                  icon: Icons.alt_route_rounded,
+                                  renk: const Color(0xFF0F172A),
+                                  onSelect: () => setSheetState(() => _seciliYolFiltresi = 'tumu'),
+                                ),
+                                _buildYolFiltreChip(
+                                  id: 'cevirme',
+                                  label: '🚓 Çevirme (${_yolBildirimleri.where((b) => b.tip == YolForumTipi.cevirme).length})',
+                                  icon: Icons.local_police_rounded,
+                                  renk: const Color(0xFF2563EB),
+                                  onSelect: () => setSheetState(() => _seciliYolFiltresi = 'cevirme'),
+                                ),
+                                _buildYolFiltreChip(
+                                  id: 'kaza',
+                                  label: '💥 Kaza (${_yolBildirimleri.where((b) => b.tip == YolForumTipi.kaza).length})',
+                                  icon: Icons.car_crash_rounded,
+                                  renk: const Color(0xFFEF4444),
+                                  onSelect: () => setSheetState(() => _seciliYolFiltresi = 'kaza'),
+                                ),
+                                _buildYolFiltreChip(
+                                  id: 'calisma',
+                                  label: '🚧 Çalışma (${_yolBildirimleri.where((b) => b.tip == YolForumTipi.calisma).length})',
+                                  icon: Icons.construction_rounded,
+                                  renk: const Color(0xFFF59E0B),
+                                  onSelect: () => setSheetState(() => _seciliYolFiltresi = 'calisma'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // 3. SAĞ: ZOOM + - VE KONUM BUTONLARI (KARTLARIN TAM ÜSTÜNDE, ASLA ÇAKIŞMAZ!)
+                    Positioned(
+                      right: 14,
+                      bottom: 100,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FloatingActionButton.small(
+                            heroTag: 'yf_zoom_in',
+                            backgroundColor: Colors.white,
+                            elevation: 4,
+                            onPressed: () => _yolForumOsmKey.currentState?.zoomIn(),
+                            child: const Icon(Icons.add_rounded, color: Color(0xFF0F172A), size: 20),
+                          ),
+                          const SizedBox(height: 6),
+                          FloatingActionButton.small(
+                            heroTag: 'yf_zoom_out',
+                            backgroundColor: Colors.white,
+                            elevation: 4,
+                            onPressed: () => _yolForumOsmKey.currentState?.zoomOut(),
+                            child: const Icon(Icons.remove_rounded, color: Color(0xFF0F172A), size: 20),
+                          ),
+                          const SizedBox(height: 6),
+                          FloatingActionButton.small(
+                            heroTag: 'yf_loc',
+                            backgroundColor: Colors.white,
+                            elevation: 4,
+                            onPressed: () => _yolForumOsmKey.currentState?.centerOnUserOrKktc(),
+                            child: const Icon(Icons.my_location_rounded, color: Color(0xFF0284C7), size: 20),
+                          ),
+                          const SizedBox(height: 6),
+                          FloatingActionButton.small(
+                            heroTag: 'yf_kktc',
+                            backgroundColor: cNavy,
+                            elevation: 4,
+                            onPressed: () => _yolForumOsmKey.currentState?.centerOnKktc(),
+                            child: const Icon(Icons.center_focus_strong_rounded, color: cLime, size: 20),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // 4. ALT ŞERİT: AKTİF BİLDİRİMLER MİNİ CAROUSEL (DOKUNUNCA DETAY AÇILIR)
+                    Positioned(
+                      left: 14,
+                      right: 14,
+                      bottom: 14,
+                      child: SizedBox(
+                        height: 72,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: filtrelenmisBildirimler.length + 1,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (context, index) {
+                            if (index == filtrelenmisBildirimler.length) {
+                              return InkWell(
+                                onTap: () {
+                                  HapticFeedback.mediumImpact();
+                                  _openYeniBildirimModali();
+                                },
+                                borderRadius: BorderRadius.circular(16),
+                                child: Container(
+                                  width: 140,
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: const Color(0xFF2563EB).withOpacity(0.3), width: 1.5),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.08),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.add_circle_outline_rounded, color: Color(0xFF2563EB), size: 22),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        '+ Yeni Olay Bildir',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF2563EB),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final b = filtrelenmisBildirimler[index];
+                            return InkWell(
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                _yolForumOsmKey.currentState?.flyToLocation(b.lat, b.lon, zoom: 12.8);
+                                _showYolBildirimiDetayBottomSheet(b);
+                              },
+                              borderRadius: BorderRadius.circular(16),
+                              child: Container(
+                                width: 250,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.black.withOpacity(0.08)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.09),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 38,
+                                      height: 38,
+                                      decoration: BoxDecoration(
+                                        color: b.tip.acikRenk,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: b.tip.kenarRenk, width: 1.2),
+                                      ),
+                                      child: Icon(b.tip.ikon, color: b.tip.anaRenk, size: 19),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            b.baslik,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFF0F172A),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                b.zaman,
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFF1F5F9),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  '💬 ${b.yorumlar.length} Yorum',
+                                                  style: const TextStyle(
+                                                    fontSize: 9,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Color(0xFF334155),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(Icons.chevron_right_rounded, size: 18, color: Colors.grey.shade400),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildYolFiltreChip({
+    required String id,
+    required String label,
+    required IconData icon,
+    required Color renk,
+    VoidCallback? onSelect,
+  }) {
+    final bool isSelected = _seciliYolFiltresi == id;
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () {
+            HapticFeedback.selectionClick();
+            if (onSelect != null) {
+              onSelect();
+            } else {
+              setState(() {
+                _seciliYolFiltresi = id;
+              });
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+            decoration: BoxDecoration(
+              color: isSelected ? renk : Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: isSelected ? renk : Colors.black.withOpacity(0.08),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isSelected ? 0.15 : 0.04),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 14,
+                  color: isSelected ? Colors.white : renk,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected ? Colors.white : const Color(0xFF1E293B),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+  // ===========================================================================
+  // 💬 YOL FORUMU DETAY & YORUM MODAL SAYFASI (AŞAĞIDAN GELEN ÇOK YER KAPLAMAYAN SHEET)
+  // ===========================================================================
+  void _showYolBildirimiDetayBottomSheet(YolForumBildirimi bildirim) {
+    final TextEditingController yorumController = TextEditingController();
+    final ScrollController scrollController = ScrollController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.58,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
+                    color: Colors.black26,
+                    blurRadius: 20,
+                    offset: Offset(0, -4),
                   ),
                 ],
               ),
-              child: Row(
+              child: Column(
                 children: [
+                  // 1. Üst Tutacak (Drag Handle)
                   Container(
-                    width: 40,
-                    height: 40,
+                    margin: const EdgeInsets.only(top: 8, bottom: 6),
+                    width: 36,
+                    height: 4,
                     decoration: BoxDecoration(
-                      color: cNavy.withOpacity(0.1),
-                      shape: BoxShape.circle,
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    child: const Icon(Icons.explore_rounded, color: cNavy, size: 22),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
+
+                  // 2. Başlık ve Kategori Rozeti
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
                       children: [
-                        const Text(
-                          'Harita Keşfi',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                            color: cNavy,
+                        // Tip Rozeti
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: bildirim.tip.acikRenk,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: bildirim.tip.kenarRenk),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(bildirim.tip.ikon, size: 14, color: bildirim.tip.anaRenk),
+                              const SizedBox(width: 5),
+                              Text(
+                                bildirim.tip.baslik,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: bildirim.tip.anaRenk,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        // Doğrulama Rozeti
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFECFDF5),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFA7F3D0)),
+                          ),
+                          child: Text(
+                            '👍 ${bildirim.dogrulamaSayisi} Doğrulama',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF059669),
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
+                          onPressed: () => Navigator.pop(sheetContext),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // 3. Konum ve Açıklama Bilgisi
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          'Üstteki kategorileri seçerek KKTC\'deki benzinlikleri, servisleri ve daha fazlasını keşfedin',
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            color: Colors.grey.shade600,
+                          bildirim.baslik,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_rounded, size: 13, color: Color(0xFF64748B)),
+                            const SizedBox(width: 3),
+                            Expanded(
+                              child: Text(
+                                '${bildirim.konumAdi} • ${bildirim.zaman}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Olay Notu ve Hızlı Doğrulama Butonları
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                bildirim.aciklama,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF334155),
+                                  height: 1.3,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  // Hâlâ Aktif mi? Doğrula
+                                  InkWell(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      setModalState(() {
+                                        bildirim.dogrulamaSayisi++;
+                                      });
+                                      setState(() {});
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Teşekkürler, bildirim bilginiz kaydedildi.'),
+                                          duration: Duration(seconds: 1),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    },
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFECFDF5),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.thumb_up_alt_rounded, size: 12, color: Color(0xFF059669)),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Hâlâ Aktif (${bildirim.dogrulamaSayisi})',
+                                            style: const TextStyle(
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF059669),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Yol Temizlendi / Kalktı
+                                  InkWell(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      setModalState(() {
+                                        bildirim.yanlisSayisi++;
+                                      });
+                                      setState(() {});
+                                    },
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFEF2F2),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: const Color(0xFFEF4444).withOpacity(0.3)),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.check_circle_outline_rounded, size: 12, color: Color(0xFFDC2626)),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Kalktı (${bildirim.yanlisSayisi})',
+                                            style: const TextStyle(
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFFDC2626),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // 4. Sürücü Yorumları Başlığı
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.chat_bubble_outline_rounded, size: 14, color: Color(0xFF2563EB)),
+                        const SizedBox(width: 5),
+                        Text(
+                          'Yol Forum Yorumları (${bildirim.yorumlar.length})',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // 5. Yorumlar Listesi
+                  Expanded(
+                    child: bildirim.yorumlar.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Bu olay için henüz yorum yok.\nİlk bilgiyi aşağıdan siz paylaşın!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 11.5, color: Colors.grey.shade500),
+                            ),
+                          )
+                        : ListView.separated(
+                            controller: scrollController,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            itemCount: bildirim.yorumlar.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 6),
+                            itemBuilder: (context, index) {
+                              final y = bildirim.yorumlar[index];
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF8FAFC),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 10,
+                                          backgroundColor: const Color(0xFF2563EB).withOpacity(0.15),
+                                          child: Text(
+                                            y.yazar.isNotEmpty ? y.yazar[0] : 'S',
+                                            style: const TextStyle(
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xFF2563EB),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          y.yazar,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFF0F172A),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          y.zaman,
+                                          style: TextStyle(
+                                            fontSize: 9.5,
+                                            color: Colors.grey.shade500,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        InkWell(
+                                          onTap: () {
+                                            HapticFeedback.selectionClick();
+                                            setModalState(() {
+                                              y.begeniSayisi++;
+                                            });
+                                            setState(() {});
+                                          },
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.thumb_up_alt_outlined, size: 11, color: Colors.blueGrey),
+                                              const SizedBox(width: 3),
+                                              Text(
+                                                '${y.begeniSayisi}',
+                                                style: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      y.yorum,
+                                      style: const TextStyle(
+                                        fontSize: 11.5,
+                                        color: Color(0xFF334155),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+
+                  // 6. En Altta Sabit Yorum Ekleme Çubuğu
+                  Container(
+                    padding: EdgeInsets.only(
+                      left: 14,
+                      right: 14,
+                      top: 8,
+                      bottom: MediaQuery.of(context).viewInsets.bottom + 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border(top: BorderSide(color: Colors.grey.shade200)),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 40,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: TextField(
+                              controller: yorumController,
+                              style: const TextStyle(fontSize: 12),
+                              decoration: const InputDecoration(
+                                hintText: 'Bu yol durumu hakkında yorum yaz...',
+                                hintStyle: TextStyle(fontSize: 11, color: Colors.blueGrey),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 10),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          onPressed: () {
+                            final text = yorumController.text.trim();
+                            if (text.isEmpty) return;
+                            HapticFeedback.mediumImpact();
+                            final yeniYorum = YolForumYorum(
+                              id: 'y_${DateTime.now().millisecondsSinceEpoch}',
+                              yazar: _girisYapildiMi ? _kullaniciAdi : 'Sürücü (KKTC)',
+                              zaman: 'Az önce',
+                              yorum: text,
+                            );
+                            setModalState(() {
+                              bildirim.yorumlar.add(yeniYorum);
+                            });
+                            setState(() {});
+                            yorumController.clear();
+                            // Listeyi en alta kaydır
+                            Future.delayed(const Duration(milliseconds: 100), () {
+                              if (scrollController.hasClients) {
+                                scrollController.animateTo(
+                                  scrollController.position.maxScrollExtent,
+                                  duration: const Duration(milliseconds: 250),
+                                  curve: Curves.easeOut,
+                                );
+                              }
+                            });
+                          },
+                          icon: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF2563EB),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.send_rounded, size: 16, color: Colors.white),
                           ),
                         ),
                       ],
@@ -988,13 +2354,669 @@ class _KktcETrafikDashboardSayfasiState
                   ),
                 ],
               ),
-            ),
-          ),
-      ],
+            );
+          },
+        );
+      },
     );
   }
 
-  // ⛽ CANLI AKARYAKIT FİYATLARI ŞERİDİ (Resmi Gazete / Bakanlar Kurulu Tavan Fiyatları)
+  // ===========================================================================
+  // ➕ YENİ YOL BİLDİRİMİ EKLEME MODALI (3 SEÇENEK: ÇEVİRME, KAZA, ÇALIŞMA)
+  // ===========================================================================
+  void _openYeniBildirimModali({double? lat, double? lon}) {
+    YolForumTipi seciliTip = YolForumTipi.cevirme;
+    final TextEditingController konumController = TextEditingController();
+    final TextEditingController aciklamaController = TextEditingController();
+    double bildirilecekLat = lat ?? 35.2150;
+    double bildirilecekLon = lon ?? 33.3280;
+    bool gpsYukleniyor = false;
+    bool gpsKilitlendi = lat != null;
+
+    // KKTC Popüler Konum Önerileri
+    final List<Map<String, dynamic>> oneriKonumlar = [
+      {'ad': '📍 Canlı GPS Konumum', 'lat': 0.0, 'lon': 0.0, 'bolge': 'GPS'},
+      {'ad': 'Gönyeli Çemberi', 'lat': 35.2150, 'lon': 33.3280, 'bolge': 'Lefkoşa'},
+      {'ad': 'Girne Dağ Yolu', 'lat': 35.2780, 'lon': 33.3950, 'bolge': 'Girne'},
+      {'ad': 'Balıkesir Kavşağı', 'lat': 35.1894, 'lon': 33.4478, 'bolge': 'Lefkoşa / Balıkesir'},
+      {'ad': 'Alsancak Çevre Yolu', 'lat': 35.3420, 'lon': 33.2510, 'bolge': 'Girne'},
+      {'ad': 'Dörtyol Çemberi', 'lat': 35.1950, 'lon': 33.7450, 'bolge': 'Gazimağusa'},
+      {'ad': 'Dereboyu Caddesi', 'lat': 35.1850, 'lon': 33.3550, 'bolge': 'Lefkoşa'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (modalContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 20,
+                    offset: Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Tutacak
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Başlık
+                    Row(
+                      children: [
+                        const Icon(Icons.campaign_rounded, color: Color(0xFF2563EB), size: 22),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Yol Durumu Bildir',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF64748B)),
+                          onPressed: () => Navigator.pop(modalContext),
+                        ),
+                      ],
+                    ),
+
+                    Text(
+                      '3 seçenekten birini seçerek diğer sürücüleri bilgilendirin:',
+                      style: TextStyle(fontSize: 11.5, color: Colors.grey.shade600),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // ⭐ 3 ANA SEÇENEK KARTI: 1. ÇEVİRME VAR | 2. KAZA VAR | 3. ÇALIŞMA VAR
+                    Row(
+                      children: [
+                        // 1. Çevirme Var
+                        Expanded(
+                          child: _buildSecenekKarti(
+                            tip: YolForumTipi.cevirme,
+                            seciliTip: seciliTip,
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              setModalState(() => seciliTip = YolForumTipi.cevirme);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // 2. Kaza Var
+                        Expanded(
+                          child: _buildSecenekKarti(
+                            tip: YolForumTipi.kaza,
+                            seciliTip: seciliTip,
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              setModalState(() => seciliTip = YolForumTipi.kaza);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // 3. Çalışma Var
+                        Expanded(
+                          child: _buildSecenekKarti(
+                            tip: YolForumTipi.calisma,
+                            seciliTip: seciliTip,
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              setModalState(() => seciliTip = YolForumTipi.calisma);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // 🛰️ CANLI GPS İLE BİLDİR KARTI (KULLANICININ ANLIK KONUMU)
+                    InkWell(
+                      onTap: () async {
+                        HapticFeedback.heavyImpact();
+                        setModalState(() => gpsYukleniyor = true);
+                        try {
+                          Position? pos = _gps.sonKonum;
+                          if (pos == null) {
+                            pos = await Geolocator.getCurrentPosition(
+                              desiredAccuracy: LocationAccuracy.high,
+                              timeLimit: const Duration(seconds: 4),
+                            );
+                          }
+                          if (pos != null) {
+                            bildirilecekLat = pos.latitude;
+                            bildirilecekLon = pos.longitude;
+                            gpsKilitlendi = true;
+                            konumController.text = 'Mevcut Konumum (Canlı GPS: ${pos.latitude.toStringAsFixed(4)}, ${pos.longitude.toStringAsFixed(4)})';
+                          } else {
+                            bildirilecekLat = 35.2150;
+                            bildirilecekLon = 33.3280;
+                            gpsKilitlendi = true;
+                            konumController.text = 'Mevcut Konumum (Canlı GPS)';
+                          }
+                        } catch (_) {
+                          bildirilecekLat = 35.2150;
+                          bildirilecekLon = 33.3280;
+                          gpsKilitlendi = true;
+                          konumController.text = 'Mevcut Konumum (Canlı GPS)';
+                        } finally {
+                          setModalState(() => gpsYukleniyor = false);
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: gpsKilitlendi
+                                ? [const Color(0xFFECFDF5), const Color(0xFFD1FAE5)]
+                                : [const Color(0xFFEFF6FF), const Color(0xFFDBEAFE)],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: gpsKilitlendi ? const Color(0xFF10B981) : const Color(0xFF3B82F6),
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (gpsKilitlendi ? const Color(0xFF10B981) : const Color(0xFF3B82F6)).withOpacity(0.15),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: gpsKilitlendi ? const Color(0xFF10B981) : const Color(0xFF2563EB),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                gpsKilitlendi ? Icons.gps_fixed_rounded : Icons.my_location_rounded,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        gpsKilitlendi ? '📍 Canlı GPS Konumunuz Seçildi' : '📡 Şu Anki Konumuma Bildir (GPS)',
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: gpsKilitlendi ? const Color(0xFF065F46) : const Color(0xFF1E40AF),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      if (gpsKilitlendi)
+                                        const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    gpsKilitlendi
+                                        ? 'Koordinat: ${bildirilecekLat.toStringAsFixed(4)}, ${bildirilecekLon.toStringAsFixed(4)} (Doğrulandı)'
+                                        : 'Tek dokunuşla bulunduğunuz yere olay bildirimi ekleyin',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: gpsKilitlendi ? const Color(0xFF047857) : const Color(0xFF3B82F6),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (gpsYukleniyor)
+                              const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF2563EB)),
+                              )
+                            else
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: gpsKilitlendi ? const Color(0xFF10B981) : const Color(0xFF2563EB),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  gpsKilitlendi ? 'SEÇİLDİ' : 'GPS KULLAN',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Konum Başlığı ve Öneri Hapları
+                    const Text(
+                      'Veya Öneri Konumlardan Seçin',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      height: 30,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        children: oneriKonumlar.map((loc) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: InkWell(
+                              onTap: () async {
+                                HapticFeedback.lightImpact();
+                                if ((loc['ad'] as String).contains('GPS')) {
+                                  setModalState(() => gpsYukleniyor = true);
+                                  try {
+                                    Position? pos = _gps.sonKonum;
+                                    if (pos == null) {
+                                      pos = await Geolocator.getCurrentPosition(
+                                        desiredAccuracy: LocationAccuracy.high,
+                                        timeLimit: const Duration(seconds: 4),
+                                      );
+                                    }
+                                    setModalState(() {
+                                      if (pos != null) {
+                                        bildirilecekLat = pos.latitude;
+                                        bildirilecekLon = pos.longitude;
+                                      } else {
+                                        bildirilecekLat = 35.2150;
+                                        bildirilecekLon = 33.3280;
+                                      }
+                                      gpsKilitlendi = true;
+                                      konumController.text = 'Mevcut Konumum (Canlı GPS)';
+                                    });
+                                  } catch (_) {
+                                    setModalState(() {
+                                      bildirilecekLat = 35.2150;
+                                      bildirilecekLon = 33.3280;
+                                      gpsKilitlendi = true;
+                                      konumController.text = 'Mevcut Konumum (Canlı GPS)';
+                                    });
+                                  } finally {
+                                    setModalState(() => gpsYukleniyor = false);
+                                  }
+                                } else {
+                                  setModalState(() {
+                                    konumController.text = loc['ad'] as String;
+                                    bildirilecekLat = loc['lat'] as double;
+                                    bildirilecekLon = loc['lon'] as double;
+                                    gpsKilitlendi = false;
+                                  });
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(15),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(color: const Color(0xFFCBD5E1)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.place_rounded, size: 11, color: Color(0xFF2563EB)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      loc['ad'] as String,
+                                      style: const TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF1E293B),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Özel Konum Adı Girişi
+                    Container(
+                      height: 42,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFCBD5E1)),
+                      ),
+                      child: TextField(
+                        controller: konumController,
+                        style: const TextStyle(fontSize: 12),
+                        decoration: const InputDecoration(
+                          hintText: 'Cadde / kavşak adını yazınız...',
+                          hintStyle: TextStyle(fontSize: 11.5, color: Colors.blueGrey),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 11),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Açıklama Notu
+                    const Text(
+                      'Kısa Açıklama (İsteğe bağlı)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      height: 42,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFCBD5E1)),
+                      ),
+                      child: TextField(
+                        controller: aciklamaController,
+                        style: const TextStyle(fontSize: 12),
+                        decoration: const InputDecoration(
+                          hintText: 'Örn: Sağ şerit kapalı, trafik yavaş ilerliyor...',
+                          hintStyle: TextStyle(fontSize: 11.5, color: Colors.blueGrey),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 11),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // "Bildirimi Paylaş" Butonu
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final String konum = konumController.text.trim().isEmpty
+                              ? 'Lefkoşa Çevre Yolu'
+                              : konumController.text.trim();
+                          final String aciklama = aciklamaController.text.trim().isEmpty
+                              ? '${seciliTip.baslik} bildirildi. Sürücülerin dikkatli olması rica olunur.'
+                              : aciklamaController.text.trim();
+
+                          HapticFeedback.heavyImpact();
+
+                          final yeniBildirim = YolForumBildirimi(
+                            id: 'yf_${DateTime.now().millisecondsSinceEpoch}',
+                            tip: seciliTip,
+                            baslik: '$konum ${seciliTip.baslik}',
+                            bolge: 'KKTC',
+                            konumAdi: konum,
+                            aciklama: aciklama,
+                            lat: bildirilecekLat,
+                            lon: bildirilecekLon,
+                            zaman: 'Şimdi',
+                            olusturmaTarihi: DateTime.now(),
+                            dogrulamaSayisi: 1,
+                            yanlisSayisi: 0,
+                            bildiren: _girisYapildiMi ? _kullaniciAdi : 'Sürücü',
+                            yorumlar: [],
+                          );
+
+                          setState(() {
+                            _yolBildirimleri.insert(0, yeniBildirim);
+                            _seciliYolBildirimi = yeniBildirim;
+                          });
+
+                          Navigator.pop(modalContext);
+
+                          _yolForumOsmKey.currentState?.flyToLocation(
+                            yeniBildirim.lat,
+                            yeniBildirim.lon,
+                            zoom: 13.0,
+                          );
+
+                          // Bildirim açıldıktan sonra detay modalını göster
+                          Future.delayed(const Duration(milliseconds: 300), () {
+                            if (mounted) {
+                              _showYolBildirimiDetayBottomSheet(yeniBildirim);
+                            }
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: seciliTip.anaRenk,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          elevation: 2,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(seciliTip.ikon, size: 18, color: Colors.white),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${seciliTip.baslik} Bildir',
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // 📦 3 SEÇENEK KARTI WİDGETI
+  Widget _buildSecenekKarti({
+    required YolForumTipi tip,
+    required YolForumTipi seciliTip,
+    required VoidCallback onTap,
+  }) {
+    final bool isSelected = seciliTip == tip;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? tip.acikRenk : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? tip.anaRenk : const Color(0xFFE2E8F0),
+            width: isSelected ? 2.2 : 1.0,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: tip.anaRenk.withOpacity(0.22),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : null,
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: isSelected ? tip.anaRenk : Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? Colors.white : tip.kenarRenk,
+                  width: 1.2,
+                ),
+              ),
+              child: Icon(
+                tip.ikon,
+                color: isSelected ? Colors.white : tip.anaRenk,
+                size: 20,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              tip.baslik,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+                color: isSelected ? tip.anaRenk : const Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              tip == YolForumTipi.cevirme
+                  ? 'Polis/Radar'
+                  : (tip == YolForumTipi.kaza ? 'Kaza/Hasar' : 'Yol Bakım'),
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? tip.anaRenk.withOpacity(0.8) : Colors.grey.shade500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+    // ⛽ CANLI AKARYAKIT FİYATLARI ŞERİDİ (Resmi Gazete / Bakanlar Kurulu Tavan Fiyatları)
+  // 🧭 HIZLI GÜNLÜK NAVİGASYON BUTONU (EVİM, İŞİM, AVM, BENZİN)
+  Widget _buildQuickNavButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.35), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 🔍 ARAMA MODALI FİLTRE HAPI
+  Widget _buildSearchFilterChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.10),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withOpacity(0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildLiveAkaryakitFiyatBanner() {
     final fiyatlar = _akaryakitServisi.fiyatlar;
     return Container(
@@ -1484,32 +3506,48 @@ class _KktcETrafikDashboardSayfasiState
                 Row(
                   children: [
                     Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0284C7),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        ),
-                        icon: const Icon(Icons.directions_rounded, size: 18),
-                        label: const Text(
-                          'Yol Tarifi Al',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                        ),
-                        onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => YolTarifiSayfasi(
-                                turkceMi: true,
-                                varisNoktasi: poi.toRotaNoktasi(),
-                                otomatikNavigasyonBaslat: true,
-                              ),
+                      child: Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF2563EB), Color(0xFF0284C7)],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF2563EB).withOpacity(0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
                             ),
-                          );
-                        },
+                          ],
+                        ),
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          icon: const Icon(Icons.navigation_rounded, size: 18),
+                          label: Text(
+                            '🚀 Navigasyonu Başlat (${poi.sure})',
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+                          ),
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => YolTarifiSayfasi(
+                                  turkceMi: true,
+                                  varisNoktasi: poi.toRotaNoktasi(),
+                                  otomatikNavigasyonBaslat: true,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -2040,32 +4078,12 @@ class _KktcETrafikDashboardSayfasiState
                     ),
                   ),
 
-                  // Sağ Üst: Harita Kontrol Düğmeleri
+                  // Sağ Üst: Harita Kontrol Düğmeleri (GPS & Katman)
                   Positioned(
                     top: 10,
                     right: 10,
                     child: Column(
                       children: [
-                        if (_radarHaritaModu == 1) ...[
-                          _buildMapToolButton(
-                            Icons.add_rounded,
-                            tooltip: 'Yakınlaştır',
-                            onTap: () {
-                              HapticFeedback.selectionClick();
-                              _osmKey.currentState?.zoomIn();
-                            },
-                          ),
-                          const SizedBox(height: 5),
-                          _buildMapToolButton(
-                            Icons.remove_rounded,
-                            tooltip: 'Uzaklaştır',
-                            onTap: () {
-                              HapticFeedback.selectionClick();
-                              _osmKey.currentState?.zoomOut();
-                            },
-                          ),
-                          const SizedBox(height: 5),
-                        ],
                         _buildMapToolButton(
                           Icons.my_location_rounded,
                           tooltip: 'Konuma Odaklan',
@@ -2084,7 +4102,7 @@ class _KktcETrafikDashboardSayfasiState
                             }
                           },
                         ),
-                        const SizedBox(height: 5),
+                        const SizedBox(height: 8),
                         _buildMapToolButton(
                           Icons.layers_rounded,
                           tooltip: 'Katman Değiştir',
@@ -6085,44 +8103,29 @@ class _KktcETrafikDashboardSayfasiState
           physics: const NeverScrollableScrollPhysics(),
           childAspectRatio: 1.10,
           children: [
-            // 1. Cezalarım Kartı
+            // 1. Yol Forum Kartı (Önceden Cezalarım olan konum: Çevirme, Kaza, Çalışma)
             _buildGridActionCard(
-              icon: Icons.receipt_long_rounded,
+              icon: Icons.forum_rounded,
               badgeWidget: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: _girisYapildiMi ? cLime : cSoft,
+                  color: const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: const Color(0xFF93C5FD)),
                 ),
-                child: Text(
-                  _girisYapildiMi
-                      ? (_cezaOdendi ? 'TEMİZ' : '1 ÖDENMEMİŞ')
-                      : 'GİRİŞ GEREKLİ',
+                child: const Text(
+                  'CANLI BİLDİRİM',
                   style: TextStyle(
-                    fontSize: 9.5,
+                    fontSize: 8.5,
                     fontWeight: FontWeight.w900,
-                    color: _girisYapildiMi ? cNavy : cSlate,
+                    color: Color(0xFF2563EB),
                     letterSpacing: 0.2,
                   ),
                 ),
               ),
-              title: 'Cezalarım',
-              bottomLabel: _girisYapildiMi ? 'Toplam Borç' : 'Sorgula',
-              bottomValue: _girisYapildiMi ? (_cezaOdendi ? '₺0' : '₺1.850') : 'Giriş Yap',
-              onTap: () {
-                _girisKontrolEt(
-                  islemAdi: 'Trafik cezalarınızı görüntülemek ve ödemek',
-                  onGirisSonrasi: () {
-                    setState(() {
-                      _selectedTabIndex = 3;
-                      _cezaSigortaSubTab = 0;
-                    });
-                    if (widget.onOpenFines != null) {
-                      widget.onOpenFines!();
-                    }
-                  },
-                );
-              },
+              title: 'Yol Forum',
+              subtitle: 'Çevirme, Kaza & Yol Olayı',
+              onTap: _openYolForumModal,
             ),
 
             // 2. Sigorta & Seyrüsefer Kartı
@@ -6166,28 +8169,43 @@ class _KktcETrafikDashboardSayfasiState
               },
             ),
 
-            // 3. Sabit Radarlar Kartı
+            // 3. Cezalarım Kartı (Önceden Haritalar & GPS olan konum)
             _buildGridActionCard(
-              icon: Icons.radar_rounded,
+              icon: Icons.receipt_long_rounded,
               badgeWidget: Container(
-                width: 10,
-                height: 10,
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: cLime,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: cLime.withOpacity(0.5),
-                      blurRadius: 6,
-                      spreadRadius: 2,
-                    ),
-                  ],
+                  color: _girisYapildiMi ? cLime : cSoft,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  _girisYapildiMi
+                      ? (_cezaOdendi ? 'TEMİZ' : '1 ÖDENMEMİŞ')
+                      : 'GİRİŞ GEREKLİ',
+                  style: TextStyle(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w900,
+                    color: _girisYapildiMi ? cNavy : cSlate,
+                    letterSpacing: 0.2,
+                  ),
                 ),
               ),
-              title: 'Haritalar & GPS',
-              subtitle: 'Tam Ekran Canlı Harita',
+              title: 'Cezalarım',
+              bottomLabel: _girisYapildiMi ? 'Toplam Borç' : 'Sorgula',
+              bottomValue: _girisYapildiMi ? (_cezaOdendi ? '₺0' : '₺1.850') : 'Giriş Yap',
               onTap: () {
-                setState(() => _selectedTabIndex = 1);
+                _girisKontrolEt(
+                  islemAdi: 'Trafik cezalarınızı görüntülemek ve ödemek',
+                  onGirisSonrasi: () {
+                    setState(() {
+                      _selectedTabIndex = 3;
+                      _cezaSigortaSubTab = 0;
+                    });
+                    if (widget.onOpenFines != null) {
+                      widget.onOpenFines!();
+                    }
+                  },
+                );
               },
             ),
 
@@ -7066,12 +9084,17 @@ class _KktcETrafikDashboardSayfasiState
                 icon: Icons.grid_view_rounded,
                 label: 'Panel',
               ),
-              // 2. Haritalar (Tab 1 - Google Maps Tarzı Tam Ekran Canlı Harita)
+              // 2. Yol Tarifi (Tab 1 - Panelin Yanındaki Konum)
               _buildBottomNavItem(
                 index: 1,
-                icon: Icons.map_rounded,
-                label: 'Haritalar',
+                icon: Icons.navigation_rounded,
+                label: 'Yol Tarifi',
                 hasActiveYellowBadge: true,
+                onCustomTap: () {
+                  setState(() {
+                    _selectedTabIndex = 1;
+                  });
+                },
               ),
               // 3. E-Denetim (Orta Yükseltilmiş Hızlı Buton)
               _buildCenterActionItem(
@@ -7095,11 +9118,11 @@ class _KktcETrafikDashboardSayfasiState
                   );
                 },
               ),
-              // 4. Ceza & Sigorta (Kırmızı Bildirim Noktalı)
+              // 4. Cezalar & Sigorta (Tab 3 - E-Denetimin Sağındaki Konum)
               _buildBottomNavItem(
                 index: 3,
                 icon: Icons.receipt_long_rounded,
-                label: 'Ceza & Sigorta',
+                label: 'Cezalar & Sigorta',
                 hasNotificationBadge: _girisYapildiMi && !_cezaOdendi,
                 onCustomTap: () {
                   setState(() {

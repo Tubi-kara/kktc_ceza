@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'canli_gps_servisi.dart';
 import 'yol_tarifi_sayfasi.dart';
+import 'yol_forum_modeli.dart';
 
 // ==========================================
 // 📍 RADAR & HIZ KAMERASI VERİ MODELİ
@@ -1375,6 +1376,286 @@ final List<KktcHaritaPoi> kktcHaritaPoiListesi = [
     ikon: Icons.local_hospital_rounded,
     renk: Color(0xFFDC2626),
   ),
+
+  // --- AVM & ALIŞVERİŞ MERKEZLERİ ---
+  const KktcHaritaPoi(
+    id: 'poi-avm-citymall',
+    ad: 'City Mall Gazimağusa AVM',
+    marka: 'City Mall',
+    kategori: 'avm',
+    sehir: 'Gazimağusa',
+    lat: 35.1385,
+    lon: 33.9180,
+    adres: 'Salamis Yolu No:114, Gazimağusa',
+    mesafe: '34.2 km',
+    sure: '31 dk',
+    calismaSaatleri: 'Açık • 10:00 - 22:00',
+    olanaklar: ['Kapalı Otopark', 'Sinema', 'Food Court', 'Market', 'Bebek Bakım', 'ATM'],
+    ikon: Icons.shopping_bag_rounded,
+    renk: Color(0xFF8B5CF6),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-avm-dereboyu',
+    ad: 'Avenue Dereboyu Alışveriş & Yaşam Merkezi',
+    marka: 'Avenue Cinecity',
+    kategori: 'avm',
+    sehir: 'Lefkoşa',
+    lat: 35.1930,
+    lon: 33.3490,
+    adres: 'Mehmet Akif Caddesi (Dereboyu), Lefkoşa',
+    mesafe: '2.4 km',
+    sure: '5 dk',
+    calismaSaatleri: 'Açık • 10:00 - 23:00',
+    olanaklar: ['Sinema Salonları', 'Kafe & Restoranlar', 'Giyim Mağazaları', 'Vale Park'],
+    ikon: Icons.storefront_rounded,
+    renk: Color(0xFFEC4899),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-avm-1001',
+    ad: '1001 Airport Mall & Outlet Merkezi',
+    marka: '1001 Outlet',
+    kategori: 'avm',
+    sehir: 'Lefkoşa',
+    lat: 35.1950,
+    lon: 33.4350,
+    adres: 'Lefkoşa - Mağusa Anayolu, Ercan Kavşağı',
+    mesafe: '8.5 km',
+    sure: '9 dk',
+    calismaSaatleri: 'Açık • 10:00 - 22:00',
+    olanaklar: ['Geniş Açık Otopark', 'Outlet Mağazalar', 'Çocuk Oyun Alanı', 'Süpermarket'],
+    ikon: Icons.shopping_bag_rounded,
+    renk: Color(0xFF6366F1),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-avm-erulku',
+    ad: 'Erülkü Süpermarket & Yaşam Merkezi',
+    marka: 'Erülkü',
+    kategori: 'avm',
+    sehir: 'Lefkoşa',
+    lat: 35.1840,
+    lon: 33.4680,
+    adres: 'Demirhan Çemberi Yanı, Lefkoşa - Gazimağusa Yolu',
+    mesafe: '11.0 km',
+    sure: '11 dk',
+    calismaSaatleri: 'Açık • 07:30 - 22:30',
+    olanaklar: ['Dev Otopark', 'Restoran & Fırın', 'Elektronik & Züccaciye', 'ATM'],
+    ikon: Icons.storefront_rounded,
+    renk: Color(0xFFF59E0B),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-avm-metropol',
+    ad: 'Metropol Alışveriş & Çarşı Merkezi',
+    marka: 'Metropol',
+    kategori: 'avm',
+    sehir: 'Lefkoşa',
+    lat: 35.2070,
+    lon: 33.3510,
+    adres: 'Metropol Bölgesi, Taşkınköy, Lefkoşa',
+    mesafe: '2.8 km',
+    sure: '6 dk',
+    calismaSaatleri: 'Açık • 08:00 - 22:00',
+    olanaklar: ['Süpermarket', 'Mağazalar', 'Otopark', 'Eczane'],
+    ikon: Icons.shopping_bag_rounded,
+    renk: Color(0xFF14B8A6),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-avm-girne',
+    ad: 'Bellapais Mall Alışveriş & Çarşı Merkezi',
+    marka: 'Bellapais Mall',
+    kategori: 'avm',
+    sehir: 'Girne',
+    lat: 35.3280,
+    lon: 33.3420,
+    adres: 'Doğu Çevre Yolu, Çatalköy Girişi, Girne',
+    mesafe: '18.5 km',
+    sure: '20 dk',
+    calismaSaatleri: 'Açık • 09:30 - 22:00',
+    olanaklar: ['Otopark', 'Restoranlar', 'Market & Butikler'],
+    ikon: Icons.storefront_rounded,
+    renk: Color(0xFF8B5CF6),
+  ),
+
+  // --- PLAJ, SAHİL & TATİL ---
+  const KktcHaritaPoi(
+    id: 'poi-plaj-escape',
+    ad: 'Escape Beach Club & Koyu',
+    marka: 'Escape Beach',
+    kategori: 'plaj',
+    sehir: 'Girne',
+    lat: 35.3520,
+    lon: 33.2280,
+    adres: 'Yavuz Çıkarma Plajı Yanı, Alsancak, Girne',
+    mesafe: '21.0 km',
+    sure: '23 dk',
+    calismaSaatleri: 'Açık • 09:00 - 19:00',
+    olanaklar: ['Kumsal & Şezlong', 'Su Sporları', 'Beach Bar & Restoran', 'Otopark'],
+    ikon: Icons.beach_access_rounded,
+    renk: Color(0xFF0EA5E9),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-plaj-glapsides',
+    ad: 'Glapsides Halk Plajı & Tesisleri',
+    marka: 'Glapsides',
+    kategori: 'plaj',
+    sehir: 'Gazimağusa',
+    lat: 35.1660,
+    lon: 33.9180,
+    adres: 'Salamis Anayolu Üzeri, Gazimağusa Sahili',
+    mesafe: '37.0 km',
+    sure: '34 dk',
+    calismaSaatleri: 'Açık • 24 Saat (Giriş Ücretsiz)',
+    olanaklar: ['Geniş Kumsal', 'Belediye Tesisleri', 'Kamp Alanı', 'Otopark'],
+    ikon: Icons.beach_access_rounded,
+    renk: Color(0xFF06B6D4),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-plaj-alagadi',
+    ad: 'Alagadi Kaplumbağa Koruma Sahili',
+    marka: 'Alagadi Turtle Beach',
+    kategori: 'plaj',
+    sehir: 'Girne',
+    lat: 35.3340,
+    lon: 33.4910,
+    adres: 'Esentepe Sahil Yolu, Girne',
+    mesafe: '28.0 km',
+    sure: '29 dk',
+    calismaSaatleri: 'Açık • Gün Boyu',
+    olanaklar: ['Doğal Sit Alanı', 'Kum Tepeleri', 'Restoran & Büfe'],
+    ikon: Icons.beach_access_rounded,
+    renk: Color(0xFF10B981),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-plaj-acapulco',
+    ad: 'Acapulco Resort & Sahili',
+    marka: 'Acapulco Beach',
+    kategori: 'plaj',
+    sehir: 'Girne',
+    lat: 35.3360,
+    lon: 33.4210,
+    adres: 'Çatalköy Mevkii, Girne Doğu Sahili',
+    mesafe: '23.5 km',
+    sure: '25 dk',
+    calismaSaatleri: 'Açık • 08:30 - 20:00',
+    olanaklar: ['Aquapark', 'Altın Kumsal', 'Havuzlar', 'Geniş Otopark'],
+    ikon: Icons.beach_access_rounded,
+    renk: Color(0xFFF59E0B),
+  ),
+
+  // --- ÜNİVERSİTELER & KAMPÜSLER ---
+  const KktcHaritaPoi(
+    id: 'poi-uni-dau',
+    ad: 'Doğu Akdeniz Üniversitesi (DAÜ) Kampüsü',
+    marka: 'DAÜ (EMU)',
+    kategori: 'universite',
+    sehir: 'Gazimağusa',
+    lat: 35.1440,
+    lon: 33.9050,
+    adres: 'Üniversite Bulvarı, Gazimağusa',
+    mesafe: '35.0 km',
+    sure: '32 dk',
+    calismaSaatleri: 'Açık • 7/24 Kampüs Girişi',
+    olanaklar: ['Rektörlük', 'Kütüphane', 'Spor Kompleksi', 'Yurtlar', 'ATM Çarşısı'],
+    ikon: Icons.school_rounded,
+    renk: Color(0xFF2563EB),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-uni-ydu',
+    ad: 'Yakın Doğu Üniversitesi (YDÜ) Kampüsü',
+    marka: 'YDÜ (NEU)',
+    kategori: 'universite',
+    sehir: 'Lefkoşa',
+    lat: 35.2260,
+    lon: 33.3280,
+    adres: 'Yakın Doğu Bulvarı, Lefkoşa',
+    mesafe: '3.5 km',
+    sure: '6 dk',
+    calismaSaatleri: 'Açık • 7/24 Kampüs Girişi',
+    olanaklar: ['Büyük Kütüphane', 'Tıp Fakültesi & Hastane', 'Olimpik Havuz', 'Kongre Sarayı'],
+    ikon: Icons.school_rounded,
+    renk: Color(0xFFDC2626),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-uni-odtu',
+    ad: 'ODTÜ Kuzey Kıbrıs Kampüsü',
+    marka: 'ODTÜ KKK (METU NCC)',
+    kategori: 'universite',
+    sehir: 'Güzelyurt',
+    lat: 35.2440,
+    lon: 33.0270,
+    adres: 'Kalkanlı Köyü Mevkii, Güzelyurt',
+    mesafe: '29.5 km',
+    sure: '28 dk',
+    calismaSaatleri: 'Açık • 7/24 Kampüs Girişi',
+    olanaklar: ['Kütüphane', 'Kültür ve Kongre Merkezi', 'Spor Salonu', 'Öğrenci Yurtları'],
+    ikon: Icons.school_rounded,
+    renk: Color(0xFFB91C1C),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-uni-uku',
+    ad: 'Uluslararası Kıbrıs Üniversitesi (UKÜ) Kampüsü',
+    marka: 'UKÜ (CIU)',
+    kategori: 'universite',
+    sehir: 'Lefkoşa',
+    lat: 35.2160,
+    lon: 33.4120,
+    adres: 'Haspolat Mevkii, Lefkoşa',
+    mesafe: '7.5 km',
+    sure: '8 dk',
+    calismaSaatleri: 'Açık • 7/24 Kampüs Girişi',
+    olanaklar: ['CIU Arena Spor Tesisi', 'Kütüphane', 'Yurtlar', 'Kafe Çarşısı'],
+    ikon: Icons.school_rounded,
+    renk: Color(0xFFF97316),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-uni-gau',
+    ad: 'Girne Amerikan Üniversitesi (GAÜ) Kampüsü',
+    marka: 'GAÜ (GAU)',
+    kategori: 'universite',
+    sehir: 'Girne',
+    lat: 35.3340,
+    lon: 33.2790,
+    adres: 'Üniversite Yolu, Karaoğlanoğlu, Girne',
+    mesafe: '18.2 km',
+    sure: '20 dk',
+    calismaSaatleri: 'Açık • 7/24 Kampüs Girişi',
+    olanaklar: ['Millenium Kompleksi', 'Kütüphane', 'Kafe & Restoranlar'],
+    ikon: Icons.school_rounded,
+    renk: Color(0xFF0284C7),
+  ),
+
+  // --- HAVALİMANI & LİMANLAR ---
+  const KktcHaritaPoi(
+    id: 'poi-ulasim-ercan',
+    ad: 'Yeni Ercan Uluslararası Havalimanı Terminali',
+    marka: 'Ercan Havalimanı (ECN)',
+    kategori: 'havalimani',
+    sehir: 'Lefkoşa',
+    lat: 35.1585,
+    lon: 33.4980,
+    adres: 'Yeni Terminal Binası, Değirmenlik - Ercan Yolu',
+    mesafe: '16.5 km',
+    sure: '15 dk',
+    calismaSaatleri: 'Açık • 7/24 Uçuş & Yolcu Hizmeti',
+    olanaklar: ['Çok Katlı Otopark', 'KIBHAS Otobüsleri', 'Gümrüksüz Satış (Duty Free)', 'Taksi Durağı', 'VIP Lounge'],
+    ikon: Icons.flight_takeoff_rounded,
+    renk: Color(0xFF0284C7),
+  ),
+  const KktcHaritaPoi(
+    id: 'poi-ulasim-girne-liman',
+    ad: 'Girne Turizm Limanı & Yolcu Feribot Terminali',
+    marka: 'Girne Limanı',
+    kategori: 'havalimani',
+    sehir: 'Girne',
+    lat: 35.3420,
+    lon: 33.3280,
+    adres: 'Karakum Yolu, Girne Yeni Liman',
+    mesafe: '17.2 km',
+    sure: '19 dk',
+    calismaSaatleri: 'Açık • 7/24 Sefer & Gümrük Hizmeti',
+    olanaklar: ['Feribot İskelesi (Taşucu/Mersin)', 'Gümrük & Pasaport', 'Otopark', 'Bilet Satış'],
+    ikon: Icons.directions_boat_rounded,
+    renk: Color(0xFF0D9488),
+  ),
 ];
 
 // ==========================================
@@ -1467,6 +1748,11 @@ class KktcOpenStreetMapTileView extends StatefulWidget {
   final bool radarlariGoster;
   final List<List<double>>? rotaKoordinatlari;
   final bool gosterUstBar;
+  final List<YolForumBildirimi>? yolBildirimleri;
+  final YolForumBildirimi? seciliYolBildirimi;
+  final Function(YolForumBildirimi)? onYolBildirimiSelected;
+  final double bottomControlPadding;
+  final bool gosterZoomButonlari;
 
   const KktcOpenStreetMapTileView({
     super.key,
@@ -1480,6 +1766,11 @@ class KktcOpenStreetMapTileView extends StatefulWidget {
     this.radarlariGoster = true,
     this.rotaKoordinatlari,
     this.gosterUstBar = true,
+    this.yolBildirimleri,
+    this.seciliYolBildirimi,
+    this.onYolBildirimiSelected,
+    this.bottomControlPadding = 0.0,
+    this.gosterZoomButonlari = true,
   });
 
   @override
@@ -1492,6 +1783,7 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
   double _centerLat = 35.250;
   double _centerLon = 33.620;
   double _zoom = 9.0;
+  double _baseZoom = 9.0;
 
   // Harita Stili: 0 = OpenStreetMap Standart, 1 = CartoDB Voyager, 2 = CartoDB Dark Matter
   int _mapStyleIndex = 0;
@@ -1559,13 +1851,13 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
 
   void zoomIn() {
     setState(() {
-      _zoom = (_zoom + 1.0).clamp(8.0, 14.0);
+      _zoom = (_zoom + 1.0).clamp(8.0, 16.0);
     });
   }
 
   void zoomOut() {
     setState(() {
-      _zoom = (_zoom - 1.0).clamp(8.0, 14.0);
+      _zoom = (_zoom - 1.0).clamp(8.0, 16.0);
     });
   }
 
@@ -1804,33 +2096,172 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                 ),
               ],
             ),
-            const SizedBox(height: 3),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: isSelected ? poi.renk : Colors.white24,
-                  width: isSelected ? 1.2 : 0.6,
-                ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black45,
-                    blurRadius: 4,
-                    offset: Offset(0, 1),
+            if (isSelected || _zoom >= 12.5) ...[
+              const SizedBox(height: 3),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: isSelected ? poi.renk : Colors.white24,
+                    width: isSelected ? 1.2 : 0.6,
                   ),
-                ],
-              ),
-              child: Text(
-                poi.marka.isNotEmpty ? poi.marka : poi.ad.split(' ').first,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
-                  fontSize: 9.0,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black45,
+                      blurRadius: 4,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  poi.marka.isNotEmpty ? poi.marka : poi.ad.split(' ').first,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFFCBD5E1),
+                    fontSize: 9.0,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  ),
                 ),
               ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 🚦 YOL FORUMU İŞARETÇİSİ (Çevirme, Kaza, Çalışma Canlı Pinleri)
+  Widget _buildSingleYolBildirimiPin({
+    required YolForumBildirimi bildirim,
+    required bool isSelected,
+    required double width,
+    required double height,
+    required double centerTileX,
+    required double centerTileY,
+    required double tileSize,
+    required int intZoom,
+  }) {
+    final double pTileX = lonToTileX(bildirim.lon, intZoom.toDouble());
+    final double pTileY = latToTileY(bildirim.lat, intZoom.toDouble());
+
+    final double pinX = width / 2.0 + (pTileX - centerTileX) * tileSize;
+    final double pinY = height / 2.0 + (pTileY - centerTileY) * tileSize;
+
+    if (pinX < -80 || pinX > width + 80 || pinY < -80 || pinY > height + 80) {
+      return const SizedBox.shrink();
+    }
+
+    final double pinSize = isSelected ? 40.0 : 34.0;
+    final Color pinColor = bildirim.tip.anaRenk;
+
+    return Positioned(
+      left: pinX - (pinSize / 2.0),
+      top: pinY - (pinSize / 2.0),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          widget.onYolBildirimiSelected?.call(bildirim);
+          flyToLocation(bildirim.lat, bildirim.lon, zoom: math.max(_zoom, 12.5));
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                FadeTransition(
+                  opacity: _pulseController,
+                  child: Container(
+                    width: pinSize + (isSelected ? 22 : 14),
+                    height: pinSize + (isSelected ? 22 : 14),
+                    decoration: BoxDecoration(
+                      color: pinColor.withValues(alpha: isSelected ? 0.45 : 0.25),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+                Container(
+                  width: pinSize,
+                  height: pinSize,
+                  decoration: BoxDecoration(
+                    color: pinColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: pinColor.withValues(alpha: 0.55),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      bildirim.tip.ikon,
+                      size: isSelected ? 22 : 18,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
+            if (isSelected || _zoom >= 10.8) ...[
+              const SizedBox(height: 3),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isSelected ? pinColor : Colors.white24,
+                    width: isSelected ? 1.5 : 0.7,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black45,
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      bildirim.tip.baslik,
+                      style: TextStyle(
+                        color: isSelected ? const Color(0xFFFDE047) : Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (bildirim.yorumlar.isNotEmpty) ...[
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '💬 ${bildirim.yorumlar.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -2075,10 +2506,20 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
         final String template = _tileProviders[_mapStyleIndex];
 
         return GestureDetector(
-          onPanUpdate: (details) {
+          onScaleStart: (details) {
+            _baseZoom = _zoom;
+          },
+          onScaleUpdate: (details) {
             setState(() {
-              final double dxInTiles = -details.delta.dx / tileSize;
-              final double dyInTiles = -details.delta.dy / tileSize;
+              // 1. İki parmakla kıstırma / açma ile yakınlaştırma (Pinch-to-zoom)
+              if (details.scale != 1.0) {
+                final double logScale = math.log(details.scale) / math.ln2;
+                _zoom = (_baseZoom + logScale).clamp(8.0, 16.0);
+              }
+
+              // 2. Parmakla kaydırma (Pan / Drag)
+              final double dxInTiles = -details.focalPointDelta.dx / tileSize;
+              final double dyInTiles = -details.focalPointDelta.dy / tileSize;
 
               final double newCenterTileX = centerTileX + dxInTiles;
               final double newCenterTileY = centerTileY + dyInTiles;
@@ -2086,6 +2527,10 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
               _centerLon = tileXToLon(newCenterTileX, intZoom.toDouble()).clamp(32.0, 35.0);
               _centerLat = tileYToLat(newCenterTileY, intZoom.toDouble()).clamp(34.4, 36.0);
             });
+          },
+          onDoubleTap: () {
+            HapticFeedback.lightImpact();
+            zoomIn();
           },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
@@ -2131,7 +2576,7 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
 
                   // 3. OPENSTREETMAP ŞEHİR İSİM ROZETLERİ (Zoom seviyesine göre akıllı filtreleme)
                   ...osmCityLabels
-                      .where((c) => _zoom >= 10.3 || c.important)
+                      .where((c) => _zoom >= 11.8 || (_zoom >= 10.0 && c.important))
                       .map((c) {
                     final double cTileX = osmLonToTileX(c.lon, intZoom.toDouble());
                     final double cTileY = osmLatToTileY(c.lat, intZoom.toDouble());
@@ -2186,6 +2631,22 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                       ),
                     ),
 
+                  // 1.9 YOL FORUMU İŞARETÇİLERİ (ÇEVİRME, KAZA, ÇALIŞMA)
+                  if (widget.yolBildirimleri != null && widget.yolBildirimleri!.isNotEmpty) ...[
+                    ...widget.yolBildirimleri!.map((bildirim) {
+                      return _buildSingleYolBildirimiPin(
+                        bildirim: bildirim,
+                        isSelected: widget.seciliYolBildirimi?.id == bildirim.id,
+                        width: width,
+                        height: height,
+                        centerTileX: centerTileX,
+                        centerTileY: centerTileY,
+                        tileSize: tileSize,
+                        intZoom: intZoom,
+                      );
+                    }),
+                  ],
+
                   // 2. POI İŞARETÇİLERİ (BENZİNLİKLER, SERVİS, OTOPARK, HASTANE)
                   if (widget.poiNoktalari != null && widget.poiNoktalari!.isNotEmpty) ...[
                     ...widget.poiNoktalari!.map((poi) {
@@ -2233,8 +2694,8 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                       // 2c. Yakınlaşınca (zoom >= 10.3) radarlar yol üzerinde tek tek gösterilir
                       ...widget.radarlar.map((radar) {
                         final bool isSelected = widget.seciliRadar?.id == radar.id;
-                        // İsim etiketi sadece çok yakınlaşınca (zoom >= 11.5) veya seçili radar için görünür
-                        final bool showNameLabel = _zoom >= 11.5 || isSelected;
+                        // İsim etiketi sadece çok yakınlaşınca (zoom >= 12.2) veya seçili radar için görünür
+                        final bool showNameLabel = (_zoom >= 12.2) || isSelected;
 
                         return _buildSingleRadarPin(
                           radar: radar,
@@ -2410,24 +2871,25 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                     ),
                   ],
 
-                  // 5. SAĞ ALT: ZOOM VE MERKEZ KONTROL BUTONLARI
-                  Positioned(
-                    bottom: 12,
-                    right: 12,
-                    child: Column(
-                      children: [
-                        _buildFloatingButton(Icons.add_rounded, zoomIn),
-                        const SizedBox(height: 6),
-                        _buildFloatingButton(Icons.remove_rounded, zoomOut),
-                        const SizedBox(height: 6),
-                        _buildFloatingButton(
-                          Icons.my_location_rounded,
-                          centerOnUserOrKktc,
-                          isAccent: true,
-                        ),
-                      ],
+                  // 5. SAĞ ALT: ZOOM VE MERKEZ KONTROL BUTONLARI (KARTLARLA ÇAKIŞMA ÖNLENİR)
+                  if (widget.gosterZoomButonlari)
+                    Positioned(
+                      bottom: 12 + widget.bottomControlPadding,
+                      right: 12,
+                      child: Column(
+                        children: [
+                          _buildFloatingButton(Icons.add_rounded, zoomIn),
+                          const SizedBox(height: 6),
+                          _buildFloatingButton(Icons.remove_rounded, zoomOut),
+                          const SizedBox(height: 6),
+                          _buildFloatingButton(
+                            Icons.my_location_rounded,
+                            centerOnUserOrKktc,
+                            isAccent: true,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
                   // 6. SOL ALT: OSM TELİF & DETAY BİLGİSİ
                   Positioned(
