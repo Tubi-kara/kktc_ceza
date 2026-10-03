@@ -55,8 +55,25 @@ class KktcTemaServisi extends ChangeNotifier {
     return MediaQuery.platformBrightnessOf(context) == Brightness.dark;
   }
 
-  /// Aktif modun koyu olup olmadığını anlık kontrol eder (context'siz genel durum)
-  bool get isKoyuAktif => _temaModu == KktcTemaModu.koyu;
+  /// Aktif modun koyu olup olmadığını anlık kontrol eder (context'siz; sistem modunda cihaz temasına bakar)
+  bool get isKoyuAktif {
+    if (_temaModu == KktcTemaModu.koyu) return true;
+    if (_temaModu == KktcTemaModu.acik) return false;
+    return WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark;
+  }
+
+  /// Tema değişince açık olan tüm sayfa/sheet'lerin sabit renklerini de yenilemek için tüm ağacı yeniden çizer
+  void _tumAgaciYenile() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final root = WidgetsBinding.instance.rootElement;
+      if (root == null) return;
+      void yenile(Element el) {
+        el.markNeedsBuild();
+        el.visitChildren(yenile);
+      }
+      root.visitChildren(yenile);
+    });
+  }
 
   // 🎨 DİNAMİK RENK TOKENLARI
   Color get bg => isKoyuAktif ? const Color(0xFF0A0F1D) : const Color(0xFFF4F5F7);
@@ -116,6 +133,7 @@ class KktcTemaServisi extends ChangeNotifier {
     if (_temaModu == yeniMod) return;
     _temaModu = yeniMod;
     notifyListeners();
+    _tumAgaciYenile();
     await _ayariKaydet();
   }
 

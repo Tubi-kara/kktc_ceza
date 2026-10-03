@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'kktc_tema_servisi.dart';
 
 // ============================================================================
 // 🚦 KKTC YOL FORUMU VERİ VE BİLDİRİM MODELLERİ
@@ -57,24 +58,26 @@ extension YolForumTipiExtension on YolForumTipi {
   }
 
   Color get acikRenk {
+    final bool koyu = KktcTemaServisi().isKoyuAktif;
     switch (this) {
       case YolForumTipi.cevirme:
-        return const Color(0xFFEFF6FF);
+        return koyu ? const Color(0xFF1E3A8A).withOpacity(0.35) : const Color(0xFFEFF6FF);
       case YolForumTipi.kaza:
-        return const Color(0xFFFEF2F2);
+        return koyu ? const Color(0xFF7F1D1D).withOpacity(0.35) : const Color(0xFFFEF2F2);
       case YolForumTipi.calisma:
-        return const Color(0xFFFFFBEB);
+        return koyu ? const Color(0xFF78350F).withOpacity(0.35) : const Color(0xFFFFFBEB);
     }
   }
 
   Color get kenarRenk {
+    final bool koyu = KktcTemaServisi().isKoyuAktif;
     switch (this) {
       case YolForumTipi.cevirme:
-        return const Color(0xFF93C5FD);
+        return koyu ? const Color(0xFF3B82F6) : const Color(0xFF93C5FD);
       case YolForumTipi.kaza:
-        return const Color(0xFFFCA5A5);
+        return koyu ? const Color(0xFFEF4444) : const Color(0xFFFCA5A5);
       case YolForumTipi.calisma:
-        return const Color(0xFFFCD34D);
+        return koyu ? const Color(0xFFF59E0B) : const Color(0xFFFCD34D);
     }
   }
 }

@@ -40,11 +40,12 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
   // Tasarım Renk Tokenları
   static const Color cNavy = Color(0xFF010E3C);
   // 🌙 Koyu tema uyumlu dinamik metin & yüzey renkleri
-  Color get cInk => KktcTemaServisi().isKoyu(context) ? const Color(0xFFF1F5F9) : cNavy;
-  Color get cSurface => KktcTemaServisi().isKoyu(context) ? const Color(0xFF151D30) : Colors.white;
-  Color get cSoftSurface => KktcTemaServisi().isKoyu(context) ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
-  Color get cMuted => KktcTemaServisi().isKoyu(context) ? const Color(0xFF94A3B8) : cSlate;
-  Color get cLine => KktcTemaServisi().isKoyu(context) ? const Color(0xFF243048) : const Color(0xFFE2E8F0);
+  bool get isKoyu => KktcTemaServisi().isKoyuAktif;
+  Color get cInk => KktcTemaServisi().isKoyuAktif ? const Color(0xFFF1F5F9) : cNavy;
+  Color get cSurface => KktcTemaServisi().isKoyuAktif ? const Color(0xFF151D30) : Colors.white;
+  Color get cSoftSurface => KktcTemaServisi().isKoyuAktif ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
+  Color get cMuted => KktcTemaServisi().isKoyuAktif ? const Color(0xFF94A3B8) : cSlate;
+  Color get cLine => KktcTemaServisi().isKoyuAktif ? const Color(0xFF243048) : const Color(0xFFE2E8F0);
   static const Color cSlate = Color(0xFF747675);
   static const Color cAccent = Color(0xFFD1C929);
   static const Color cAccentLight = Color(0xFFFAF9E5);

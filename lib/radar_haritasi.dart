@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'canli_gps_servisi.dart';
 import 'yol_tarifi_sayfasi.dart';
 import 'yol_forum_modeli.dart';
+import 'kktc_tema_servisi.dart';
 
 // ==========================================
 // 📍 RADAR & HIZ KAMERASI VERİ MODELİ
@@ -2504,7 +2505,10 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
         final int maxTileY = (centerTileY + (height / 2.0) / tileSize).ceil() + 1;
 
         final int numTiles = 1 << intZoom;
-        final String template = _tileProviders[_mapStyleIndex];
+        final bool isKoyuHarita = KktcTemaServisi().isKoyuAktif;
+        final String template = (isKoyuHarita && _mapStyleIndex == 0)
+            ? 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+            : _tileProviders[_mapStyleIndex];
 
         return GestureDetector(
           onScaleStart: (details) {
