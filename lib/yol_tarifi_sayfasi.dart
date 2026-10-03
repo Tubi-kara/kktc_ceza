@@ -5561,7 +5561,7 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
                 // Evim Kartı
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.fromLTRB(10, 8, 4, 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     decoration: BoxDecoration(
                       color: NavHtmlColors.surfaceContainerLowest,
                       borderRadius: BorderRadius.circular(14),
@@ -5569,8 +5569,8 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.home_rounded, color: Color(0xFF10B981), size: 20),
-                        const SizedBox(width: 8),
+                        const Icon(Icons.home_rounded, color: Color(0xFF10B981), size: 18),
+                        const SizedBox(width: 6),
                         Expanded(
                           child: InkWell(
                             onTap: () {
@@ -5584,31 +5584,33 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
                                   'Evim',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 12.5,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
                                   KktcFavoriNoktalarServisi().evimAdres,
-                                  style: const TextStyle(color: Colors.white60, fontSize: 10),
+                                  style: const TextStyle(color: Colors.white60, fontSize: 9.5),
                                   overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.edit_location_alt_rounded, color: Color(0xFF10B981), size: 18),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
-                          tooltip: 'Ev Adresini Değiştir',
-                          onPressed: () {
+                        InkWell(
+                          onTap: () {
                             showEvIsDuzenleModal(
                               context: context,
                               isEv: true,
                               onKaydedildi: () => setState(() {}),
                             );
                           },
+                          borderRadius: BorderRadius.circular(6),
+                          child: const Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Icon(Icons.edit_location_alt_rounded, color: Color(0xFF10B981), size: 16),
+                          ),
                         ),
                       ],
                     ),
@@ -5618,7 +5620,7 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
                 // İşim Kartı
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.fromLTRB(10, 8, 4, 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     decoration: BoxDecoration(
                       color: NavHtmlColors.surfaceContainerLowest,
                       borderRadius: BorderRadius.circular(14),
@@ -5626,8 +5628,8 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.work_rounded, color: Color(0xFF38BDF8), size: 20),
-                        const SizedBox(width: 8),
+                        const Icon(Icons.work_rounded, color: Color(0xFF38BDF8), size: 18),
+                        const SizedBox(width: 6),
                         Expanded(
                           child: InkWell(
                             onTap: () {
@@ -5641,31 +5643,33 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
                                   'İşim',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 12.5,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text(
                                   KktcFavoriNoktalarServisi().isimAdres,
-                                  style: const TextStyle(color: Colors.white60, fontSize: 10),
+                                  style: const TextStyle(color: Colors.white60, fontSize: 9.5),
                                   overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.edit_location_alt_rounded, color: Color(0xFF38BDF8), size: 18),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
-                          tooltip: 'İş Adresini Değiştir',
-                          onPressed: () {
+                        InkWell(
+                          onTap: () {
                             showEvIsDuzenleModal(
                               context: context,
                               isEv: false,
                               onKaydedildi: () => setState(() {}),
                             );
                           },
+                          borderRadius: BorderRadius.circular(6),
+                          child: const Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Icon(Icons.edit_location_alt_rounded, color: Color(0xFF38BDF8), size: 16),
+                          ),
                         ),
                       ],
                     ),

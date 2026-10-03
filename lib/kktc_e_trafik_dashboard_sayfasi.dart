@@ -3405,28 +3405,32 @@ class _KktcETrafikDashboardSayfasiState
                   Row(
                     children: [
                       const Text(
-                        'Akaryakıt Tarifesi',
+                        'Akaryakıt',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: cNavy,
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          _akaryakitServisi.fiyatlar.kaynak.contains('Canlı')
-                              ? 'CANLI K-PET TARİFE'
-                              : 'K-PET / RESMİ TARİFE',
-                          style: const TextStyle(
-                            fontSize: 8.5,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF047857),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            _akaryakitServisi.fiyatlar.kaynak.contains('Canlı')
+                                ? 'CANLI TARİFE'
+                                : 'K-PET / RESMİ',
+                            style: const TextStyle(
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF047857),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
                       ),
@@ -3452,7 +3456,7 @@ class _KktcETrafikDashboardSayfasiState
                         },
                         borderRadius: BorderRadius.circular(6),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
                           decoration: BoxDecoration(
                             color: cNavy.withValues(alpha: 0.06),
                             borderRadius: BorderRadius.circular(6),
@@ -3463,7 +3467,7 @@ class _KktcETrafikDashboardSayfasiState
                               Icon(Icons.refresh_rounded, size: 12, color: cNavy),
                               SizedBox(width: 3),
                               Text(
-                                'Fiyatları Yenile',
+                                'Yenile',
                                 style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: cNavy),
                               ),
                             ],
