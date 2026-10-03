@@ -243,6 +243,8 @@ class _KktcETrafikRadarKokpitSayfasiState
         ),
       ),
     );
+      },
+    );
   }
 
   // ===========================================================================
@@ -454,8 +456,8 @@ class _KktcETrafikRadarKokpitSayfasiState
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 

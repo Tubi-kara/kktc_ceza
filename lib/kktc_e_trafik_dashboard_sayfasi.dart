@@ -1158,7 +1158,7 @@ class _KktcETrafikDashboardSayfasiState
                                 color: const Color(0xFF2563EB),
                                 borderRadius: BorderRadius.circular(16),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.directions_rounded, size: 14, color: Colors.white),
@@ -1603,7 +1603,7 @@ class _KktcETrafikDashboardSayfasiState
                                       ),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
-                                    child: const Row(
+                                    child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(Icons.add_location_alt_rounded, size: 14, color: Colors.white),
@@ -3135,7 +3135,7 @@ class _KktcETrafikDashboardSayfasiState
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: const Color(0xFF10B981).withOpacity(0.25)),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.sync_rounded, size: 12, color: Color(0xFF10B981)),
@@ -5266,9 +5266,9 @@ class _KktcETrafikDashboardSayfasiState
                     );
                   },
                   icon: const Icon(Icons.login_rounded, size: 18, color: cLime),
-                  label: const Text(
+                  label: Text(
                     dil('Kimlik / Ehliyet ile Giriş Yap', 'Sign In with ID / Driving License'),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
@@ -5556,7 +5556,7 @@ class _KktcETrafikDashboardSayfasiState
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.white.withOpacity(0.12)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(Icons.timer_outlined, color: cLime, size: 16),
                       SizedBox(width: 8),
@@ -7659,11 +7659,11 @@ class _KktcETrafikDashboardSayfasiState
                                   ),
                                 ],
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.login_rounded, size: 15, color: cLime),
-                                  SizedBox(width: 5),
+                                  const Icon(Icons.login_rounded, size: 15, color: cLime),
+                                  const SizedBox(width: 5),
                                   Text(
                                     dil('Giriş Yap', 'Sign In'),
                                     style: const TextStyle(
@@ -7996,14 +7996,14 @@ class _KktcETrafikDashboardSayfasiState
                           ),
                         ],
                       )
-                    : const Column(
+                    : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.lock_rounded, color: cLime, size: 22),
-                          SizedBox(height: 2),
+                          const Icon(Icons.lock_rounded, color: cLime, size: 22),
+                          const SizedBox(height: 2),
                           Text(
                             dil('GİRİŞ', 'SIGN IN'),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
@@ -8282,9 +8282,9 @@ class _KktcETrafikDashboardSayfasiState
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(color: const Color(0xFF93C5FD)),
                 ),
-                child: const Text(
+                child: Text(
                   dil('CANLI BİLDİRİM', 'LIVE REPORTS'),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 8.5,
                     fontWeight: FontWeight.w900,
                     color: Color(0xFF2563EB),
@@ -8965,9 +8965,9 @@ class _KktcETrafikDashboardSayfasiState
                   _girisEkraniniAc();
                 },
                 icon: const Icon(Icons.login_rounded, size: 16, color: cLime),
-                label: const Text(
+                label: Text(
                   dil('Kimlik / Ehliyet ile Giriş Yap', 'Sign In with ID / Driving License'),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
@@ -9188,7 +9188,7 @@ class _KktcETrafikDashboardSayfasiState
                       color: cNavy,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
@@ -9691,3 +9691,4 @@ class RadarVectorMapPainter extends CustomPainter {
     return oldDelegate.pulseValue != pulseValue;
   }
 }
+
