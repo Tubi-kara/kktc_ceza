@@ -1107,6 +1107,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // 10. Canlı & Taranabilir QR Kodu Kurulumu
+  const qrImg = document.getElementById('qrImage');
+  if (qrImg) {
+    const liveUrl = encodeURIComponent(window.location.origin && window.location.origin !== 'null' ? window.location.origin + '/' : 'https://kktcceza-website.vercel.app/');
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${liveUrl}&color=05-96-69&bgcolor=ffffff`;
+  }
+
   // İlk hesaplama kurulumu
   updateFineCalculator();
 });

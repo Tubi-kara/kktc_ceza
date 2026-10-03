@@ -1669,15 +1669,27 @@ h1, h2, h3, h4, h5, h6 {
   width: 170px;
   height: 170px;
   padding: 10px;
-  background: #0B0F19;
-  border-radius: 16px;
-  border: 2px dashed rgba(16, 185, 129, 0.4);
-  margin-bottom: 12px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 3.5px solid #10B981;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.35);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.qr-svg {
+.qr-frame:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 14px 35px rgba(16, 185, 129, 0.5);
+}
+
+.qr-img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 .qr-caption {
