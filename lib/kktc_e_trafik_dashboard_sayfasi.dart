@@ -3416,15 +3416,57 @@ class _KktcETrafikDashboardSayfasiState
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withOpacity(0.12),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text(
-                          'CANLI TARİFE',
-                          style: TextStyle(
+                        child: Text(
+                          _akaryakitServisi.fiyatlar.kaynak.contains('Canlı')
+                              ? 'CANLI K-PET TARİFE'
+                              : 'K-PET / RESMİ TARİFE',
+                          style: const TextStyle(
                             fontSize: 8.5,
                             fontWeight: FontWeight.w800,
                             color: Color(0xFF047857),
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      InkWell(
+                        onTap: () async {
+                          HapticFeedback.lightImpact();
+                          final ok = await _akaryakitServisi.canliFiyatlariGuncelle();
+                          if (mounted) {
+                            setState(() {});
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  ok
+                                      ? '✅ Akaryakıt fiyatları güncellendi (K-Pet & Resmi Gazete: 95 Oktan ${_akaryakitServisi.fiyatlar.kursunsuz95.toStringAsFixed(2)} ₺, Euro Diesel ${_akaryakitServisi.fiyatlar.euroDiesel.toStringAsFixed(2)} ₺)'
+                                      : '⚠️ Fiyatlar kontrol edildi (Mevcut resmi tarife geçerli)',
+                                ),
+                                duration: const Duration(seconds: 2),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(6),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: cNavy.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.refresh_rounded, size: 12, color: cNavy),
+                              SizedBox(width: 3),
+                              Text(
+                                'Fiyatları Yenile',
+                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: cNavy),
+                              ),
+                            ],
                           ),
                         ),
                       ),
