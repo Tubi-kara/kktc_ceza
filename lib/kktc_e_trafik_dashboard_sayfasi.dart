@@ -2,6 +2,7 @@ import 'kktc_favori_noktalar_servisi.dart';
 import 'kktc_tema_servisi.dart';
 import 'kktc_dil_servisi.dart';
 import 'dart:ui';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -735,6 +736,9 @@ class _KktcETrafikDashboardSayfasiState
     HapticFeedback.lightImpact();
     final TextEditingController aramaCtrl = TextEditingController();
     List<KktcHaritaPoi> sonuclar = List.from(kktcHaritaPoiListesi);
+    List<RotaNoktasi> uzakSonuclar = [];
+    bool uzakAraniyor = false;
+    Timer? uzakTimer;
 
     showModalBottomSheet(
       context: context,
@@ -818,6 +822,22 @@ class _KktcETrafikDashboardSayfasiState
                                         p.marka.toLowerCase().contains(q) ||
                                         p.sehir.toLowerCase().contains(q))
                                     .toList();
+                            if (q.length < 2) {
+                              uzakSonuclar = [];
+                              uzakAraniyor = false;
+                            }
+                          });
+                          uzakTimer?.cancel();
+                          final q = val.trim();
+                          if (q.length < 2) return;
+                          uzakTimer = Timer(const Duration(milliseconds: 450), () async {
+                            setModalState(() => uzakAraniyor = true);
+                            final dil = KktcDilServisi().turkceMi ? 'tr' : 'en';
+                            final r = await KktcAdresAramaServisi.ara(q, dil: dil);
+                            setModalState(() {
+                              uzakSonuclar = r;
+                              uzakAraniyor = false;
+                            });
                           });
                         },
                       ),
@@ -950,8 +970,62 @@ class _KktcETrafikDashboardSayfasiState
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
-                            itemCount: sonuclar.length,
+                            itemCount: sonuclar.length +
+                                ((aramaCtrl.text.trim().length >= 2)
+                                    ? 1 + (uzakAraniyor ? 1 : (uzakSonuclar.isEmpty ? 1 : uzakSonuclar.length))
+                                    : 0),
                             itemBuilder: (_, i) {
+                              if (i >= sonuclar.length) {
+                                final uIdx = i - sonuclar.length;
+                                if (uIdx == 0) {
+                                  return const Padding(
+                                    padding: EdgeInsets.fromLTRB(8, 14, 8, 6),
+                                    child: Text(
+                                      'İNTERNETTE ARA (TÜM KKTC)',
+                                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.grey, letterSpacing: 0.6),
+                                    ),
+                                  );
+                                }
+                                if (uzakAraniyor) {
+                                  return const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 18),
+                                    child: Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))),
+                                  );
+                                }
+                                if (uzakSonuclar.isEmpty) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    child: Center(
+                                      child: Text('İnternette sonuç bulunamadı', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                                    ),
+                                  );
+                                }
+                                final nokta = uzakSonuclar[uIdx - 1];
+                                return ListTile(
+                                  leading: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(color: const Color(0xFF2563EB).withValues(alpha: 0.12), shape: BoxShape.circle),
+                                    child: Icon(nokta.ikon, color: const Color(0xFF2563EB), size: 20),
+                                  ),
+                                  title: Text(nokta.ad, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                                  subtitle: Text(nokta.kisaAd, style: TextStyle(fontSize: 11, color: Colors.grey.shade600), overflow: TextOverflow.ellipsis),
+                                  trailing: const Icon(Icons.directions_rounded, color: Color(0xFF2563EB), size: 20),
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => YolTarifiSayfasi(
+                                          turkceMi: KktcDilServisi().turkceMi,
+                                          varisNoktasi: nokta,
+                                          otomatikNavigasyonBaslat: true,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
                               final poi = sonuclar[i];
                               return ListTile(
                                 leading: Container(

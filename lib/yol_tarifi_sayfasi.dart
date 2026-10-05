@@ -602,32 +602,39 @@ class KktcAdresAramaServisi {
   static const String _nominatimViewbox = '32.20,35.72,34.65,34.55';
   static final Map<String, List<RotaNoktasi>> _onbellek = {};
 
-  static Future<List<RotaNoktasi>> ara(String sorgu, {double? yakinLat, double? yakinLon}) async {
+  static Future<List<RotaNoktasi>> ara(String sorgu, {double? yakinLat, double? yakinLon, String dil = 'tr'}) async {
     final q = sorgu.trim();
     if (q.length < 2) return [];
-    final key = q.toLowerCase();
+    final key = '${q.toLowerCase()}|$dil';
     if (_onbellek.containsKey(key)) return _onbellek[key]!;
 
     List<RotaNoktasi> sonuc = [];
     try {
-      sonuc = await _photonAra(q, yakinLat ?? 35.20, yakinLon ?? 33.36);
+      sonuc = await _photonAra(q, yakinLat ?? 35.20, yakinLon ?? 33.36, dil);
     } catch (_) {}
     if (sonuc.isEmpty) {
       try {
-        sonuc = await _nominatimAra(q);
+        sonuc = await _nominatimAra(q, dil);
       } catch (_) {}
     }
     if (sonuc.isNotEmpty) _onbellek[key] = sonuc;
     return sonuc;
   }
 
-  static Future<List<RotaNoktasi>> _photonAra(String q, double lat, double lon) async {
+  // Yalnızca Kuzey Kıbrıs (KKTC) sonuçlarını kabul et
+  static bool _kkTcMi(String metin) {
+    final t = metin.toLowerCase();
+    return t.contains('kuzey') || t.contains('northern') || t.contains('kktc');
+  }
+
+  static Future<List<RotaNoktasi>> _photonAra(String q, double lat, double lon, String dil) async {
     final uri = Uri.parse('https://photon.komoot.io/api/').replace(queryParameters: {
       'q': q,
       'limit': '10',
       'lat': lat.toString(),
       'lon': lon.toString(),
       'bbox': _photonBbox,
+      'lang': dil == 'en' ? 'en' : 'default',
     });
     final resp = await http.get(uri, headers: {
       if (!kIsWeb) 'User-Agent': 'KktcCezaApp/1.0',
@@ -645,6 +652,11 @@ class KktcAdresAramaServisi {
       if (coords.length < 2) continue;
       final fLon = (coords[0] as num).toDouble();
       final fLat = (coords[1] as num).toDouble();
+
+      // KKTC filtresi: state/country alanında "Kuzey" veya "Northern" olmalı
+      final stateAlan = (p['state'] ?? '').toString();
+      final countryAlan = (p['country'] ?? '').toString();
+      if (!_kkTcMi(stateAlan) && !_kkTcMi(countryAlan)) continue;
 
       final sokak = [p['street'], p['housenumber']].where((e) => e != null).join(' ');
       final ad = (p['name'] ?? (sokak.isNotEmpty ? sokak : null) ?? q).toString();
@@ -673,7 +685,7 @@ class KktcAdresAramaServisi {
     return list;
   }
 
-  static Future<List<RotaNoktasi>> _nominatimAra(String q) async {
+  static Future<List<RotaNoktasi>> _nominatimAra(String q, String dil) async {
     final uri = Uri.parse('https://nominatim.openstreetmap.org/search').replace(queryParameters: {
       'q': q,
       'format': 'jsonv2',
@@ -682,7 +694,7 @@ class KktcAdresAramaServisi {
       'viewbox': _nominatimViewbox,
       'bounded': '0',
       'addressdetails': '1',
-      'accept-language': 'tr',
+      'accept-language': dil,
     });
     final resp = await http.get(uri, headers: {
       if (!kIsWeb) 'User-Agent': 'KktcCezaApp/1.0 (karam3517@hotmail.com)',
@@ -693,6 +705,10 @@ class KktcAdresAramaServisi {
     return items.map((e) {
       final m = e as Map<String, dynamic>;
       final adr = (m['address'] as Map<String, dynamic>?) ?? {};
+      // KKTC filtresi: address.country veya display_name "Kuzey Kıbrıs" içermeli
+      final country = (adr['country'] ?? '').toString();
+      final display = m['display_name']?.toString() ?? '';
+      if (!_kkTcMi(country) && !_kkTcMi(display)) return null;
       final fLat = double.tryParse(m['lat'].toString()) ?? 0;
       final fLon = double.tryParse(m['lon'].toString()) ?? 0;
       final ad = (m['name']?.toString().isNotEmpty == true)
@@ -710,7 +726,7 @@ class KktcAdresAramaServisi {
         ikon: _ikonSec(m['category']?.toString(), m['type']?.toString()),
         kategori: 'arama',
       );
-    }).toList();
+    }).where((e) => e != null).toList().whereType<RotaNoktasi>().toList();
   }
 
   static IconData _ikonSec(String? key, String? value) {
@@ -5520,7 +5536,7 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
       if (!mounted) return;
       setState(() => _uzakAraniyor = true);
       try {
-        final sonuc = await KktcAdresAramaServisi.ara(q);
+        final sonuc = await KktcAdresAramaServisi.ara(q, dil: widget.turkceMi ? 'tr' : 'en');
         if (!mounted) return;
         if (_aramaMetni.trim() == q) {
           setState(() {
