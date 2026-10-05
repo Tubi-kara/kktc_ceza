@@ -2,7 +2,7 @@
   "name": "KKTC Trafik & Sabit Radar Portalı",
   "short_name": "KKTC Radar",
   "description": "Kuzey Kıbrıs Türk Cumhuriyeti Sabit Radar, Canlı Navigasyon ve 2026 Ceza Hesaplayıcı",
-  "start_url": "./index.html",
+  "start_url": "./app/",
   "display": "standalone",
   "background_color": "#070B14",
   "theme_color": "#10B981",

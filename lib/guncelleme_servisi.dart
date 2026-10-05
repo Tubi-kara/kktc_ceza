@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
@@ -36,6 +37,8 @@ class GuncellemeServisi {
 
   /// 🔍 GitHub Releases Üzerinden Yeni Sürüm Var mı Kontrol Eder
   static Future<GuncellemeBilgisi?> guncellemeKontrolEt() async {
+    // Web/PWA (iPhone ana ekran) sürümü her açılışta sunucudan güncel yüklenir
+    if (kIsWeb) return null;
     try {
       final client = HttpClient();
       client.connectionTimeout = const Duration(seconds: 7);

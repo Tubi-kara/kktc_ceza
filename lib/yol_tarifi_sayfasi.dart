@@ -1,9 +1,10 @@
 import 'kktc_favori_noktalar_servisi.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'radar_haritasi.dart';
@@ -468,17 +469,15 @@ class CanliOsrmServisi {
       return _onbellek[cacheKey];
     }
 
-    HttpClient? client;
     try {
-      client = HttpClient()..connectionTimeout = const Duration(seconds: 5);
-      client.userAgent = 'KktcCezaApp/1.0';
       final uri = Uri.parse(
         'https://router.project-osrm.org/route/v1/driving/$startLon,$startLat;$endLon,$endLat?overview=full&geometries=geojson&steps=true',
       );
-      final req = await client.getUrl(uri);
-      final resp = await req.close().timeout(const Duration(seconds: 5));
+      final resp = await http.get(uri, headers: {
+        if (!kIsWeb) 'User-Agent': 'KktcCezaApp/1.0',
+      }).timeout(const Duration(seconds: 8));
       if (resp.statusCode == 200) {
-        final body = await resp.transform(utf8.decoder).join();
+        final body = utf8.decode(resp.bodyBytes);
         final json = jsonDecode(body) as Map<String, dynamic>;
         final routes = json['routes'] as List<dynamic>?;
         if (routes != null && routes.isNotEmpty) {
@@ -588,8 +587,6 @@ class CanliOsrmServisi {
       }
     } catch (_) {
       // Çevrimdışı durumunda yedek koordinatlar ve yerleşik manevralar kullanılır
-    } finally {
-      client?.close();
     }
     return null;
   }

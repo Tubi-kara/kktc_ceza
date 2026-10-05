@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 /// KKTC Resmi Akaryakıt Fiyat Modeli (Bakanlar Kurulu / Resmi Gazete & K-Pet Tavan Fiyatları)
 class KktcAkaryakitFiyatlari {
@@ -73,22 +74,19 @@ class KktcAkaryakitServisi extends ChangeNotifier {
     _sonHata = null;
     notifyListeners();
 
-    final HttpClient client = HttpClient()
-      ..connectionTimeout = const Duration(seconds: 5);
-
     try {
       // 1. Resmi Gazete & KTTO (Kıbrıs Türk Ticaret Odası) Canlı REST API Sorgusu
       final Uri url = Uri.parse(
         'https://www.ktto.net/wp-json/wp/v2/posts?search=Akaryak%C4%B1t+Fiyatlar%C4%B1+hk&per_page=1',
       );
-      final request = await client.getUrl(url).timeout(const Duration(seconds: 5));
-      request.headers.set('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) KKTC-Ceza-App/1.0');
-      request.headers.set('Accept', 'application/json');
-
-      final response = await request.close().timeout(const Duration(seconds: 5));
+      final response = await http.get(url, headers: {
+        // Tarayıcılar User-Agent başlığının değiştirilmesine izin vermez
+        if (!kIsWeb) 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) KKTC-Ceza-App/1.0',
+        'Accept': 'application/json',
+      }).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
-        final String body = await response.transform(utf8.decoder).join();
+        final String body = utf8.decode(response.bodyBytes);
         final List<dynamic> posts = jsonDecode(body) as List<dynamic>;
 
         if (posts.isNotEmpty) {
@@ -130,8 +128,6 @@ class KktcAkaryakitServisi extends ChangeNotifier {
     } catch (e) {
       // Ağ hatasında doğrulanmış güncel resmi fiyatları koru
       _sonHata = e.toString();
-    } finally {
-      client.close();
     }
 
     // Ağ erişimi yoksa teyitli tavan tarife ile devam et

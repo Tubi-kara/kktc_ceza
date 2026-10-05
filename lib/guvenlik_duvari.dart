@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 /// 🛡️ Siber Tehdit Türleri
@@ -254,7 +255,7 @@ class GuvenlikDuvari extends ChangeNotifier {
     bool rootSuphesi = false;
     List<String> bulunanTehditler = [];
 
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       final supheliYollar = [
         '/system/app/Superuser.apk',
         '/sbin/su',
