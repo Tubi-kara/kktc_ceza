@@ -994,6 +994,8 @@ h1, h2, h3, h4, h5, h6 {
 .legend-dot.speed-50 { background: #38BDF8; }
 .legend-dot.speed-65 { background: #10B981; }
 .legend-dot.speed-75 { background: #EF4444; }
+.legend-dot.speed-90 { background: #A855F7; }
+.legend-dot.speed-100 { background: #F59E0B; }
 
 /* Radar Liste Sidebar */
 .radar-sidebar {

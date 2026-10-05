@@ -60,7 +60,7 @@ const kktcRadarlar = [
     ad: "Haspolat - UKÜ Kavşağı",
     adEn: "Haspolat - CIU Junction",
     sehir: "Lefkoşa",
-    hizLimiti: 65,
+    hizLimiti: 100,
     tur: "Sabit Hız Radarı",
     turEn: "Fixed Speed Camera",
     yon: "Çift Yönlü",
@@ -108,7 +108,7 @@ const kktcRadarlar = [
     ad: "Girne Çevre Yolu (Alsancak Girişi)",
     adEn: "Kyrenia Ring Road (Alsancak Entry)",
     sehir: "Girne",
-    hizLimiti: 50,
+    hizLimiti: 75,
     tur: "Sabit Hız Radarı",
     turEn: "Fixed Speed Camera",
     yon: "Alsancak - Girne İstikameti",
@@ -172,7 +172,7 @@ const kktcRadarlar = [
     ad: "Dörtyol Çemberi (Anayol)",
     adEn: "Dortyol Roundabout (Highway)",
     sehir: "Gazimağusa",
-    hizLimiti: 65,
+    hizLimiti: 100,
     tur: "Sabit Hız Radarı",
     turEn: "Fixed Speed Camera",
     yon: "Lefkoşa - Mağusa Çift Yön",
@@ -188,7 +188,7 @@ const kktcRadarlar = [
     ad: "Glapsides Çemberi Girişi",
     adEn: "Glapsides Beach Entrance",
     sehir: "Gazimağusa",
-    hizLimiti: 50,
+    hizLimiti: 90,
     tur: "Sabit Hız Radarı",
     turEn: "Fixed Speed Camera",
     yon: "Mağusa - İskele Sahil Yolu",
@@ -503,7 +503,9 @@ function initLeafletMap() {
 function createRadarIcon(speed) {
   let borderColor = '#38BDF8';
   if (speed === 65) borderColor = '#10B981';
-  if (speed >= 75) borderColor = '#EF4444';
+  if (speed === 75) borderColor = '#EF4444';
+  if (speed === 90) borderColor = '#A855F7';
+  if (speed >= 100) borderColor = '#F59E0B';
 
   const html = `
     <div style="

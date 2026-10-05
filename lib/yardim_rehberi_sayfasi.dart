@@ -816,7 +816,7 @@ class _YardimRehberiSayfasiState extends State<YardimRehberiSayfasi>
             ? "Sabit hız radarlarında yasal hız toleransı var mı? Hangi hızda ceza kesilir?"
             : "Is there a speed tolerance on fixed speed cameras in TRNC?",
         "a": widget.turkceMi
-            ? "Evet, KKTC'deki tüm sabit hız kameralarında yasal hız sınırının üzerine %10 tolerans payı tanınmaktadır:\n\n• 50 km/s Şehir İçi: 56 km/s ve üzeri hızlarda ceza yazılır.\n• 65 km/s Çevre Yolu: 72 km/s ve üzeri hızlarda ceza yazılır.\n• 75 km/s Bölünmüş Anayol: 83 km/s ve üzeri hızlarda ceza yazılır.\n• 90 km/s Otoyol (Ercan / Mağusa): 100 km/s ve üzeri hızlarda ceza yazılır.\n\nRadar kameraları hem gündüz hem gece çift yönlü telemetri ve flaşlı plaka algılama yapmaktadır."
+            ? "Evet, KKTC'deki tüm sabit hız kameralarında yasal hız sınırının üzerine %10 tolerans payı tanınmaktadır:\n\n• 50 km/s Şehir İçi: 56 km/s ve üzeri hızlarda ceza yazılır.\n• 65 km/s Çevre Yolu: 72 km/s ve üzeri hızlarda ceza yazılır.\n• 75 km/s Bölünmüş Anayol: 83 km/s ve üzeri hızlarda ceza yazılır.\n• 90 km/s Kıyı Arterleri: 99 km/s ve üzeri hızlarda ceza yazılır.\n• 100 km/s Şehirlerarası Anayol (Lefkoşa - Mağusa / İskele): 110 km/s ve üzeri hızlarda ceza yazılır.\n\nRadar kameraları hem gündüz hem gece çift yönlü telemetri ve flaşlı plaka algılama yapmaktadır."
             : "Yes, a 10% speed tolerance is officially applied. For example, in a 65 km/h zone, tickets are triggered at 72 km/h and above. Speed limits: 50 km/h (urban), 75 km/h (intercity), 90 km/h (motorway).",
       },
       {
