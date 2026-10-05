@@ -593,6 +593,167 @@ class CanliOsrmServisi {
 }
 
 // ==========================================
+// 🌍 SERBEST ADRES / MEKAN ARAMA (GEOCODING)
+// Ücretsiz OpenStreetMap servisleri: Photon (yazarken tamamlama) + Nominatim (yedek)
+// ==========================================
+class KktcAdresAramaServisi {
+  // Kıbrıs adası sınır kutusu (minLon, minLat, maxLon, maxLat)
+  static const String _photonBbox = '32.20,34.55,34.65,35.72';
+  static const String _nominatimViewbox = '32.20,35.72,34.65,34.55';
+  static final Map<String, List<RotaNoktasi>> _onbellek = {};
+
+  static Future<List<RotaNoktasi>> ara(String sorgu, {double? yakinLat, double? yakinLon}) async {
+    final q = sorgu.trim();
+    if (q.length < 2) return [];
+    final key = q.toLowerCase();
+    if (_onbellek.containsKey(key)) return _onbellek[key]!;
+
+    List<RotaNoktasi> sonuc = [];
+    try {
+      sonuc = await _photonAra(q, yakinLat ?? 35.20, yakinLon ?? 33.36);
+    } catch (_) {}
+    if (sonuc.isEmpty) {
+      try {
+        sonuc = await _nominatimAra(q);
+      } catch (_) {}
+    }
+    if (sonuc.isNotEmpty) _onbellek[key] = sonuc;
+    return sonuc;
+  }
+
+  static Future<List<RotaNoktasi>> _photonAra(String q, double lat, double lon) async {
+    final uri = Uri.parse('https://photon.komoot.io/api/').replace(queryParameters: {
+      'q': q,
+      'limit': '10',
+      'lat': lat.toString(),
+      'lon': lon.toString(),
+      'bbox': _photonBbox,
+    });
+    final resp = await http.get(uri, headers: {
+      if (!kIsWeb) 'User-Agent': 'KktcCezaApp/1.0',
+    }).timeout(const Duration(seconds: 6));
+    if (resp.statusCode != 200) return [];
+
+    final data = jsonDecode(utf8.decode(resp.bodyBytes)) as Map<String, dynamic>;
+    final features = (data['features'] as List<dynamic>?) ?? [];
+    final List<RotaNoktasi> list = [];
+    final Set<String> gorulen = {};
+
+    for (final f in features) {
+      final p = (f['properties'] as Map<String, dynamic>?) ?? {};
+      final coords = (f['geometry']?['coordinates'] as List<dynamic>?) ?? [];
+      if (coords.length < 2) continue;
+      final fLon = (coords[0] as num).toDouble();
+      final fLat = (coords[1] as num).toDouble();
+
+      final sokak = [p['street'], p['housenumber']].where((e) => e != null).join(' ');
+      final ad = (p['name'] ?? (sokak.isNotEmpty ? sokak : null) ?? q).toString();
+      final yer = (p['city'] ?? p['town'] ?? p['village'] ?? p['district'] ?? p['county'] ?? p['state'] ?? 'Kıbrıs').toString();
+      final detay = [
+        if (p['name'] != null && sokak.isNotEmpty) sokak,
+        p['district'],
+        p['city'] ?? p['county'],
+      ].where((e) => e != null && e.toString().isNotEmpty).toSet().join(', ');
+
+      final tekil = '$ad|${fLat.toStringAsFixed(4)}|${fLon.toStringAsFixed(4)}';
+      if (!gorulen.add(tekil)) continue;
+
+      list.add(RotaNoktasi(
+        id: 'geo_${fLat.toStringAsFixed(5)}_${fLon.toStringAsFixed(5)}',
+        ad: ad,
+        adEn: ad,
+        kisaAd: detay.isNotEmpty ? detay : yer,
+        bolge: yer,
+        lat: fLat,
+        lon: fLon,
+        ikon: _ikonSec(p['osm_key']?.toString(), p['osm_value']?.toString()),
+        kategori: 'arama',
+      ));
+    }
+    return list;
+  }
+
+  static Future<List<RotaNoktasi>> _nominatimAra(String q) async {
+    final uri = Uri.parse('https://nominatim.openstreetmap.org/search').replace(queryParameters: {
+      'q': q,
+      'format': 'jsonv2',
+      'limit': '10',
+      'countrycodes': 'cy',
+      'viewbox': _nominatimViewbox,
+      'bounded': '0',
+      'addressdetails': '1',
+      'accept-language': 'tr',
+    });
+    final resp = await http.get(uri, headers: {
+      if (!kIsWeb) 'User-Agent': 'KktcCezaApp/1.0 (karam3517@hotmail.com)',
+    }).timeout(const Duration(seconds: 6));
+    if (resp.statusCode != 200) return [];
+
+    final items = jsonDecode(utf8.decode(resp.bodyBytes)) as List<dynamic>;
+    return items.map((e) {
+      final m = e as Map<String, dynamic>;
+      final adr = (m['address'] as Map<String, dynamic>?) ?? {};
+      final fLat = double.tryParse(m['lat'].toString()) ?? 0;
+      final fLon = double.tryParse(m['lon'].toString()) ?? 0;
+      final ad = (m['name']?.toString().isNotEmpty == true)
+          ? m['name'].toString()
+          : m['display_name'].toString().split(',').first;
+      final yer = (adr['city'] ?? adr['town'] ?? adr['village'] ?? adr['county'] ?? 'Kıbrıs').toString();
+      return RotaNoktasi(
+        id: 'geo_${fLat.toStringAsFixed(5)}_${fLon.toStringAsFixed(5)}',
+        ad: ad,
+        adEn: ad,
+        kisaAd: m['display_name'].toString().split(',').skip(1).take(3).join(',').trim(),
+        bolge: yer,
+        lat: fLat,
+        lon: fLon,
+        ikon: _ikonSec(m['category']?.toString(), m['type']?.toString()),
+        kategori: 'arama',
+      );
+    }).toList();
+  }
+
+  static IconData _ikonSec(String? key, String? value) {
+    switch (value) {
+      case 'fuel':
+        return Icons.local_gas_station_rounded;
+      case 'hospital':
+      case 'clinic':
+      case 'pharmacy':
+        return Icons.local_hospital_rounded;
+      case 'restaurant':
+      case 'fast_food':
+      case 'cafe':
+      case 'bar':
+        return Icons.restaurant_rounded;
+      case 'hotel':
+      case 'guest_house':
+        return Icons.hotel_rounded;
+      case 'university':
+      case 'school':
+      case 'college':
+        return Icons.school_rounded;
+      case 'beach':
+        return Icons.beach_access_rounded;
+      case 'supermarket':
+      case 'mall':
+        return Icons.shopping_bag_rounded;
+      case 'parking':
+        return Icons.local_parking_rounded;
+      case 'city':
+      case 'town':
+      case 'village':
+      case 'suburb':
+      case 'neighbourhood':
+        return Icons.location_city_rounded;
+    }
+    if (key == 'highway') return Icons.add_road_rounded;
+    if (key == 'building') return Icons.home_work_rounded;
+    return Icons.place_rounded;
+  }
+}
+
+// ==========================================
 // 🚀 ANA YOL TARİFİ VE NAVİGASYON SAYFASI
 // ==========================================
 class YolTarifiSayfasi extends StatefulWidget {
@@ -5318,6 +5479,9 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
   final TextEditingController _searchController = TextEditingController();
   String _seciliBolge = 'Tümü';
   String _aramaMetni = '';
+  List<RotaNoktasi> _uzakSonuclar = [];
+  bool _uzakAraniyor = false;
+  Timer? _aramaZamanlayici;
 
   final List<String> _bolgeler = [
     'Tümü',
@@ -5338,7 +5502,36 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
   @override
   void dispose() {
     _searchController.dispose();
+    _aramaZamanlayici?.cancel();
     super.dispose();
+  }
+
+  void _uzakAramaBaslat(String metin) {
+    _aramaZamanlayici?.cancel();
+    final q = metin.trim();
+    if (q.length < 2) {
+      setState(() {
+        _uzakSonuclar = [];
+        _uzakAraniyor = false;
+      });
+      return;
+    }
+    _aramaZamanlayici = Timer(const Duration(milliseconds: 450), () async {
+      if (!mounted) return;
+      setState(() => _uzakAraniyor = true);
+      try {
+        final sonuc = await KktcAdresAramaServisi.ara(q);
+        if (!mounted) return;
+        if (_aramaMetni.trim() == q) {
+          setState(() {
+            _uzakSonuclar = sonuc;
+            _uzakAraniyor = false;
+          });
+        }
+      } catch (_) {
+        if (mounted) setState(() => _uzakAraniyor = false);
+      }
+    });
   }
 
   Future<void> _canliGpsSec() async {
@@ -5503,6 +5696,7 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
                   setState(() {
                     _aramaMetni = val;
                   });
+                  _uzakAramaBaslat(val);
                 },
                 decoration: InputDecoration(
                   hintText: widget.turkceMi
@@ -5517,6 +5711,8 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
                             _searchController.clear();
                             setState(() {
                               _aramaMetni = '';
+                              _uzakSonuclar = [];
+                              _uzakAraniyor = false;
                             });
                           },
                         )
@@ -5770,7 +5966,7 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
 
           // Liste Görünümü
           Expanded(
-            child: sonuclar.isEmpty
+            child: (sonuclar.isEmpty && _uzakSonuclar.isEmpty && !_uzakAraniyor && _aramaMetni.trim().length < 2)
                 ? Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -5786,9 +5982,69 @@ class _NoktaSeciciBottomSheetState extends State<_NoktaSeciciBottomSheet> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    itemCount: sonuclar.length,
+                    itemCount: sonuclar.length +
+                        ((_aramaMetni.trim().length >= 2)
+                            ? 1 + (_uzakAraniyor ? 1 : (_uzakSonuclar.isEmpty ? 1 : _uzakSonuclar.length))
+                            : 0),
                     itemBuilder: (context, idx) {
-                      final nokta = sonuclar[idx];
+                      // 🌍 İnternette arama bölümü başlığı / yükleniyor / boş durumu
+                      if (idx >= sonuclar.length) {
+                        final uIdx = idx - sonuclar.length;
+                        if (uIdx == 0) {
+                          return Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 14, 8, 6),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.public_rounded, color: NavHtmlColors.tertiary, size: 15),
+                                const SizedBox(width: 6),
+                                Text(
+                                  widget.turkceMi ? 'İNTERNETTE ARA (TÜM KKTC)' : 'SEARCH THE WEB (ALL TRNC)',
+                                  style: const TextStyle(
+                                    color: NavHtmlColors.tertiary,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                if (_uzakAraniyor) ...[
+                                  const SizedBox(width: 8),
+                                  const SizedBox(
+                                    width: 12,
+                                    height: 12,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: NavHtmlColors.tertiary),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          );
+                        }
+                        if (_uzakAraniyor) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 18),
+                            child: Center(
+                              child: SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          );
+                        }
+                        if (_uzakSonuclar.isEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            child: Center(
+                              child: Text(
+                                widget.turkceMi ? 'İnternette sonuç bulunamadı' : 'No results found online',
+                                style: const TextStyle(color: NavHtmlColors.secondary, fontSize: 12),
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                      final nokta = idx < sonuclar.length
+                          ? sonuclar[idx]
+                          : _uzakSonuclar[idx - sonuclar.length - 1];
                       final isSelected = nokta.id == widget.secilenNokta.id;
 
                       return Container(
