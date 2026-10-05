@@ -1,11 +1,13 @@
 {
-    "name": "KKTC e-Trafik Portalı",
-    "short_name": "KKTC e-Trafik",
-    "start_url": ".",
+    "name": "KKTC Trafik & Radar",
+    "short_name": "KKTC Radar",
+    "id": "./",
+    "start_url": "./",
+    "scope": "./",
     "display": "standalone",
     "background_color": "#060B19",
-    "theme_color": "#0A122A",
-    "description": "Kuzey Kıbrıs Türk Cumhuriyeti Akıllı Trafik, Ceza, Seyrüsefer ve Navigasyon Sistemi",
+    "theme_color": "#060B19",
+    "description": "Kuzey Kıbrıs Türk Cumhuriyeti Akıllı Trafik, Radar Uyarısı, Ceza ve Navigasyon Uygulaması",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
