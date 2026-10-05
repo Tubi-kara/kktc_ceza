@@ -739,8 +739,9 @@ class _KktcETrafikDashboardSayfasiState
     List<RotaNoktasi> uzakSonuclar = [];
     bool uzakAraniyor = false;
     Timer? uzakTimer;
+    bool modalAcik = true;
 
-    showModalBottomSheet(
+    final sheetFuture = showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -831,13 +832,15 @@ class _KktcETrafikDashboardSayfasiState
                           final q = val.trim();
                           if (q.length < 2) return;
                           uzakTimer = Timer(const Duration(milliseconds: 450), () async {
-                            setModalState(() => uzakAraniyor = true);
+                            if (modalAcik) setModalState(() => uzakAraniyor = true);
                             final dil = KktcDilServisi().turkceMi ? 'tr' : 'en';
                             final r = await KktcAdresAramaServisi.ara(q, dil: dil);
-                            setModalState(() {
-                              uzakSonuclar = r;
-                              uzakAraniyor = false;
-                            });
+                            if (modalAcik) {
+                              setModalState(() {
+                                uzakSonuclar = r;
+                                uzakAraniyor = false;
+                              });
+                            }
                           });
                         },
                       ),
@@ -1001,7 +1004,9 @@ class _KktcETrafikDashboardSayfasiState
                                   );
                                 }
                                 final nokta = uzakSonuclar[uIdx - 1];
-                                return ListTile(
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: ListTile(
                                   leading: Container(
                                     width: 40,
                                     height: 40,
@@ -1024,10 +1029,13 @@ class _KktcETrafikDashboardSayfasiState
                                       ),
                                     );
                                   },
+                                  ),
                                 );
                               }
                               final poi = sonuclar[i];
-                              return ListTile(
+                              return Material(
+                                color: Colors.transparent,
+                                child: ListTile(
                                 leading: Container(
                                   width: 40,
                                   height: 40,
@@ -1058,6 +1066,7 @@ class _KktcETrafikDashboardSayfasiState
                                   });
                                   _haritaOsmKey.currentState?.flyToLocation(poi.lat, poi.lon, zoom: 14.0);
                                 },
+                                ),
                               );
                             },
                           ),
@@ -1070,6 +1079,10 @@ class _KktcETrafikDashboardSayfasiState
         },
       ),
     );
+    sheetFuture.whenComplete(() {
+      modalAcik = false;
+      uzakTimer?.cancel();
+    });
   }
 
   // Hızlı Ceza, Radar ve Mevzuat Arama Çubuğu
