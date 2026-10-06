@@ -820,6 +820,18 @@ class _YardimRehberiSayfasiState extends State<YardimRehberiSayfasi>
             : "Yes, a 10% speed tolerance is officially applied. For example, in a 65 km/h zone, tickets are triggered at 72 km/h and above. Speed limits: 50 km/h (urban), 75 km/h (intercity), 90 km/h (motorway).",
       },
       {
+        "kategori": "Genel",
+        "rozet": "YASAL UYARI",
+        "rozetRenk": const Color(0xFFEF4444),
+        "ikon": Icons.gavel_rounded,
+        "q": widget.turkceMi
+            ? "Bu uygulama resmi bir devlet uygulaması mıdır? Veriler doğru ve güncel mi?"
+            : "Is this an official government app? Is the data accurate and current?",
+        "a": widget.turkceMi
+            ? "Bu uygulama bilgilendirme amaçlı geliştirilmiş bağımsız bir sivil platformdur; KKTC Trafik Dairesi, Karayolları, Polis Genel Müdürlüğü veya Bayındırlık ve Ulaştırma Bakanlığı'nın resmî bir ürünü değildir. Harita, radar ve hız sınırı verileri OpenStreetMap katkıcıları ve kamuya açık kaynaklardan derlenir; hatalı veya eksik olabilir. Trafikte levhalara ve canlı trafik görevlilerinin talimatlarına uymanız yasal zorunluluktur."
+            : "This is an independent informational platform, not an official product of the TRNC Traffic Department, Public Works, Police HQ or Ministry of Public Works and Transport. Map, radar and speed-limit data are compiled from OpenStreetMap contributors and public sources and may be inaccurate or incomplete. Always obey on-road signs and officers over this app.",
+      },
+      {
         "kategori": "E-Denetim & Polis",
         "rozet": "RESMİ BELGE",
         "rozetRenk": const Color(0xFF3B82F6),
