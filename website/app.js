@@ -357,6 +357,60 @@ const translations = {
       fineAmount: "Ceza Tutarı:",
       penaltyPoints: "Ehliyet Ceza Puanı:",
       wageBasis: "Hesaplama, 2026 KKTC Resmi Brüt Asgari Ücreti (35.180 ₺) oranları baz alınarak otomatik yapılmaktadır."
+    },
+    features: {
+      tag: "Neden Bu Uygulama?",
+      title: "Güvenli Sürüş İçin Eksiksiz Bir Kokpit",
+      desc: "KKTC yollarında sürüş yaparken ceza risklerini sıfıra indirin, en hızlı ve akıllı rotalarla güvenle seyahat edin.",
+      f1Title: "0 Gecikmeli Sesli Radar Alarmı",
+      f1Desc: "Sabit hız kameralarına 1000m, 500m ve 250m kala sesli Türkçe/İngilizce ikazlar ve görsel flaş uyarısıyla hızınızı güvenli limite çeker.",
+      f2Title: "Google Maps Tarzı Canlı Navigasyon",
+      f2Desc: "Her metrede azalan kilometre, akıllı varış saati (ETA) sayacı ve viraj öncesi 'Şimdi Sola Dönün' manevra talimatları.",
+      f3Title: "Çevrimdışı (Offline) Tam Uyum",
+      f3Desc: "Dağ yollarında veya internet kesintilerinde önbellek haritası ve dahili GPS motoruyla kesintisiz radar takibi sağlar.",
+      f4Title: "Canlı Topluluk Yol Forumu",
+      f4Desc: "Kıbrıs'taki sürücülerden anlık çevirme, kaza, yol yapımı ve gizli mobil polis kontrolü bildirimleri tek panelde.",
+      f5Title: "7/24 KKTC Acil Destek & Çekici",
+      f5Desc: "Polis İmdat (155), Ambulans (112), İtfaiye (199) ve en yakın akü/çekici servislerine tek dokunuşla direkt çağrı yapın.",
+      f6Title: "Gece Sürüşü İçin OLED Dark Mode",
+      f6Desc: "Göz yormayan lüks gece kokpiti, pil tasarrufu sağlayan derin siyah tonlar ve Apple CarPlay / HUD uyumlu göstergeler."
+    },
+    download: {
+      tag: "Android APK İndirme",
+      title: "Uygulamayı Hemen Cihazınıza Yükleyin",
+      desc: "En güncel v2.4.0 sürümünü indirin. Reklamsız, hızlı ve tüm KKTC radarları yüklü olarak hemen kullanmaya başlayın.",
+      directLink: "Doğrudan İndir",
+      scanQr: "Kameranızla okutun, anında açılsın",
+      step1: "APK dosyasını indirin.",
+      step2: "'Bilinmeyen Kaynaklara İzin Ver' uyarısını onaylayın.",
+      step3: "Yükleyin ve GPS iznini vererek yola çıkın!"
+    },
+    faq: {
+      tag: "Yardım Merkezi",
+      title: "Sıkça Sorulan Sorular",
+      q1: "Radarlar ve kameralar ne kadar güncel?",
+      a1: "Veri tabanımız, kamuya açık açık kaynakları (OpenStreetMap), kamuya açık resmi trafik duyurularını ve yerel sürücü bildirimlerini dikkate alarak derlenir. Lefkoşa, Girne, Mağusa, Güzelyurt ve tüm ilçelerdeki sabit kamera noktaları mümkün olduğunca doğrulanır; ancak anlık resmi veri yerine bilgilendirme amaçlı kullanılmalıdır.",
+      q2: "İnternet paketim bittiğinde uygulama çalışır mı?",
+      a2: "Evet! Uygulama harita ve radar verilerini yerel olarak cihaz hafızasına önbelleğe alır. Yalnızca GPS uyduları açıkken bile yaklaşan tüm sabit radarları sesli olarak ikaz etmeye devam eder.",
+      q3: "Ekran kapalıyken veya arka planda çalışıyor mu?",
+      a3: "Evet. Arka plan servis izni verildiğinde navigasyon ve radar ikaz sistemi ekran kilitliyken veya Spotify / YouTube açıkken dahi sesli bildirim vermeyi sürdürür.",
+      q4: "Cezalar 2026 asgari ücretine göre mi hesaplanıyor?",
+      a4: "Kesinlikle. KKTC Trafik Yasası gereğince tüm para cezaları yürürlükteki brüt asgari ücrete (%10, %15, %25 gibi) endekslidir. Sistem her asgari ücret artışında otomatik güncellenir."
+    },
+    footer: {
+      desc: "Kuzey Kıbrıs Türk Cumhuriyeti sürücüleri için geliştirilmiş bağımsız, ücretsiz ve açık kaynaklı trafik bilgi ve akıllı navigasyon platformu.",
+      quickLinks: "Hızlı Bağlantılar",
+      emergency: "KKTC Acil Hatlar",
+      copy: "© 2026 KKTC Trafik & Radar Portalı. Tüm hakları saklıdır.",
+      disclaimer: "Yasal Uyarı: Bu portal bilgilendirme amaçlıdır. Lütfen KKTC Karayolları trafik kurallarına ve hız limitlerine daima uyunuz."
+    },
+    mockup: {
+      turnTitle: "Sola Dönün",
+      turnDesc: "Güzergahı takip edin",
+      closeView: "Dönüş Yakın Çekim",
+      simRunning: "Sürüş Simülasyonu",
+      radarWarning: "SABİT RADAR UYARISI",
+      endRoute: "Rotayı Bitir"
     }
   },
   en: {
@@ -413,6 +467,60 @@ const translations = {
       fineAmount: "Fine Amount:",
       penaltyPoints: "Penalty Points:",
       wageBasis: "Calculations are dynamically derived from the official 2026 TRNC Gross Minimum Wage (35,180 ₺)."
+    },
+    features: {
+      tag: "Why This App?",
+      title: "A Complete Cockpit for Safer Driving",
+      desc: "Reduce fine risks on TRNC roads to zero, and travel safely with the smartest routes.",
+      f1Title: "Zero-Delay Audible Radar Alert",
+      f1Desc: "Gives audible TR/EN warnings and visual flash alerts at 1000m, 500m and 250m to bring your speed to the safe limit.",
+      f2Title: "Google Maps Style Live Navigation",
+      f2Desc: "Decrementing kilometers, smart ETA counter, and maneuver instructions like 'Turn left now' before junctions.",
+      f3Title: "Fully Offline Compatible",
+      f3Desc: "Provides uninterrupted radar tracking on mountain roads or with internet outages thanks to cached maps and built-in GPS engine.",
+      f4Title: "Live Community Road Forum",
+      f4Desc: "Instant reports on checkpoints, accidents, roadworks and hidden mobile police controls from drivers around Cyprus.",
+      f5Title: "24/7 TRNC Emergency Support & Tow",
+      f5Desc: "Call directly to Police (155), Ambulance (112), Fire (199) or nearest battery/tow services with one tap.",
+      f6Title: "OLED Dark Mode for Night Driving",
+      f6Desc: "A luxury night cockpit that reduces eye strain, deep black tones that save battery, and CarPlay / HUD compatible gauges."
+    },
+    download: {
+      tag: "Android APK Download",
+      title: "Load the App on Your Device Now",
+      desc: "Download the latest v2.4.0 release. Ad-free, fast, and all TRNC radars preinstalled.",
+      directLink: "Direct Download",
+      scanQr: "Open instantly with your camera",
+      step1: "Download the APK file.",
+      step2: "Approve 'Allow unknown sources' prompt.",
+      step3: "Install and hit the road with GPS permission!"
+    },
+    faq: {
+      tag: "Help Center",
+      title: "Frequently Asked Questions",
+      q1: "How up-to-date are radars and cameras?",
+      a1: "Our database is compiled from public open sources (OpenStreetMap), public official traffic announcements and local driver reports. Fixed camera points across Nicosia, Kyrenia, Famagusta, Guzelyurt and all districts are verified as much as possible; but it should be used for informational purposes, not real-time official data.",
+      q2: "Does the app work when my data runs out?",
+      a2: "Yes! It caches maps and radar data locally. Even with only GPS satellites active, it keeps giving audible warnings for all fixed radars ahead.",
+      q3: "Does it work with screen off or in background?",
+      a3: "Yes. With background service permission, the navigation and radar alert systems continue to give audible notifications even when locked or while Spotify/YouTube are playing.",
+      q4: "Are fines calculated based on the 2026 minimum wage?",
+      a4: "Absolutely. According to TRNC Traffic Law all fines are indexed to the current gross minimum wage (e.g. 10%, 15%, 25%). The system updates automatically with each minimum wage change."
+    },
+    footer: {
+      desc: "Independent, free and open-source traffic information and smart navigation platform developed for drivers in the Turkish Republic of Northern Cyprus.",
+      quickLinks: "Quick Links",
+      emergency: "TRNC Emergency Lines",
+      copy: "© 2026 KKTC Traffic & Radar Portal. All rights reserved.",
+      disclaimer: "Legal Disclaimer: This portal is for informational purposes only. Please always comply with TRNC Highways traffic rules and speed limits."
+    },
+    mockup: {
+      turnTitle: "Turn Left",
+      turnDesc: "Follow the route",
+      closeView: "Turn Close-up",
+      simRunning: "Drive Simulation",
+      radarWarning: "FIXED RADAR WARNING",
+      endRoute: "End Route"
     }
   }
 };
@@ -996,14 +1104,22 @@ function updateFineCalculator() {
       fineDesc.textContent = isEn
         ? `Speed exceeded between 20-40 km/h (15% of gross minimum wage). High risk of license suspension on repeat.`
         : `Hız sınırını 20-40 km/s arasında aştınız (Brüt Asgari Ücretin %15'i). 15 gün içinde ödenmelidir.`;
-    } else {
-      // 40+ km/s aşım: Asgari ücretin %25'i, 50 Ceza Puanı + Mahkeme
+    } else if (excessSpeed <= 60) {
+      // 41-60 km/s aşım: Asgari ücretin %25'i, 50 Ceza Puanı + Mahkeme
       const fine = Math.round(KKTC_BRUT_ASGARI_UCRET_2026 * 0.25);
       fineAmountTL.textContent = `${fine.toLocaleString('tr-TR')} ₺`;
       finePointsVal.textContent = isEn ? '50 Points + Court' : '50 Puan + Mahkeme';
       fineDesc.textContent = isEn
         ? `Extreme speeding (+40 km/h). 25% minimum wage fine and mandatory court appearance for reckless driving.`
-        : `Hız sınırını 40 km/s'den fazla aştınız (Brüt Asgari Ücretin %25'i). Ağır kusur kapsamında mahkemeye sevk ve ehliyete el konulma riski!`;
+        : `Hız sınırını 40-60 km/s arasında aştınız (Brüt Asgari Ücretin %25'i). Ağır kusur kapsamında mahkemeye sevk!`;
+    } else {
+      // 60+ km/s aşım: Asgari ücretin %35'i, 100 Ceza Puanı + Mahkeme + Ehliyete El Koyma
+      const fine = Math.round(KKTC_BRUT_ASGARI_UCRET_2026 * 0.35);
+      fineAmountTL.textContent = `${fine.toLocaleString('tr-TR')} ₺`;
+      finePointsVal.textContent = isEn ? '100 Points + Court + Suspension' : '100 Puan + Mahkeme + El Koyma';
+      fineDesc.textContent = isEn
+        ? `Severe speeding (+60 km/h). 35% minimum wage fine, mandatory court appearance and license suspension risk!`
+        : `Hız sınırını 60 km/s'den fazla aştınız (Brüt Asgari Ücretin %35'i). Çok ağır kusur kapsamında ehliyete el konulma riski!`;
     }
   } else {
     // Diğer İhlaller
@@ -1013,12 +1129,12 @@ function updateFineCalculator() {
     fineAmountTL.style.color = '#EF4444';
 
     if (violationType === 'phone') {
-      const fine = Math.round(KKTC_BRUT_ASGARI_UCRET_2026 * 0.10);
+      const fine = Math.round(KKTC_BRUT_ASGARI_UCRET_2026 * 0.20);
       fineAmountTL.textContent = `${fine.toLocaleString('tr-TR')} ₺`;
       finePointsVal.textContent = isEn ? '15 Points' : '15 Puan';
       fineDesc.textContent = isEn ? 'Mobile phone usage while operating vehicle (10% of minimum wage).' : 'Seyir halinde elde cep telefonuyla konuşma veya mesajlaşma (Asgari ücretin %10\'u).';
     } else if (violationType === 'belt') {
-      const fine = Math.round(KKTC_BRUT_ASGARI_UCRET_2026 * 0.10);
+      const fine = Math.round(KKTC_BRUT_ASGARI_UCRET_2026 * 0.15);
       fineAmountTL.textContent = `${fine.toLocaleString('tr-TR')} ₺`;
       finePointsVal.textContent = isEn ? '5 Points' : '5 Puan';
       fineDesc.textContent = isEn ? 'Driving without wearing a safety seatbelt.' : 'Sürücünün veya yolcuların emniyet kemeri takmaması (Asgari ücretin %10\'u).';
