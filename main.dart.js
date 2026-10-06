@@ -108184,8 +108184,8 @@ q=r?"Emergency Traffic & 155 Police":"Acil Trafik \u0130hbar & 155 Polis \u0130m
 r=r?"24/7 Non-stop Hotline":"7/24 Kesintisiz Hat"
 q=h.jz(B.pp,B.nH,B.aJ,h.gafh(),r,q)
 r=e.a===B.r
-n=r?"Traffic Department & Guide":"Trafik Dairesi & \u0130leti\u015fim Rehberi"
-r=r?"Accident emergency steps & offices":"Kaza an\u0131nda yap\u0131lacaklar & \u015fubeler"
+n=r?"Help & FAQ (Traffic Guide)":"Yard\u0131m & SSS (Trafik Rehberi)"
+r=r?"FAQs, emergency steps & laws":"S\u0131k sorular, acil ad\u0131mlar & yasalar"
 d=h.vR(B.a5,A.a([o,q,h.jz(B.Rq,B.ny,B.nQ,new A.aI_(a),r,n)],p),d)
 r=e.a===B.r
 q=r?"SECURITY & SYSTEM":"G\xdcVENL\u0130K & S\u0130STEM \u0130\u015eLEMLER\u0130"
