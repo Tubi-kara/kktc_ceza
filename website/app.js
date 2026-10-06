@@ -420,6 +420,8 @@ const translations = {
 function setLanguage(lang) {
   currentLang = lang;
   const t = translations[lang];
+  try { localStorage.setItem('kktc_lang', lang); } catch (e) {}
+  document.documentElement.lang = lang;
   
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
@@ -1023,6 +1025,12 @@ document.addEventListener('DOMContentLoaded', () => {
       setLanguage(currentLang === 'tr' ? 'en' : 'tr');
     });
   }
+
+  // Kaydedilmiş dil tercihini uygula (yoksa tarayıcı diline göre seç)
+  let savedLang = null;
+  try { savedLang = localStorage.getItem('kktc_lang'); } catch (e) {}
+  const initialLang = savedLang || ((navigator.language || '').toLowerCase().startsWith('en') ? 'en' : 'tr');
+  if (initialLang !== 'tr') setLanguage(initialLang);
 
   // 3. Mobil Menü Toggle
   const mobileToggle = document.getElementById('mobileToggle');

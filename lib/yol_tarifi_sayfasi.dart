@@ -11,6 +11,7 @@ import 'radar_haritasi.dart';
 import 'kktc_gov_sync_service.dart';
 import 'yardim_rehberi_sayfasi.dart';
 import 'canli_gps_servisi.dart';
+import 'bildirim_servisi.dart';
 
 // ==========================================
 // 🎨 NAVİGASYON VE HARİTA TASARIM TOKENLARI (İNSAN DOSTU & SADE)
@@ -1170,6 +1171,15 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
           _yaklasanRadar = rota.radarlar[radarIndex];
           double kalanKmMesafesi = (1.0 - _simulasyonIlerleme) * rota.mesafeKm;
           _yaklasanRadarMesafeMetre = (kalanKmMesafesi * 250).clamp(150, 4800);
+
+          // Yaklaşan radar için sistem bildirimi gönder (her radar için 1 kez)
+          if (_yaklasanRadarMesafeMetre <= 500) {
+            KktcBildirimServisi().radarUyarisi(
+              radarId: _yaklasanRadar!.id,
+              baslik: widget.turkceMi ? 'Sabit Radar Yaklaşıyor' : 'Fixed Radar Ahead',
+              mesaj: '${_yaklasanRadar!.ad} • ${_yaklasanRadar!.hizLimiti} km/s • ${_yaklasanRadarMesafeMetre.toInt()} m',
+            );
+          }
         }
 
         // Manevra adımlarını ve dönüş mesafesini dinamik ilerlet
@@ -1199,6 +1209,7 @@ class _YolTarifiSayfasiState extends State<YolTarifiSayfasi>
       _simulasyonIlerleme = 0.0;
       _yaklasanRadar = null;
     });
+    KktcBildirimServisi().listeSifirla();
   }
 
   void _gosterHedefeUlasildi() {
