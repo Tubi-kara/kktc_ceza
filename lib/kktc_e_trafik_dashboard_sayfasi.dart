@@ -129,6 +129,8 @@ class _KktcETrafikDashboardSayfasiState
 
   // Cezalar & Sigorta Alt Sekmesi: 0: Trafik Cezaları, 1: Seyrüsefer & Ruhsat, 2: Sigorta & Muayene
   int _cezaSigortaSubTab = 0;
+  DateTime _sigortaBitis = DateTime(2026, 10, 14);
+  DateTime _fenniMuayeneBitis = DateTime(2026, 11, 2);
   bool _cezaOdendi = false;
   bool _seyruseferYenilendi = false;
   // Radarlar Sekmesi Durumları (HTML Şablonu ile Birebir)
@@ -6365,9 +6367,12 @@ class _KktcETrafikDashboardSayfasiState
                       color: const Color(0xFFFEF3C7),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Text(
-                      '12 GÜN KALDI',
-                      style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFFD97706)),
+                    child: Text(
+                      () {
+                        final kalan = _sigortaBitis.difference(DateTime.now()).inDays;
+                        return kalan >= 0 ? '$kalan GÜN KALDI' : 'SÜRESİ DOLDU';
+                      }(),
+                      style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFFD97706)),
                     ),
                   ),
                 ],
