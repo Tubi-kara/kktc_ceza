@@ -1168,8 +1168,8 @@ class _KktcETrafikMenuSayfasiState extends State<KktcETrafikMenuSayfasi> {
               iconBgColor: const Color(0xFFE0F2FE),
               iconColor: const Color(0xFF0369A1),
               icon: Icons.menu_book_rounded,
-              title: dil('Trafik Dairesi & İletişim Rehberi', 'Traffic Department & Guide'),
-              subtitle: dil('Kaza anında yapılacaklar & şubeler', 'Accident emergency steps & offices'),
+              title: dil('Yardım & SSS (Trafik Rehberi)', 'Help & FAQ (Traffic Guide)'),
+              subtitle: dil('Sık sorular, acil adımlar & yasalar', 'FAQs, emergency steps & laws'),
               onTap: () {
                 Navigator.push(
                   context,
