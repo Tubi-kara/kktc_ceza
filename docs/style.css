@@ -1931,6 +1931,71 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ==========================================
+   📢 CANLI DUYURU BANDI (TICKER)
+   ========================================== */
+.live-ticker {
+  background: linear-gradient(90deg, #0F172A, #111827 60%, #0F172A);
+  border-top: 1px solid rgba(16, 185, 129, 0.25);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 10px 0;
+  overflow: hidden;
+}
+.ticker-inner {
+  display: flex;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  gap: 14px;
+}
+.ticker-label {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.ticker-viewport {
+  overflow: hidden;
+  flex: 1;
+  position: relative;
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.ticker-track {
+  display: inline-flex;
+  white-space: nowrap;
+  gap: 56px;
+  padding-left: 100%;
+  animation: tickerScroll 30s linear infinite;
+  font-size: 13px;
+  color: #E2E8F0;
+  font-weight: 500;
+}
+.ticker-track span::before {
+  content: '●';
+  color: #10B981;
+  margin-right: 18px;
+  font-size: 10px;
+  vertical-align: middle;
+}
+.live-ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+@keyframes tickerScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+@media (max-width: 768px) {
+  .ticker-label { font-size: 10px; padding: 3px 8px; }
+  .ticker-track { font-size: 12px; animation-duration: 22s; }
+}
+
+/* ==========================================
    🍎 iOS PWA MODAL
    ========================================== */
 .ios-modal-overlay {

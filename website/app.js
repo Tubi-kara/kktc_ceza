@@ -455,6 +455,36 @@ function setLanguage(lang) {
   // Haritadaki radar listesini mevcut dile göre yenile
   renderRadarList(kktcRadarlar);
   updateFineCalculator();
+  renderTicker();
+}
+
+// ==========================================
+// 📢 DUYURU BANDI
+// ==========================================
+const bulletins = {
+  tr: [
+    'Lefkoşa - Mağusa anayolunda Dörtyol kavşağında yol çalışması, tek şerit',
+    'Girne Boğaz yolu üzerinde sis nedeniyle görüş mesafesi azalmış durumda',
+    'Gönyeli çemberinde trafik yoğun, alternatif güzergah önerilir',
+    'Ercan Havalimanı yolu çift şerit açık, normal akış',
+    'Kuzey sahil yolu üzerinde Dipkarpaz dönüşinde radar aktif',
+  ],
+  en: [
+    'Road works near Dortyol junction on Nicosia - Famagusta highway, single lane',
+    'Reduced visibility due to fog on Kyrenia Bogaz road',
+    'Heavy traffic at Gonyeli roundabout, alternative route advised',
+    'Ercan Airport road open with dual lanes, normal flow',
+    'Fixed radar active at Dipkarpaz junction on North Coast road',
+  ],
+};
+
+function renderTicker() {
+  const track = document.getElementById('tickerTrack');
+  const label = document.getElementById('tickerLabel');
+  if (!track) return;
+  const items = bulletins[currentLang] || bulletins.tr;
+  track.innerHTML = items.map(t => `<span>${t}</span>`).join('');
+  if (label) label.textContent = currentLang === 'en' ? 'LATEST' : 'SON DURUM';
 }
 
 // ==========================================
@@ -1031,6 +1061,7 @@ document.addEventListener('DOMContentLoaded', () => {
   try { savedLang = localStorage.getItem('kktc_lang'); } catch (e) {}
   const initialLang = savedLang || ((navigator.language || '').toLowerCase().startsWith('en') ? 'en' : 'tr');
   if (initialLang !== 'tr') setLanguage(initialLang);
+  renderTicker();
 
   // 3. Mobil Menü Toggle
   const mobileToggle = document.getElementById('mobileToggle');
