@@ -776,7 +776,7 @@ class _KktcETrafikDashboardSayfasiState
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Konum Ara',
+                            dil('Konum Ara', 'Search Location'),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
@@ -803,8 +803,8 @@ class _KktcETrafikDashboardSayfasiState
                       child: TextField(
                         controller: aramaCtrl,
                         autofocus: false,
-                        decoration: const InputDecoration(
-                          hintText: 'Evim, İşim, AVM, Plaj, Benzinlik, Üniversite ara...',
+                        decoration: InputDecoration(
+                          hintText: dil('Evim, İşim, AVM, Plaj, Benzinlik, Üniversite ara...', 'Search Home, Work, Mall, Beach, Gas, University...'),
                           hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -967,7 +967,7 @@ class _KktcETrafikDashboardSayfasiState
                               children: [
                                 Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade400),
                                 const SizedBox(height: 8),
-                                Text('Sonuç bulunamadı', style: TextStyle(color: Colors.grey.shade500)),
+                                Text(dil('Sonuç bulunamadı', 'No results found'), style: TextStyle(color: Colors.grey.shade500)),
                               ],
                             ),
                           )
@@ -981,10 +981,10 @@ class _KktcETrafikDashboardSayfasiState
                               if (i >= sonuclar.length) {
                                 final uIdx = i - sonuclar.length;
                                 if (uIdx == 0) {
-                                  return const Padding(
-                                    padding: EdgeInsets.fromLTRB(8, 14, 8, 6),
+                                  return Padding(
+                                    padding: const EdgeInsets.fromLTRB(8, 14, 8, 6),
                                     child: Text(
-                                      'İNTERNETTE ARA (TÜM KKTC)',
+                                      dil('İNTERNETTE ARA (TÜM KKTC)', 'SEARCH THE WEB (ALL TRNC)'),
                                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.grey, letterSpacing: 0.6),
                                     ),
                                   );
@@ -999,7 +999,7 @@ class _KktcETrafikDashboardSayfasiState
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 14),
                                     child: Center(
-                                      child: Text('İnternette sonuç bulunamadı', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                                      child: Text(dil('İnternette sonuç bulunamadı', 'No results found online'), style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
                                     ),
                                   );
                                 }
