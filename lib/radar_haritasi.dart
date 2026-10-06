@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'canli_gps_servisi.dart';
+import 'kktc_dil_servisi.dart';
+import 'bildirim_servisi.dart';
 import 'yol_tarifi_sayfasi.dart';
 import 'yol_forum_modeli.dart';
 import 'kktc_tema_servisi.dart';
@@ -1818,8 +1820,27 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
   }
 
   void _onGpsChanged() {
-    if (mounted) {
-      setState(() {});
+    if (!mounted) return;
+    setState(() {});
+    _yakinRadarKontrol();
+  }
+
+  // Canlı GPS konumuna göre yakındaki radarı sistem bildirimi ile duyur
+  void _yakinRadarKontrol() {
+    final pos = _gps.sonKonum;
+    if (pos == null) return;
+    for (final radar in kktcRadarListesi) {
+      final dy = (radar.lat - pos.latitude).abs();
+      final dx = (radar.lon - pos.longitude).abs();
+      // ~110m ≈ 0.001 enlem derecesi
+      final mesafeMetre = math.sqrt(dx * dx + dy * dy) * 111000;
+      if (mesafeMetre < 500) {
+        KktcBildirimServisi().radarUyarisi(
+          radarId: radar.id,
+          baslik: KktcDilServisi().turkceMi ? 'Sabit Radar Yaklaşıyor' : 'Fixed Radar Ahead',
+          mesaj: '${radar.ad} • ${radar.hizLimiti} km/s • ${mesafeMetre.toInt()} m',
+        );
+      }
     }
   }
 
