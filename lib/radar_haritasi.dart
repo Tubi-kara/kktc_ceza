@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,64 @@ import 'bildirim_servisi.dart';
 import 'yol_tarifi_sayfasi.dart';
 import 'yol_forum_modeli.dart';
 import 'kktc_tema_servisi.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+
+// ==========================================
+// 🗂️ ÇEVRİMDIŞI TİLE ÖNBELLEĞİ
+// ==========================================
+class KktcTileCache {
+  static Future<String?> getir(String url) async {
+    if (kIsWeb) return null;
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final cacheDir = Directory('${dir.path}/map_tiles');
+      if (!await cacheDir.exists()) await cacheDir.create(recursive: true);
+      final name = url.replaceAll(RegExp(r'[:\/\?&=\.]'), '_');
+      final f = File('${cacheDir.path}/$name.png');
+      if (await f.exists()) return f.path;
+      final resp = await http.get(Uri.parse(url), headers: const {'User-Agent': 'KktcTrafikCezaRadar/1.0'});
+      if (resp.statusCode == 200) {
+        await f.writeAsBytes(resp.bodyBytes);
+        return f.path;
+      }
+    } catch (_) {}
+    return null;
+  }
+}
+
+class KktcCachedTile extends StatelessWidget {
+  final String url;
+  const KktcCachedTile({super.key, required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: KktcTileCache.getir(url),
+      builder: (_, snap) {
+        if (snap.data != null) {
+          return Image.file(
+            File(snap.data!),
+            fit: BoxFit.fill,
+            errorBuilder: (c, e, s) => Image.network(
+              url,
+              headers: const {'User-Agent': 'KktcTrafikCezaRadar/1.0'},
+              fit: BoxFit.fill,
+              errorBuilder: (c, e, s) => const SizedBox.shrink(),
+            ),
+          );
+        }
+        return Image.network(
+          url,
+          headers: const {'User-Agent': 'KktcTrafikCezaRadar/1.0'},
+          fit: BoxFit.fill,
+          errorBuilder: (c, e, s) => const SizedBox.shrink(),
+        );
+      },
+    );
+  }
+}
 
 // ==========================================
 // 📍 RADAR & HIZ KAMERASI VERİ MODELİ
@@ -2595,24 +2654,18 @@ class KktcOpenStreetMapTileViewState extends State<KktcOpenStreetMapTileView>
                                     0, 0, -0.82, 0, 225,
                                     0, 0, 0, 1, 0,
                                   ]),
-                                  child: Image.network(
-                                    template
+                                  child: KktcCachedTile(
+                                    url: template
                                         .replaceAll('{z}', '$intZoom')
                                         .replaceAll('{x}', '${((tx % numTiles) + numTiles) % numTiles}')
                                         .replaceAll('{y}', '$ty'),
-                                    headers: const {'User-Agent': 'KktcTrafikCezaRadar/1.0'},
-                                    fit: BoxFit.fill,
-                                    errorBuilder: (c, e, s) => const SizedBox.shrink(),
                                   ),
                                 )
-                              : Image.network(
-                                  template
+                              : KktcCachedTile(
+                                  url: template
                                       .replaceAll('{z}', '$intZoom')
                                       .replaceAll('{x}', '${((tx % numTiles) + numTiles) % numTiles}')
                                       .replaceAll('{y}', '$ty'),
-                                  headers: const {'User-Agent': 'KktcTrafikCezaRadar/1.0'},
-                                  fit: BoxFit.fill,
-                                  errorBuilder: (c, e, s) => const SizedBox.shrink(),
                                 ),
                         ),
 
