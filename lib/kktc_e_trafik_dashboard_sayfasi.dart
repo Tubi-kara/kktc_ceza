@@ -14,6 +14,7 @@ import 'hizli_arama_modali.dart';
 import 'radar_haritasi.dart';
 import 'guncelleme_servisi.dart';
 import 'yol_tarifi_sayfasi.dart';
+import 'adres_arama_servisi.dart';
 import 'canli_gps_servisi.dart';
 import 'kktc_akaryakit_servisi.dart';
 import 'yol_forum_modeli.dart';
