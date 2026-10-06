@@ -8737,11 +8737,13 @@ class _BildirimAyarlariSayfasiState extends State<BildirimAyarlariSayfasi> {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: AppColors.surface,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: AppColors.slate200),
             ),
-            child: Column(
+            child: Material(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(24),
+              child: Column(
               children: [
                 SwitchListTile(
                   activeThumbColor: AppColors.primary,
@@ -8767,6 +8769,7 @@ class _BildirimAyarlariSayfasiState extends State<BildirimAyarlariSayfasi> {
                   onChanged: (v) => setState(() => radar = v),
                 ),
               ],
+              ),
             ),
           ),
         ],
